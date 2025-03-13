@@ -3,7 +3,6 @@ name: Deploy IaC
 on:
   push:
     branches:
-      - main
       - dev
     paths:
       - 'iac/**'
