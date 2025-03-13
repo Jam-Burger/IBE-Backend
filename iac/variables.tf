@@ -65,18 +65,6 @@ variable "service_desired_count" {
 
 variable "container_environment" {
   description = "Environment variables for the container"
-  type = list(object({
-    name  = string
-    value = string
-  }))
-  default = [
-    {
-      name  = "SPRING_PROFILES_ACTIVE"
-      value = "prod"
-    },
-    {
-      name  = "SERVER_PORT"
-      value = "8080"
-    }
-  ]
+  type = map(string)
+  sensitive = true
 } 

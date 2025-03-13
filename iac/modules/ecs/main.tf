@@ -67,7 +67,31 @@ resource "aws_ecs_task_definition" "app" {
           protocol      = "tcp"
         }
       ]
-      environment = var.container_environment
+      environment = [
+        {
+          name  = "DB_URL"
+          value = var.container_environment["DB_URL"]
+        },
+        {
+          name  = "DB_USERNAME"
+          value = var.container_environment["DB_USERNAME"]
+        },
+        {
+          name  = "DB_PASSWORD"
+          value = var.container_environment["DB_PASSWORD"]
+        },
+        {
+          name  = "ENV"
+          value = var.container_environment["ENV"]
+        }
+      ]
+      healthCheck = {
+        command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}/health || exit 1"]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      }
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -76,6 +100,7 @@ resource "aws_ecs_task_definition" "app" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
+      essential = true
     }
   ])
 
