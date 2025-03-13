@@ -1,18 +1,12 @@
-# Build stage
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+# Stage 1: Build
+FROM maven:3.9-amazoncorretto-21 AS builder
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
+COPY . .
 RUN mvn clean package -DskipTests
 
-# Run stage
-FROM eclipse-temurin:21-jre-alpine
+# Stage 2: Run
+FROM amazoncorretto:21-alpine
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-
-# Add a non-root user
-RUN addgroup -S spring && adduser -S spring -G spring
-USER spring
-
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
