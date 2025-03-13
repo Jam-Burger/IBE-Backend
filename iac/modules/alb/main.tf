@@ -1,0 +1,91 @@
+# Security Group for ALB
+resource "aws_security_group" "alb" {
+  name        = "${var.project_name}-${var.team_name}-alb-sg"
+  description = "Security group for ALB"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # Allow traffic from anywhere
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = var.tags
+}
+
+# Application Load Balancer
+resource "aws_lb" "app" {
+  name               = "${var.project_name}-${var.team_name}-alb"
+  internal           = false  # Make it internet-facing
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb.id]
+  subnets           = var.public_subnet_ids  # Use public subnets
+
+  tags = var.tags
+}
+
+# ALB Target Group
+resource "aws_lb_target_group" "app" {
+  name        = "${var.project_name}-${var.team_name}-tg"
+  port        = var.container_port
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
+
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    interval            = 30
+    timeout             = 5
+    path                = "/health"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    unhealthy_threshold = 2
+  }
+
+  tags = var.tags
+}
+
+# ALB Listener Rule for Health Check
+resource "aws_lb_listener_rule" "health" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 1
+
+  action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "application/json"
+      message_body = jsonencode({
+        status  = "healthy"
+        message = "Application is healthy"
+      })
+      status_code = "200"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/health"]
+    }
+  }
+}
+
+# ALB Listener
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.app.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app.arn
+  }
+} 
