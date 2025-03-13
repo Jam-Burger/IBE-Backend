@@ -29,7 +29,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleGenericException(Exception ex) {
-        System.out.println("An unexpected error occurred: " + ex.getMessage());
         return ErrorResponse.builder()
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
                 .message("An unexpected error occurred")
