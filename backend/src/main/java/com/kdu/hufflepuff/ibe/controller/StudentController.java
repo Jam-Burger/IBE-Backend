@@ -28,6 +28,7 @@ public class StudentController {
 
     @PostMapping
     public ApiResponse<StudentDTO> addStudent(@RequestBody StudentDTO studentDTO) {
+
         return ApiResponse.<StudentDTO>builder()
                 .statusCode(HttpStatus.CREATED)
                 .message("Student added successfully")
