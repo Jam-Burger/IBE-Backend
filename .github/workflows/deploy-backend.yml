@@ -10,8 +10,13 @@ on:
       - '.github/workflows/deploy-backend.yml'
 
 jobs:
-  deploy:
-    name: Deploy
+  deploy-infrastructure:
+    uses: ./.github/workflows/deploy-iac.yml
+    secrets: inherit
+
+  deploy-backend:
+    needs: deploy-infrastructure
+    name: Deploy Backend
     runs-on: ubuntu-latest
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}
