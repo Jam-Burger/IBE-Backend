@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - dev
-      - feature/workflows
     paths:
       - 'iac/**'
       - '.github/workflows/deploy-iac.yml'
@@ -18,11 +17,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      # Basic Configuration
       TF_VAR_aws_region: ${{ vars.AWS_REGION }}
       TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
       TF_VAR_team_name: ${{ vars.TEAM_NAME }}
-      # VPC Configuration
       TF_VAR_vpc_id: ${{ vars.VPC_ID }}
       TF_VAR_vpc_cidr: ${{ vars.VPC_CIDR }}
       TF_VAR_public_subnet_ids: ${{ vars.PUBLIC_SUBNET_IDS }}

@@ -9,18 +9,21 @@ on:
       - 'iac/**'
       - '.github/workflows/deploy-backend.yml'
 
-env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
-  ECR_REPOSITORY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-repo
-  ECS_CLUSTER: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-cluster
-  ECS_SERVICE: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-service
-  CONTAINER_NAME: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-container
-  TASK_FAMILY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-td
-
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      ECR_REPOSITORY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-repo
+      ECS_CLUSTER: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-cluster
+      ECS_SERVICE: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-service
+      CONTAINER_NAME: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-container
+      TASK_FAMILY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-td
+
+    defaults:
+      run:
+        working-directory: ./backend
 
     steps:
     - name: Checkout
