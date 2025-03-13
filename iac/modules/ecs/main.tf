@@ -23,7 +23,7 @@ resource "aws_security_group" "ecs_tasks" {
 
 # ECR Repository
 resource "aws_ecr_repository" "app" {
-  name = "${var.project_name}-${var.team_name}"
+  name = "${var.project_name}-${var.team_name}-repo"
   
   image_scanning_configuration {
     scan_on_push = true
@@ -48,7 +48,7 @@ resource "aws_ecs_cluster" "main" {
 
 # Task Definition
 resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.project_name}-${var.team_name}"
+  family                   = "${var.project_name}-${var.team_name}-td"
   network_mode            = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                     = var.task_cpu
@@ -58,7 +58,7 @@ resource "aws_ecs_task_definition" "app" {
 
   container_definitions = jsonencode([
     {
-      name  = "${var.project_name}-${var.team_name}"
+      name  = "${var.project_name}-${var.team_name}-container"
       image = "${aws_ecr_repository.app.repository_url}:latest"
       portMappings = [
         {
@@ -78,6 +78,8 @@ resource "aws_ecs_task_definition" "app" {
       }
     }
   ])
+
+  tags = var.tags
 }
 
 # ECS Service
@@ -96,7 +98,7 @@ resource "aws_ecs_service" "app" {
 
   load_balancer {
     target_group_arn = var.target_group_arn
-    container_name   = "${var.project_name}-${var.team_name}"
+    container_name   = "${var.project_name}-${var.team_name}-container"
     container_port   = var.container_port
   }
 
