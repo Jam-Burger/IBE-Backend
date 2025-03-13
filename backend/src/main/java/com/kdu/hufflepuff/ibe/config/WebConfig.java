@@ -13,7 +13,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173") // Change port if needed
+                        .allowedOrigins("http://localhost:5173")// Change port if needed
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
             }
         };
