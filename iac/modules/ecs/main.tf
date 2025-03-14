@@ -1,20 +1,20 @@
 # Security Group for ECS Tasks
 resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.project_name}-${var.team_name}-ecs-tasks-sg"
+  name        = "${var.project_name}-${var.team_name}-${var.environment}-ecs-tasks-sg"
   description = "Security group for ECS tasks"
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port       = var.container_port
-    to_port         = var.container_port
-    protocol        = "tcp"
+    from_port = var.container_port
+    to_port   = var.container_port
+    protocol  = "tcp"
     security_groups = [var.alb_security_group_id]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -23,12 +23,12 @@ resource "aws_security_group" "ecs_tasks" {
 
 # ECR Repository
 resource "aws_ecr_repository" "app" {
-  name = "${var.project_name}-${var.team_name}-repo"
-  
+  name = "${var.project_name}-${var.team_name}-${var.environment}-repo"
+
   image_scanning_configuration {
     scan_on_push = true
   }
-  
+
   image_tag_mutability = "MUTABLE"
 
   tags = var.tags
@@ -36,8 +36,8 @@ resource "aws_ecr_repository" "app" {
 
 # ECS Cluster
 resource "aws_ecs_cluster" "main" {
-  name = "${var.project_name}-${var.team_name}-cluster"
-  
+  name = "${var.project_name}-${var.team_name}-${var.environment}-cluster"
+
   setting {
     name  = "containerInsights"
     value = "enabled"
@@ -48,17 +48,17 @@ resource "aws_ecs_cluster" "main" {
 
 # Task Definition
 resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.project_name}-${var.team_name}-td"
-  network_mode            = "awsvpc"
+  family             = "${var.project_name}-${var.team_name}-${var.environment}-td"
+  network_mode       = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                     = var.task_cpu
-  memory                  = var.task_memory
-  execution_role_arn      = var.ecs_execution_role_arn
-  task_role_arn           = var.ecs_task_role_arn
+  cpu                = var.task_cpu
+  memory             = var.task_memory
+  execution_role_arn = var.ecs_execution_role_arn
+  task_role_arn      = var.ecs_task_role_arn
 
   container_definitions = jsonencode([
     {
-      name  = "${var.project_name}-${var.team_name}-container"
+      name  = "${var.project_name}-${var.team_name}-${var.environment}-container"
       image = "${aws_ecr_repository.app.repository_url}:latest"
       portMappings = [
         {
@@ -86,7 +86,7 @@ resource "aws_ecs_task_definition" "app" {
         }
       ]
       healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}/health || exit 1"]
+        command = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}/health || exit 1"]
         interval    = 30
         timeout     = 5
         retries     = 3
@@ -95,7 +95,7 @@ resource "aws_ecs_task_definition" "app" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/${var.project_name}-${var.team_name}"
+          "awslogs-group"         = "/ecs/${var.project_name}-${var.team_name}-${var.environment}"
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
         }
@@ -109,7 +109,7 @@ resource "aws_ecs_task_definition" "app" {
 
 # ECS Service
 resource "aws_ecs_service" "app" {
-  name            = "${var.project_name}-${var.team_name}-service"
+  name            = "${var.project_name}-${var.team_name}-${var.environment}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = var.service_desired_count
@@ -117,13 +117,13 @@ resource "aws_ecs_service" "app" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [aws_security_group.ecs_tasks.id]
+    security_groups = [aws_security_group.ecs_tasks.id]
     assign_public_ip = false
   }
 
   load_balancer {
     target_group_arn = var.target_group_arn
-    container_name   = "${var.project_name}-${var.team_name}-container"
+    container_name   = "${var.project_name}-${var.team_name}-${var.environment}-container"
     container_port   = var.container_port
   }
 
@@ -132,7 +132,7 @@ resource "aws_ecs_service" "app" {
 
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "ecs" {
-  name              = "/ecs/${var.project_name}-${var.team_name}"
+  name              = "/ecs/${var.project_name}-${var.team_name}-${var.environment}"
   retention_in_days = 30
 
   tags = var.tags

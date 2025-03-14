@@ -1,36 +1,39 @@
 locals {
   tags = {
-    Creator = "team-${var.team_name}"
-    Purpose = "${var.project_name}-project"
+    Creator    = "team-${var.team_name}"
+    Purpose    = "${var.project_name}-project"
+    Environment = var.environment
   }
 }
 
 # IAM Module
 module "iam" {
   source = "./modules/iam"
-  
+
   project_name = var.project_name
   team_name    = var.team_name
+  environment  = var.environment
   tags         = local.tags
 }
 
 # ALB Module
 module "alb" {
   source = "./modules/alb"
-  
-  project_name      = var.project_name
-  team_name         = var.team_name
-  vpc_id            = var.vpc_id
-  container_port    = var.container_port
-  public_subnet_ids = var.public_subnet_ids
-  tags              = local.tags
+
+  project_name       = var.project_name
+  team_name          = var.team_name
+  environment        = var.environment
+  vpc_id             = var.vpc_id
+  container_port     = var.container_port
+  public_subnet_ids  = var.public_subnet_ids
+  tags               = local.tags
 }
 
 # ECS Module
 module "ecs" {
   source = "./modules/ecs"
-  
-  project_name            = var.project_name
+
+  project_name           = var.project_name
   team_name              = var.team_name
   environment            = var.environment
   vpc_id                 = var.vpc_id
@@ -51,9 +54,10 @@ module "ecs" {
 # API Gateway Module
 module "api_gateway" {
   source = "./modules/api_gateway"
-  
-  project_name  = var.project_name
-  team_name     = var.team_name
-  alb_dns_name  = module.alb.alb_dns_name
-  tags          = local.tags
+
+  project_name = var.project_name
+  team_name    = var.team_name
+  environment  = var.environment
+  alb_dns_name = module.alb.alb_dns_name
+  tags         = local.tags
 } 

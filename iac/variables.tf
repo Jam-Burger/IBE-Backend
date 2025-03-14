@@ -11,7 +11,6 @@ variable "team_name" {
 variable "environment" {
   description = "Environment name (e.g., dev, prod)"
   type        = string
-  default     = "dev"
 }
 
 variable "aws_region" {
@@ -66,5 +65,5 @@ variable "service_desired_count" {
 variable "container_environment" {
   description = "Environment variables for the container"
   type = map(string)
-  sensitive = true
+  sensitive   = true
 } 
