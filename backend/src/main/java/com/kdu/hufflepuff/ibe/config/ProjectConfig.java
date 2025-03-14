@@ -12,5 +12,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ComponentScan(basePackages = "com.kdu.hufflepuff.ibe.service.impl")
 @ComponentScan(basePackages = "com.kdu.hufflepuff.ibe.exception")
 @ComponentScan(basePackages = "com.kdu.hufflepuff.ibe.controller")
+@ComponentScan(basePackages = "com.kdu.hufflepuff.ibe.util")
 public class ProjectConfig {
 }
