@@ -30,35 +30,40 @@ jobs:
         with:
           terraform_version: "1.5.7"
 
-      - name: Terraform Format
-        id: fmt
-        run: terraform fmt -check
-        continue-on-error: true
+      - name: Create tfvars file
+        run: |
+          cat > qa.tfvars <<EOF
+          project_name = "${{ vars.PROJECT_NAME }}"
+          team_name = "${{ vars.TEAM_NAME }}"
+          aws_region = "${{ vars.AWS_REGION }}"
+          vpc_id = "${{ vars.VPC_ID }}"
+          vpc_cidr = "${{ vars.VPC_CIDR }}"
+          public_subnet_ids = ${{ vars.PUBLIC_SUBNET_IDS }}
+          private_subnet_ids = ${{ vars.PRIVATE_SUBNET_IDS }}
+          container_environment = {
+            ENV = "qa"
+            DB_URL = "${{ vars.DB_URL_QA }}"
+            DB_USERNAME = "${{ secrets.DB_USERNAME }}"
+            DB_PASSWORD = "${{ secrets.DB_PASSWORD }}"
+          }
+            EOF
 
       - name: Terraform Init
         id: init
         run: terraform init
-        env:
-          TF_VAR_project_name: ${{ vars.PROJECT_NAME }}
-          TF_VAR_team_name: ${{ vars.TEAM_NAME }}
-          TF_VAR_aws_region: ${{ vars.AWS_REGION }}
-          TF_VAR_vpc_id: ${{ vars.VPC_ID }}
-          TF_VAR_vpc_cidr: ${{ vars.VPC_CIDR }}
-          TF_VAR_public_subnet_ids: ${{ vars.PUBLIC_SUBNET_IDS }}
-          TF_VAR_private_subnet_ids: ${{ vars.PRIVATE_SUBNET_IDS }}
-          TF_VAR_db_url: ${{ vars.DB_URL_QA }}
-          TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
-          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-          TF_VAR_container_environment: '{"ENV":"qa","DB_URL":"${{ vars.DB_URL_QA }}","DB_USERNAME":"${{ secrets.DB_USERNAME }}","DB_PASSWORD":"${{ secrets.DB_PASSWORD }}"}'
-
+        
       - name: Terraform Validate
+        id: validate
         run: terraform validate
 
       - name: Select Terraform Workspace
+        id: workspace
         run: terraform workspace select qa || terraform workspace new qa
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        id: plan
+        run: terraform plan -var-file=qa.tfvars -out=tfplan
 
       - name: Terraform Apply
+        id: apply
         run: terraform apply -auto-approve tfplan 
