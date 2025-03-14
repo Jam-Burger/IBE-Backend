@@ -1,16 +1,16 @@
-name: Deploy Backend
+name: Deploy Backend - QA
 
 on:
   push:
     branches:
-      - dev
+      - main
     paths:
       - 'backend/**'
-      - '.github/workflows/deploy-backend.yml'
+      - '.github/workflows/deploy-backend-qa.yml'
 
 jobs:
   deploy-infrastructure:
-    uses: ./.github/workflows/deploy-iac.yml
+    uses: ./.github/workflows/deploy-iac-qa.yml
     secrets: inherit
 
   deploy-backend:
@@ -19,11 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}
-      ECR_REPOSITORY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-repo
-      ECS_CLUSTER: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-cluster
-      ECS_SERVICE: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-service
-      CONTAINER_NAME: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-container
-      TASK_FAMILY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-td
+      ECR_REPOSITORY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-repo
+      ECS_CLUSTER: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-cluster
+      ECS_SERVICE: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-service
+      CONTAINER_NAME: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-container
+      TASK_FAMILY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-td
 
     defaults:
       run:
@@ -60,15 +60,21 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        # Print working directory and list files for debugging
-        pwd
-        ls -la
-        # Build and push
         docker build \
           --platform linux/amd64 \
           -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
           .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+    - name: Manual Approval
+      uses: trstringer/manual-approval@v1
+      with:
+        secret: ${{ secrets.GITHUB_TOKEN }}
+        approvers: ${{ vars.QA_TEAM_APPROVERS }}
+        minimum-approvals: 1
+        issue-title: "Approve QA Backend Deployment"
+        issue-body: "Please review the backend changes and approve the deployment to QA environment."
+        exclude-workflow-initiator-as-approver: false
 
     - name: Update ECS service
       run: |
