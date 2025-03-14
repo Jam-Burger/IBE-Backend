@@ -10,5 +10,10 @@ variable "team_name" {
 
 variable "tags" {
   description = "Tags to be applied to all resources"
-  type        = map(string)
-} 
+  type = map(string)
+}
+
+variable "environment" {
+  description = "Environment name (e.g., dev, prod)"
+  type        = string
+}

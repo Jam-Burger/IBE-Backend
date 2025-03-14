@@ -48,7 +48,7 @@ variable "service_desired_count" {
 
 variable "private_subnet_ids" {
   description = "List of private subnet IDs where ECS tasks will be launched"
-  type        = list(string)
+  type = list(string)
 }
 
 variable "target_group_arn" {
@@ -79,5 +79,5 @@ variable "container_environment" {
 
 variable "tags" {
   description = "Tags to be applied to all resources"
-  type        = map(string)
+  type = map(string)
 } 

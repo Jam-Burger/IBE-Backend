@@ -20,10 +20,15 @@ variable "container_port" {
 
 variable "public_subnet_ids" {
   description = "List of public subnet IDs for the ALB"
-  type        = list(string)
+  type = list(string)
 }
 
 variable "tags" {
   description = "Tags to be applied to all resources"
-  type        = map(string)
-} 
+  type = map(string)
+}
+
+variable "environment" {
+  description = "Environment name (e.g., dev, prod)"
+  type        = string
+}
