@@ -33,6 +33,7 @@ jobs:
       - name: Create tfvars file
         run: |
           cat > qa.tfvars <<EOF
+          environment = "qa"
           project_name = "${{ vars.PROJECT_NAME }}"
           team_name = "${{ vars.TEAM_NAME }}"
           aws_region = "${{ vars.AWS_REGION }}"
