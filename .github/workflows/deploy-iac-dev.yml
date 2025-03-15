@@ -46,13 +46,13 @@ jobs:
           vpc_cidr = "${{ vars.VPC_CIDR }}"
           public_subnet_ids = ${{ vars.PUBLIC_SUBNET_IDS }}
           private_subnet_ids = ${{ vars.PRIVATE_SUBNET_IDS }}
-          allowed_origins = "${{ vars.ALLOWED_ORIGINS }}"
+          allowed_origins = ${{ vars.ALLOWED_ORIGINS }}
           container_environment = {
             ENV = "dev"
             DB_URL = "${{ vars.DB_URL }}"
             DB_USERNAME = "${{ secrets.DB_USERNAME }}"
             DB_PASSWORD = "${{ secrets.DB_PASSWORD }}"
-            ALLOWED_ORIGINS = "'${{ join(',', vars.ALLOWED_ORIGINS) }}'"
+            ALLOWED_ORIGINS = "${{ join(',', vars.ALLOWED_ORIGINS) }}"
           }
           EOF
 
