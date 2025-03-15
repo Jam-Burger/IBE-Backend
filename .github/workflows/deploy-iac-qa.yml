@@ -12,6 +12,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: qa
+      url: ${{ steps.invoke_url.outputs.api_url }}
     defaults:
       run:
         working-directory: ./iac
@@ -30,6 +33,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.5.7"
+          terraform_wrapper: false
 
       - name: Create tfvars file
         run: |
@@ -42,11 +46,13 @@ jobs:
           vpc_cidr = "${{ vars.VPC_CIDR }}"
           public_subnet_ids = ${{ vars.PUBLIC_SUBNET_IDS }}
           private_subnet_ids = ${{ vars.PRIVATE_SUBNET_IDS }}
+          allowed_origins = "${{ vars.ALLOWED_ORIGINS }}"
           container_environment = {
             ENV = "qa"
-            DB_URL = "${{ vars.DB_URL_QA }}"
+            DB_URL = "${{ vars.DB_URL }}"
             DB_USERNAME = "${{ secrets.DB_USERNAME }}"
             DB_PASSWORD = "${{ secrets.DB_PASSWORD }}"
+            ALLOWED_ORIGINS = "${{ join(',', vars.ALLOWED_ORIGINS) }}"
           }
           EOF
 
@@ -69,3 +75,8 @@ jobs:
       - name: Terraform Apply
         id: apply
         run: terraform apply -auto-approve tfplan 
+
+      - name: Get Invoke URL
+        id: invoke_url
+        run: |
+          echo "api_url=$(terraform output -raw api_gateway_invoke_url)" >> $GITHUB_OUTPUT 

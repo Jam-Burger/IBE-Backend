@@ -66,4 +66,10 @@ variable "container_environment" {
   description = "Environment variables for the container"
   type        = map(string)
   sensitive   = true
+}
+
+variable "allowed_origins" {
+  description = "List of allowed CORS origins (e.g., ['https://example.com', 'https://app.example.com'])"
+  type        = list(string)
+  default     = ["*"] # Default to allow all origins, but can be overridden in tfvars
 } 

@@ -44,10 +44,63 @@ resource "aws_api_gateway_integration" "alb" {
   }
 }
 
+# CORS Configuration
+resource "aws_api_gateway_method" "cors" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.proxy.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "cors" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.proxy.id
+  http_method = aws_api_gateway_method.cors.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = jsonencode({
+      statusCode = 200
+    })
+  }
+}
+
+resource "aws_api_gateway_method_response" "cors" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.proxy.id
+  http_method = aws_api_gateway_method.cors.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Max-Age"       = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "cors" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.proxy.id
+  http_method = aws_api_gateway_method.cors.http_method
+  status_code = aws_api_gateway_method_response.cors.status_code
+
+  response_templates = {
+    "application/json" = ""
+  }
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Origin,Accept,Access-Control-Request-Method,Access-Control-Request-Headers'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS,PATCH'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'${join(",", var.allowed_origins)}'"
+    "method.response.header.Access-Control-Max-Age"       = "'7200'"
+  }
+}
+
 # API Gateway Deployment
 resource "aws_api_gateway_deployment" "api" {
   rest_api_id = aws_api_gateway_rest_api.api.id
-  depends_on  = [aws_api_gateway_integration.alb]
+  depends_on  = [aws_api_gateway_integration.alb, aws_api_gateway_integration.cors]
 }
 
 # API Gateway Stage

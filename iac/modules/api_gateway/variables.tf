@@ -22,3 +22,8 @@ variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
 }
+
+variable "allowed_origins" {
+  description = "List of allowed CORS origins (e.g., ['https://example.com', 'https://app.example.com'])"
+  type        = list(string)
+}

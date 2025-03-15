@@ -17,10 +17,9 @@ jobs:
     needs: deploy-infrastructure
     name: Deploy Backend
     runs-on: ubuntu-latest
-    environment: qa
+    environment: QA
 
     env:
-      AWS_REGION: ${{ vars.AWS_REGION }}
       ECR_REPOSITORY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-repo
       ECS_CLUSTER: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-cluster
       ECS_SERVICE: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-service
