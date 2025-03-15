@@ -20,5 +20,5 @@ variable "alb_dns_name" {
 
 variable "tags" {
   description = "Tags to apply to all resources"
-  type = map(string)
+  type        = map(string)
 }

@@ -5,16 +5,16 @@ resource "aws_security_group" "ecs_tasks" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port = var.container_port
-    to_port   = var.container_port
-    protocol  = "tcp"
+    from_port       = var.container_port
+    to_port         = var.container_port
+    protocol        = "tcp"
     security_groups = [var.alb_security_group_id]
   }
 
   egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -48,13 +48,13 @@ resource "aws_ecs_cluster" "main" {
 
 # Task Definition
 resource "aws_ecs_task_definition" "app" {
-  family             = "${var.project_name}-${var.team_name}-${var.environment}-td"
-  network_mode       = "awsvpc"
+  family                   = "${var.project_name}-${var.team_name}-${var.environment}-td"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                = var.task_cpu
-  memory             = var.task_memory
-  execution_role_arn = var.ecs_execution_role_arn
-  task_role_arn      = var.ecs_task_role_arn
+  cpu                      = var.task_cpu
+  memory                   = var.task_memory
+  execution_role_arn       = var.ecs_execution_role_arn
+  task_role_arn            = var.ecs_task_role_arn
 
   container_definitions = jsonencode([
     {
@@ -86,7 +86,7 @@ resource "aws_ecs_task_definition" "app" {
         }
       ]
       healthCheck = {
-        command = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}/health || exit 1"]
+        command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}/health || exit 1"]
         interval    = 30
         timeout     = 5
         retries     = 3
@@ -117,7 +117,7 @@ resource "aws_ecs_service" "app" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups = [aws_security_group.ecs_tasks.id]
+    security_groups  = [aws_security_group.ecs_tasks.id]
     assign_public_ip = false
   }
 
