@@ -22,8 +22,6 @@ jobs:
       ECR_REPOSITORY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-repo
       ECS_CLUSTER: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-cluster
       ECS_SERVICE: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-service
-      CONTAINER_NAME: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-container
-      TASK_FAMILY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-td
 
     defaults:
       run:
@@ -58,7 +56,6 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }}
       run: |
         docker build \
           --platform linux/amd64 \

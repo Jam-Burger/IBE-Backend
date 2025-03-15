@@ -9,7 +9,7 @@ on:
       - '.github/workflows/deploy-iac-qa.yml'
 
 jobs:
-  plan:
+  deploy:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -47,7 +47,7 @@ jobs:
             DB_USERNAME = "${{ secrets.DB_USERNAME }}"
             DB_PASSWORD = "${{ secrets.DB_PASSWORD }}"
           }
-            EOF
+          EOF
 
       - name: Terraform Init
         id: init

@@ -5,23 +5,23 @@ resource "aws_security_group" "alb" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
+    from_port = 80
+    to_port   = 80
+    protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]  # Allow HTTP traffic from anywhere
   }
 
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
+    from_port = 443
+    to_port   = 443
+    protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]  # Allow HTTPS traffic from anywhere
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -31,10 +31,10 @@ resource "aws_security_group" "alb" {
 # Application Load Balancer
 resource "aws_lb" "app" {
   name               = "${var.project_name}-${var.team_name}-${var.environment}-alb"
-  internal           = false  # Make it public
+  internal = false  # Make it public
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
-  subnets           = var.public_subnet_ids  # Use public subnets
+  security_groups = [aws_security_group.alb.id]
+  subnets = var.public_subnet_ids  # Use public subnets
 
   tags = var.tags
 }

@@ -1,7 +1,7 @@
 locals {
   tags = {
-    Creator    = "team-${var.team_name}"
-    Purpose    = "${var.project_name}-project"
+    Creator     = "team-${var.team_name}"
+    Purpose     = "${var.project_name}-project"
     Environment = var.environment
   }
 }
@@ -20,13 +20,13 @@ module "iam" {
 module "alb" {
   source = "./modules/alb"
 
-  project_name       = var.project_name
-  team_name          = var.team_name
-  environment        = var.environment
-  vpc_id             = var.vpc_id
-  container_port     = var.container_port
-  public_subnet_ids  = var.public_subnet_ids
-  tags               = local.tags
+  project_name      = var.project_name
+  team_name         = var.team_name
+  environment       = var.environment
+  vpc_id            = var.vpc_id
+  container_port    = var.container_port
+  public_subnet_ids = var.public_subnet_ids
+  tags              = local.tags
 }
 
 # ECS Module

@@ -36,12 +36,12 @@ variable "container_port" {
 
 variable "public_subnet_ids" {
   description = "List of public subnet IDs for the ALB"
-  type = list(string)
+  type        = list(string)
 }
 
 variable "private_subnet_ids" {
   description = "List of private subnet IDs where ECS tasks will be launched"
-  type = list(string)
+  type        = list(string)
 }
 
 variable "task_cpu" {
@@ -64,6 +64,6 @@ variable "service_desired_count" {
 
 variable "container_environment" {
   description = "Environment variables for the container"
-  type = map(string)
+  type        = map(string)
   sensitive   = true
 } 
