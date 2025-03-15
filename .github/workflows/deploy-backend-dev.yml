@@ -10,6 +10,7 @@ on:
 
 jobs:
   deploy-infrastructure:
+    name: Deploy IaC
     uses: ./.github/workflows/deploy-iac-dev.yml
     secrets: inherit
 

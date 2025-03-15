@@ -83,6 +83,10 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "ENV"
           value = var.container_environment["ENV"]
+        },
+        {
+          name  = "ALLOWED_ORIGINS"
+          value = var.container_environment["ALLOWED_ORIGINS"]
         }
       ]
       healthCheck = {
