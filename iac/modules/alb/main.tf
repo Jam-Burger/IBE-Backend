@@ -50,16 +50,40 @@ resource "aws_lb_target_group" "app" {
   health_check {
     enabled             = true
     healthy_threshold   = 2
-    interval            = 30
-    timeout             = 10
+    interval            = 60
+    timeout             = 30
     path                = "/health"
     port                = "traffic-port"
     protocol            = "HTTP"
-    unhealthy_threshold = 3
+    unhealthy_threshold = 5
     matcher             = "200"
   }
 
   tags = var.tags
+}
+
+# ALB Listener Rule for Health Check
+resource "aws_lb_listener_rule" "health" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 1
+
+  action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "application/json"
+      message_body = jsonencode({
+        status  = "healthy"
+        message = "Application is healthy"
+      })
+      status_code = "200"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/health"]
+    }
+  }
 }
 
 # ALB Listener for HTTP
@@ -73,17 +97,3 @@ resource "aws_lb_listener" "http" {
     target_group_arn = aws_lb_target_group.app.arn
   }
 }
-
-# ALB Listener for HTTPS (optional, uncomment if you have SSL certificate)
-# resource "aws_lb_listener" "https" {
-#   load_balancer_arn = aws_lb.app.arn
-#   port              = "443"
-#   protocol          = "HTTPS"
-#   ssl_policy        = "ELBSecurityPolicy-2016-08"
-#   certificate_arn   = var.certificate_arn  # You'll need to add this variable
-
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.app.arn
-#   }
-# } 
