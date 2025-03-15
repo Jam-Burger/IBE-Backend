@@ -17,6 +17,8 @@ jobs:
     needs: deploy-infrastructure
     name: Deploy Backend
     runs-on: ubuntu-latest
+    environment: qa
+
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}
       ECR_REPOSITORY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-qa-repo
@@ -62,16 +64,6 @@ jobs:
           -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
           .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-    - name: Manual Approval
-      uses: trstringer/manual-approval@v1
-      with:
-        secret: ${{ secrets.GITHUB_TOKEN }}
-        approvers: ${{ vars.QA_TEAM_APPROVERS }}
-        minimum-approvals: 1
-        issue-title: "Approve QA Backend Deployment"
-        issue-body: "Please review the backend changes and approve the deployment to QA environment."
-        exclude-workflow-initiator-as-approver: false
 
     - name: Update ECS service
       run: |
