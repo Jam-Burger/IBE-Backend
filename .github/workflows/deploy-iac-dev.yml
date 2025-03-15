@@ -52,7 +52,7 @@ jobs:
             DB_URL = "${{ vars.DB_URL }}"
             DB_USERNAME = "${{ secrets.DB_USERNAME }}"
             DB_PASSWORD = "${{ secrets.DB_PASSWORD }}"
-            ALLOWED_ORIGINS = "${{ join(',', vars.ALLOWED_ORIGINS) }}"
+            ALLOWED_ORIGINS = "'${{ join(',', vars.ALLOWED_ORIGINS) }}'"
           }
           EOF
 
