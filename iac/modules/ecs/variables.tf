@@ -74,7 +74,6 @@ variable "alb_security_group_id" {
 variable "container_environment" {
   description = "Environment variables for the container"
   type        = map(string)
-  default     = {}
 }
 
 variable "tags" {

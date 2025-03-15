@@ -65,7 +65,7 @@ variable "service_desired_count" {
 variable "container_environment" {
   description = "Environment variables for the container"
   type        = map(string)
-  sensitive   = true
+  sensitive   = false
 }
 
 variable "allowed_origins" {
