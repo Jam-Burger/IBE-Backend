@@ -55,9 +55,10 @@ module "ecs" {
 module "api_gateway" {
   source = "./modules/api_gateway"
 
-  project_name = var.project_name
-  team_name    = var.team_name
-  environment  = var.environment
-  alb_dns_name = module.alb.alb_dns_name
-  tags         = local.tags
+  project_name    = var.project_name
+  team_name       = var.team_name
+  environment     = var.environment
+  alb_dns_name    = module.alb.alb_dns_name
+  allowed_origins = var.allowed_origins
+  tags            = local.tags
 } 

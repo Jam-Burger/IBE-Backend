@@ -20,7 +20,6 @@ jobs:
     environment: dev
 
     env:
-      AWS_REGION: ${{ vars.AWS_REGION }}
       ECR_REPOSITORY: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-dev-repo
       ECS_CLUSTER: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-dev-cluster
       ECS_SERVICE: ${{ vars.PROJECT_NAME }}-${{ vars.TEAM_NAME }}-dev-service
@@ -70,4 +69,4 @@ jobs:
         aws ecs update-service \
           --cluster ${{ env.ECS_CLUSTER }} \
           --service ${{ env.ECS_SERVICE }} \
-          --force-new-deployment 
+          --force-new-deployment
