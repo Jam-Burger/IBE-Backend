@@ -2,9 +2,9 @@ package com.kdu.hufflepuff.ibe.controller;
 
 import com.kdu.hufflepuff.ibe.model.dto.in.HotelRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.HotelResponseDTO;
-import com.kdu.hufflepuff.ibe.model.entity.Hotel;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.HotelService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -28,7 +28,7 @@ public class HotelController {
     }
 
     @PostMapping
-    public ApiResponse<HotelResponseDTO> addHotel(@RequestBody HotelRequestDTO hotelRequestDTO) {
+    public ApiResponse<HotelResponseDTO> addHotel(@Valid @RequestBody HotelRequestDTO hotelRequestDTO) {
         return ApiResponse.<HotelResponseDTO>builder()
                 .statusCode(HttpStatus.CREATED)
                 .message("Hotel added successfully")
