@@ -18,7 +18,7 @@ public class ErrorResponse {
     private final String message;
     private final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
-    public ResponseEntity<ErrorResponse> send(){
+    public ResponseEntity<ErrorResponse> send() {
         log.error(message);
         return ResponseEntity.status(statusCode).body(this);
     }

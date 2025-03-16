@@ -11,8 +11,9 @@ import java.util.List;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
 public interface HotelMapper {
-    HotelResponseDTO toDto(Hotel hotel);
-    List<HotelResponseDTO> toDto(List<Hotel> hotels);
     Hotel toEntity(HotelRequestDTO hotelRequestDTO);
-}
 
+    HotelResponseDTO toDto(Hotel hotel);
+
+    List<HotelResponseDTO> toDto(List<Hotel> hotel);
+}

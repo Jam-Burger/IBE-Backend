@@ -3,6 +3,7 @@ package com.kdu.hufflepuff.ibe.model.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.util.UUID;
 
 @Entity
@@ -11,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = "hotel")
+@Table(name = "hotel_translations")
 public class HotelTranslation {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

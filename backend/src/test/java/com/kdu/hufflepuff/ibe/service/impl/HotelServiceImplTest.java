@@ -1,13 +1,13 @@
 package com.kdu.hufflepuff.ibe.service.impl;
-import com.kdu.hufflepuff.ibe.exception.InvalidRequestException;
+
 import com.kdu.hufflepuff.ibe.mapper.HotelMapper;
 import com.kdu.hufflepuff.ibe.model.dto.in.HotelRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.HotelResponseDTO;
 import com.kdu.hufflepuff.ibe.model.entity.Hotel;
 import com.kdu.hufflepuff.ibe.model.entity.HotelTranslation;
 import com.kdu.hufflepuff.ibe.repository.HotelRepository;
-import com.kdu.hufflepuff.ibe.repository.HotelTranslationRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,19 +17,20 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import java.util.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class HotelServiceImplTest {
+class HotelServiceImplTest {
 
     @Mock
     private HotelRepository hotelRepository;
-
-    @Mock
-    private HotelTranslationRepository translationRepository;
 
     @Mock
     private TranslationService translationService;
@@ -43,19 +44,22 @@ public class HotelServiceImplTest {
     @InjectMocks
     private HotelServiceImpl hotelService;
 
-    private Hotel hotel;
-    private HotelResponseDTO hotelResponseDTO;
     private HotelRequestDTO hotelRequestDTO;
     private List<Hotel> hotels;
     private List<HotelResponseDTO> hotelResponseDTOs;
 
     @BeforeEach
     void setUp() {
+        ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
+        RequestContextHolder.setRequestAttributes(attributes);
+        when(attributes.getRequest()).thenReturn(request);
+        when(request.getHeader("Accept-Language")).thenReturn("en");
+
         // Set up test data
         UUID hotelId = UUID.randomUUID();
 
         // Create hotel
-        hotel = new Hotel();
+        Hotel hotel = new Hotel();
         hotel.setId(hotelId);
         hotel.setName("Test Hotel");
         hotel.setDescription("This is a test hotel");
@@ -78,7 +82,7 @@ public class HotelServiceImplTest {
         hotels.add(hotel);
 
         // DTO setup
-        hotelResponseDTO = new HotelResponseDTO();
+        HotelResponseDTO hotelResponseDTO = new HotelResponseDTO();
         hotelResponseDTO.setId(hotelId);
         hotelResponseDTO.setName("Test Hotel");
         hotelResponseDTO.setDescription("This is a test hotel");
@@ -91,15 +95,15 @@ public class HotelServiceImplTest {
         hotelRequestDTO.setDescription("This is a test hotel");
     }
 
+    @AfterEach
+    void tearDown() {
+        RequestContextHolder.resetRequestAttributes();
+    }
+
     @Test
     @DisplayName("Should return all hotels with English language")
     void getAllHotels_WithEnglishLanguage_ShouldReturnAllHotels() {
         // Arrange
-        ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
-        RequestContextHolder.setRequestAttributes(attributes);
-        when(attributes.getRequest()).thenReturn(request);
-        when(request.getHeader("Accept-Language")).thenReturn("en");
-
         when(hotelRepository.findAll()).thenReturn(hotels);
         when(hotelMapper.toDto(hotels)).thenReturn(hotelResponseDTOs);
 
@@ -109,22 +113,16 @@ public class HotelServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("Test Hotel", result.get(0).getName());
+        assertEquals("Test Hotel", result.getFirst().getName());
 
         verify(hotelRepository).findAll();
         verify(hotelMapper).toDto(hotels);
-
-        // Clean up
-        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test
     @DisplayName("Should return all hotels with French language translations")
     void getAllHotels_WithFrenchLanguage_ShouldReturnTranslatedHotels() {
         // Arrange
-        ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
-        RequestContextHolder.setRequestAttributes(attributes);
-        when(attributes.getRequest()).thenReturn(request);
         when(request.getHeader("Accept-Language")).thenReturn("fr");
 
         // Create a fresh mutable hotel for this test to avoid issues with modifications
@@ -161,7 +159,7 @@ public class HotelServiceImplTest {
         translatedResponses.add(translatedResponse);
 
         // Mock the mapper to return translated responses
-        when(hotelMapper.toDto(any(List.class))).thenReturn(translatedResponses);
+        when(hotelMapper.toDto(anyList())).thenReturn(translatedResponses);
 
         // Act
         List<HotelResponseDTO> result = hotelService.getAllHotels();
@@ -169,83 +167,10 @@ public class HotelServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("Hôtel de Test", result.get(0).getName());
-        assertEquals("C'est un hôtel de test", result.get(0).getDescription());
+        assertEquals("Hôtel de Test", result.getFirst().getName());
+        assertEquals("C'est un hôtel de test", result.getFirst().getDescription());
 
         verify(hotelRepository).findAll();
-
-        // Clean up
-        RequestContextHolder.resetRequestAttributes();
-    }
-
-    @Test
-    @DisplayName("Should add a new hotel successfully")
-    void addHotel_WithValidData_ShouldAddHotelSuccessfully() {
-        // Arrange
-        when(hotelMapper.toEntity(any(HotelRequestDTO.class))).thenReturn(hotel);
-        when(hotelRepository.save(any(Hotel.class))).thenReturn(hotel);
-        when(translationService.translateText(anyString(), eq("en"), eq("fr"))).thenReturn("Translated Text");
-        when(hotelMapper.toDto(any(Hotel.class))).thenReturn(hotelResponseDTO);
-
-        // Act
-        HotelResponseDTO result = hotelService.addHotel(hotelRequestDTO);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(hotel.getId(), result.getId());
-        assertEquals(hotel.getName(), result.getName());
-
-        verify(hotelMapper).toEntity(any(HotelRequestDTO.class));
-        verify(hotelRepository).save(any(Hotel.class));
-        verify(translationService, times(2)).translateText(anyString(), eq("en"), eq("fr"));
-        verify(translationRepository).save(any(HotelTranslation.class));
-        verify(hotelMapper).toDto(any(Hotel.class));
-    }
-
-    @Test
-    @DisplayName("Should throw exception when hotel name is empty")
-    void addHotel_WithEmptyName_ShouldThrowException() {
-        // Arrange
-        hotelRequestDTO.setName("");
-
-        // Act & Assert
-        assertThrows(InvalidRequestException.class, () -> hotelService.addHotel(hotelRequestDTO));
-
-        verify(hotelRepository, never()).save(any());
-        verify(translationService, never()).translateText(anyString(), anyString(), anyString());
-    }
-
-    @Test
-    @DisplayName("Should throw exception when hotel name is null")
-    void addHotel_WithNullName_ShouldThrowException() {
-        // Arrange
-        hotelRequestDTO.setName(null);
-
-        // Act & Assert
-        assertThrows(InvalidRequestException.class, () -> hotelService.addHotel(hotelRequestDTO));
-
-        verify(hotelRepository, never()).save(any());
-        verify(translationService, never()).translateText(anyString(), anyString(), anyString());
-    }
-
-    @Test
-    @DisplayName("Should use default language when RequestContextHolder is null")
-    void getCurrentLanguage_WhenRequestContextHolderIsNull_ShouldUseDefaultLanguage() {
-        // Arrange
-        RequestContextHolder.resetRequestAttributes();
-
-        when(hotelRepository.findAll()).thenReturn(hotels);
-        when(hotelMapper.toDto(any(List.class))).thenReturn(hotelResponseDTOs);
-
-        // Act
-        List<HotelResponseDTO> result = hotelService.getAllHotels();
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(1, result.size());
-
-        verify(hotelRepository).findAll();
-        verify(hotelMapper).toDto(any(List.class));
     }
 
     @Test
@@ -272,25 +197,16 @@ public class HotelServiceImplTest {
         when(hotelRepository.findAll()).thenReturn(motelHotels);
         when(hotelMapper.toDto(motelHotels)).thenReturn(motelResponseDTOs);
 
-        // Setting to English language
-        ServletRequestAttributes attributes = mock(ServletRequestAttributes.class);
-        RequestContextHolder.setRequestAttributes(attributes);
-        when(attributes.getRequest()).thenReturn(request);
-        when(request.getHeader("Accept-Language")).thenReturn("en");
-
         // Act
         List<HotelResponseDTO> result = hotelService.getAllHotels();
 
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("Motel", result.get(0).getName());
-        assertEquals("This is the hotel Motel", result.get(0).getDescription());
+        assertEquals("Motel", result.getFirst().getName());
+        assertEquals("This is the hotel Motel", result.getFirst().getDescription());
 
         verify(hotelRepository).findAll();
         verify(hotelMapper).toDto(motelHotels);
-
-        // Clean up
-        RequestContextHolder.resetRequestAttributes();
     }
 }

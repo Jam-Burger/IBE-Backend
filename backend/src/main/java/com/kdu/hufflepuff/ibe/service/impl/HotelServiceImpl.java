@@ -1,6 +1,6 @@
 package com.kdu.hufflepuff.ibe.service.impl;
+
 import com.kdu.hufflepuff.ibe.exception.InvalidRequestException;
-import com.kdu.hufflepuff.ibe.exception.ResourceNotFoundException;
 import com.kdu.hufflepuff.ibe.mapper.HotelMapper;
 import com.kdu.hufflepuff.ibe.model.dto.in.HotelRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.HotelResponseDTO;
@@ -9,20 +9,18 @@ import com.kdu.hufflepuff.ibe.model.entity.HotelTranslation;
 import com.kdu.hufflepuff.ibe.repository.HotelRepository;
 import com.kdu.hufflepuff.ibe.repository.HotelTranslationRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.HotelService;
-import com.kdu.hufflepuff.ibe.service.impl.TranslationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.Arrays;
 import java.util.List;
 
 
 @Service("hotelService")
 @RequiredArgsConstructor
-public class HotelServiceImpl  implements  HotelService  {
+public class HotelServiceImpl implements HotelService {
     private final HotelRepository hotelRepository;
     private final HotelTranslationRepository translationRepository;
     private final TranslationService translationService;
@@ -60,7 +58,7 @@ public class HotelServiceImpl  implements  HotelService  {
         Hotel savedHotel = hotelRepository.save(hotel);
 
         // List of languages for translation
-        List<String> languages = Arrays.asList("fr");
+        List<String> languages = List.of("fr");
 
         for (String lang : languages) {
             String translatedName = translationService.translateText(hotel.getName(), "en", lang);

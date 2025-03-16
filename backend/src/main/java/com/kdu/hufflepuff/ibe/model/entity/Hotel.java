@@ -3,6 +3,7 @@ package com.kdu.hufflepuff.ibe.model.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;

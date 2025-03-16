@@ -1,4 +1,5 @@
 package com.kdu.hufflepuff.ibe.exception;
+
 import com.kdu.hufflepuff.ibe.model.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,7 +32,7 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleGenericException(Exception ex) {
         return ErrorResponse.builder()
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-                .message("An unexpected error occurred")
+                .message("An unexpected error occurred: " + ex.getMessage())
                 .build();
     }
 }
