@@ -12,9 +12,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: dev
-      url: ${{ steps.output-vars.outputs.api_url }}
+    environment: Dev
     defaults:
       run:
         working-directory: ./iac
@@ -75,8 +73,3 @@ jobs:
       - name: Terraform Apply
         id: apply
         run: terraform apply -auto-approve tfplan
-
-      - name: Get Invoke URL
-        id: invoke_url
-        run: |
-          echo "api_url=$(terraform output -raw api_gateway_invoke_url)/api/v1" >> $GITHUB_OUTPUT

@@ -12,9 +12,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: qa
-      url: ${{ steps.invoke_url.outputs.api_url }}
+    environment: QA
     defaults:
       run:
         working-directory: ./iac
@@ -52,7 +50,7 @@ jobs:
             DB_URL = "${{ vars.DB_URL }}"
             DB_USERNAME = "${{ secrets.DB_USERNAME }}"
             DB_PASSWORD = "${{ secrets.DB_PASSWORD }}"
-            ALLOWED_ORIGINS = "${{ join(vars.ALLOWED_ORIGINS, ',') }}"
+            ALLOWED_ORIGINS = "$(echo ${{ vars.ALLOWED_ORIGINS }} | tr -d '[]"')"
           }
           EOF
 
@@ -74,9 +72,4 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        run: terraform apply -auto-approve tfplan 
-
-      - name: Get Invoke URL
-        id: invoke_url
-        run: |
-          echo "api_url=$(terraform output -raw api_gateway_invoke_url)/api/v1" >> $GITHUB_OUTPUT 
+        run: terraform apply -auto-approve tfplan
