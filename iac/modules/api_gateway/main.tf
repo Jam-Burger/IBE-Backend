@@ -93,7 +93,7 @@ resource "aws_api_gateway_integration_response" "cors" {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Origin,Accept,Access-Control-Request-Method,Access-Control-Request-Headers'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS,PATCH'"
     "method.response.header.Access-Control-Allow-Origin"  = "'${join(",", var.allowed_origins)}'"
-    "method.response.header.Access-Control-Max-Age"       = "'7200'"
+    "method.response.header.Access-Control-Max-Age"       = "'3600'"
   }
 }
 
