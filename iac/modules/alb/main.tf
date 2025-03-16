@@ -51,7 +51,7 @@ resource "aws_lb_target_group" "app" {
     enabled             = true
     healthy_threshold   = 2
     interval            = 60
-    timeout             = 30
+    timeout             = 5
     path                = "/health"
     port                = "traffic-port"
     protocol            = "HTTP"
@@ -60,30 +60,6 @@ resource "aws_lb_target_group" "app" {
   }
 
   tags = var.tags
-}
-
-# ALB Listener Rule for Health Check
-resource "aws_lb_listener_rule" "health" {
-  listener_arn = aws_lb_listener.http.arn
-  priority     = 1
-
-  action {
-    type = "fixed-response"
-    fixed_response {
-      content_type = "application/json"
-      message_body = jsonencode({
-        status  = "healthy"
-        message = "Application is healthy"
-      })
-      status_code = "200"
-    }
-  }
-
-  condition {
-    path_pattern {
-      values = ["/health"]
-    }
-  }
 }
 
 # ALB Listener for HTTP
