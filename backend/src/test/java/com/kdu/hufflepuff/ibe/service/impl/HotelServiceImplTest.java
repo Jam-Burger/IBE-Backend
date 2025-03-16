@@ -1,6 +1,5 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
-import com.kdu.hufflepuff.ibe.mapper.HotelMapper;
 import com.kdu.hufflepuff.ibe.model.dto.in.HotelRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.HotelResponseDTO;
 import com.kdu.hufflepuff.ibe.model.entity.Hotel;
@@ -15,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -33,10 +33,7 @@ class HotelServiceImplTest {
     private HotelRepository hotelRepository;
 
     @Mock
-    private TranslationService translationService;
-
-    @Mock
-    private HotelMapper hotelMapper;
+    private ModelMapper modelMapper;
 
     @Mock
     private HttpServletRequest request;
@@ -44,7 +41,6 @@ class HotelServiceImplTest {
     @InjectMocks
     private HotelServiceImpl hotelService;
 
-    private HotelRequestDTO hotelRequestDTO;
     private List<Hotel> hotels;
     private List<HotelResponseDTO> hotelResponseDTOs;
 
@@ -90,7 +86,7 @@ class HotelServiceImplTest {
         hotelResponseDTOs = new ArrayList<>();
         hotelResponseDTOs.add(hotelResponseDTO);
 
-        hotelRequestDTO = new HotelRequestDTO();
+        HotelRequestDTO hotelRequestDTO = new HotelRequestDTO();
         hotelRequestDTO.setName("Test Hotel");
         hotelRequestDTO.setDescription("This is a test hotel");
     }
@@ -105,7 +101,7 @@ class HotelServiceImplTest {
     void getAllHotels_WithEnglishLanguage_ShouldReturnAllHotels() {
         // Arrange
         when(hotelRepository.findAll()).thenReturn(hotels);
-        when(hotelMapper.toDto(hotels)).thenReturn(hotelResponseDTOs);
+        when(modelMapper.map(any(Hotel.class), eq(HotelResponseDTO.class))).thenReturn(hotelResponseDTOs.getFirst());
 
         // Act
         List<HotelResponseDTO> result = hotelService.getAllHotels();
@@ -116,7 +112,7 @@ class HotelServiceImplTest {
         assertEquals("Test Hotel", result.getFirst().getName());
 
         verify(hotelRepository).findAll();
-        verify(hotelMapper).toDto(hotels);
+        verify(modelMapper, times(1)).map(any(Hotel.class), eq(HotelResponseDTO.class));
     }
 
     @Test
@@ -155,11 +151,7 @@ class HotelServiceImplTest {
         translatedResponse.setName("Hôtel de Test");
         translatedResponse.setDescription("C'est un hôtel de test");
 
-        List<HotelResponseDTO> translatedResponses = new ArrayList<>();
-        translatedResponses.add(translatedResponse);
-
-        // Mock the mapper to return translated responses
-        when(hotelMapper.toDto(anyList())).thenReturn(translatedResponses);
+        when(modelMapper.map(any(Hotel.class), eq(HotelResponseDTO.class))).thenReturn(translatedResponse);
 
         // Act
         List<HotelResponseDTO> result = hotelService.getAllHotels();
@@ -171,6 +163,7 @@ class HotelServiceImplTest {
         assertEquals("C'est un hôtel de test", result.getFirst().getDescription());
 
         verify(hotelRepository).findAll();
+        verify(modelMapper, times(1)).map(any(Hotel.class), eq(HotelResponseDTO.class));
     }
 
     @Test
@@ -191,11 +184,8 @@ class HotelServiceImplTest {
         motelResponseDTO.setName("Motel");
         motelResponseDTO.setDescription("This is the hotel Motel");
 
-        List<HotelResponseDTO> motelResponseDTOs = new ArrayList<>();
-        motelResponseDTOs.add(motelResponseDTO);
-
         when(hotelRepository.findAll()).thenReturn(motelHotels);
-        when(hotelMapper.toDto(motelHotels)).thenReturn(motelResponseDTOs);
+        when(modelMapper.map(any(Hotel.class), eq(HotelResponseDTO.class))).thenReturn(motelResponseDTO);
 
         // Act
         List<HotelResponseDTO> result = hotelService.getAllHotels();
@@ -207,6 +197,6 @@ class HotelServiceImplTest {
         assertEquals("This is the hotel Motel", result.getFirst().getDescription());
 
         verify(hotelRepository).findAll();
-        verify(hotelMapper).toDto(motelHotels);
+        verify(modelMapper, times(1)).map(any(Hotel.class), eq(HotelResponseDTO.class));
     }
 }

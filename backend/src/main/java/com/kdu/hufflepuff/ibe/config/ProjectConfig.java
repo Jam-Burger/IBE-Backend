@@ -7,12 +7,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@Import({SecurityConfig.class, WebConfig.class})
+@Import({SecurityConfig.class, WebConfig.class, ModelMapperConfig.class})
 @EntityScan(basePackages = "com.kdu.hufflepuff.ibe.model.entity")
 @EnableJpaRepositories(basePackages = "com.kdu.hufflepuff.ibe.repository")
-@ComponentScan(basePackages = "com.kdu.hufflepuff.ibe.mapper")
-@ComponentScan(basePackages = "com.kdu.hufflepuff.ibe.service.impl")
-@ComponentScan(basePackages = "com.kdu.hufflepuff.ibe.exception")
-@ComponentScan(basePackages = "com.kdu.hufflepuff.ibe.controller")
+@ComponentScan(basePackages = {
+    "com.kdu.hufflepuff.ibe.mapper",
+    "com.kdu.hufflepuff.ibe.service.impl",
+    "com.kdu.hufflepuff.ibe.exception",
+    "com.kdu.hufflepuff.ibe.controller"
+})
 public class ProjectConfig {
 }

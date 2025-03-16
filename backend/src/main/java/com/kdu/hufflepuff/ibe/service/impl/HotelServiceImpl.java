@@ -1,7 +1,6 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
 import com.kdu.hufflepuff.ibe.exception.InvalidRequestException;
-import com.kdu.hufflepuff.ibe.mapper.HotelMapper;
 import com.kdu.hufflepuff.ibe.model.dto.in.HotelRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.HotelResponseDTO;
 import com.kdu.hufflepuff.ibe.model.entity.Hotel;
@@ -11,12 +10,12 @@ import com.kdu.hufflepuff.ibe.repository.HotelTranslationRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.HotelService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
-
 
 @Service("hotelService")
 @RequiredArgsConstructor
@@ -24,7 +23,7 @@ public class HotelServiceImpl implements HotelService {
     private final HotelRepository hotelRepository;
     private final HotelTranslationRepository translationRepository;
     private final TranslationService translationService;
-    private final HotelMapper hotelMapper;
+    private final ModelMapper modelMapper;
 
     public List<HotelResponseDTO> getAllHotels() {
         String language = getCurrentLanguage();
@@ -43,7 +42,9 @@ public class HotelServiceImpl implements HotelService {
                 }
             });
         }
-        return hotelMapper.toDto(hotels);
+        return hotels.stream()
+                .map(hotel -> modelMapper.map(hotel, HotelResponseDTO.class))
+                .toList();
     }
 
     public HotelResponseDTO addHotel(HotelRequestDTO hotelRequestDTO) {
@@ -51,8 +52,8 @@ public class HotelServiceImpl implements HotelService {
             throw new InvalidRequestException("Hotel name cannot be empty");
         }
 
-        // Use MapStruct to convert DTO to Entity
-        Hotel hotel = hotelMapper.toEntity(hotelRequestDTO);
+        // Use ModelMapper to convert DTO to Entity
+        Hotel hotel = modelMapper.map(hotelRequestDTO, Hotel.class);
 
         // Save entity
         Hotel savedHotel = hotelRepository.save(hotel);
@@ -72,8 +73,8 @@ public class HotelServiceImpl implements HotelService {
             translationRepository.save(translation);
         }
 
-        // Convert and return as DTO using MapStruct
-        return hotelMapper.toDto(savedHotel);
+        // Convert and return as DTO using ModelMapper
+        return modelMapper.map(savedHotel, HotelResponseDTO.class);
     }
 
     private String getCurrentLanguage() {

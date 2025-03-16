@@ -2,7 +2,7 @@
 FROM maven:3.9-amazoncorretto-21 AS builder
 WORKDIR /app
 COPY pom.xml .
-RUN mvn dependency:go-offline
+RUN #mvn dependency:go-offline
 
 COPY src ./src
 RUN mvn clean package
@@ -10,10 +10,6 @@ RUN mvn clean package
 # Stage 2: Run
 FROM amazoncorretto:21-alpine
 WORKDIR /app
-RUN apk add --no-cache curl
-
 COPY --from=builder /app/target/*.jar app.jar
-
 EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
