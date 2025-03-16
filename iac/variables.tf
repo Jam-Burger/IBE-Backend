@@ -59,13 +59,13 @@ variable "task_memory" {
 variable "service_desired_count" {
   description = "Desired number of tasks running in the service"
   type        = number
-  default     = 1
+  default     = 3
 }
 
 variable "container_environment" {
   description = "Environment variables for the container"
   type        = map(string)
-  sensitive   = false
+  sensitive   = true
 }
 
 variable "allowed_origins" {

@@ -10,6 +10,7 @@ import com.kdu.hufflepuff.ibe.repository.HotelTranslationRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.HotelService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -17,6 +18,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 
+@Slf4j
 @Service("hotelService")
 @RequiredArgsConstructor
 public class HotelServiceImpl implements HotelService {
@@ -32,6 +34,7 @@ public class HotelServiceImpl implements HotelService {
         if (!"en".equalsIgnoreCase(language)) {
             hotels.forEach(hotel -> {
                 if (hotel.getTranslations() != null) {
+                    log.info("Hotel translations found: " + hotel.getTranslations().size());
                     hotel.getTranslations().stream()
                             .filter(translation -> translation.getLanguage().equalsIgnoreCase(language))
                             .findFirst()

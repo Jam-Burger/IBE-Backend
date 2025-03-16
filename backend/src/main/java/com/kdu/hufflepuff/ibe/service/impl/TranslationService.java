@@ -1,7 +1,7 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -12,6 +12,9 @@ import java.util.Map;
 @Service
 public class TranslationService {
 
+    @Value("${translation.api.url}")
+    private String translationApiUrl;
+
     private final RestTemplate restTemplate;
 
     public TranslationService(RestTemplate restTemplate) {
@@ -19,8 +22,6 @@ public class TranslationService {
     }
 
     public String translateText(String text, String sourceLang, String targetLang) {
-        String apiUrl = "http://localhost:5000/translate";
-
         // Prepare the request body
         Map<String, String> requestBody = Map.of(
                 "q", text,
@@ -36,11 +37,11 @@ public class TranslationService {
         HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, Map.class);
+            ResponseEntity<Map> response = restTemplate.exchange(translationApiUrl, HttpMethod.POST, entity, Map.class);
 
             // Extract translated text from the response
             if (response.getBody() != null && response.getBody().containsKey("translatedText")) {
-                return response.getBody().get("translatedText").toString();
+                return (String) response.getBody().get("translatedText");
             }
         } catch (Exception e) {
             log.error("Translation API error: " + e.getMessage());
