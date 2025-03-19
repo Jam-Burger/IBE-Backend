@@ -68,25 +68,9 @@ resource "aws_ecs_task_definition" "app" {
         }
       ]
       environment = [
-        {
-          name  = "DB_URL"
-          value = var.container_environment["DB_URL"]
-        },
-        {
-          name  = "DB_USERNAME"
-          value = var.container_environment["DB_USERNAME"]
-        },
-        {
-          name  = "DB_PASSWORD"
-          value = var.container_environment["DB_PASSWORD"]
-        },
-        {
-          name  = "ENV"
-          value = var.container_environment["ENV"]
-        },
-        {
-          name  = "ALLOWED_ORIGINS"
-          value = var.container_environment["ALLOWED_ORIGINS"]
+        for key, value in var.container_environment : {
+          name  = key
+          value = value
         }
       ]
       logConfiguration = {
