@@ -1,6 +1,6 @@
 # Security Group for ECS Tasks
 resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.project_name}-${var.team_name}-${var.environment}-ecs-tasks-sg"
+  name        = "${var.project_name}-ecs-tasks-sg"
   description = "Security group for ECS tasks"
   vpc_id      = var.vpc_id
 
@@ -23,7 +23,7 @@ resource "aws_security_group" "ecs_tasks" {
 
 # ECR Repository
 resource "aws_ecr_repository" "app" {
-  name = "${var.project_name}-${var.team_name}-${var.environment}-repo"
+  name = "${var.project_name}-repo"
 
   image_scanning_configuration {
     scan_on_push = true
@@ -36,7 +36,7 @@ resource "aws_ecr_repository" "app" {
 
 # ECS Cluster
 resource "aws_ecs_cluster" "main" {
-  name = "${var.project_name}-${var.team_name}-${var.environment}-cluster"
+  name = "${var.project_name}-cluster"
 
   setting {
     name  = "containerInsights"
@@ -48,7 +48,7 @@ resource "aws_ecs_cluster" "main" {
 
 # Task Definition
 resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.project_name}-${var.team_name}-${var.environment}-td"
+  family                   = "${var.project_name}-td"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.task_cpu
@@ -58,7 +58,7 @@ resource "aws_ecs_task_definition" "app" {
 
   container_definitions = jsonencode([
     {
-      name  = "${var.project_name}-${var.team_name}-${var.environment}-container"
+      name  = "${var.project_name}-container"
       image = "${aws_ecr_repository.app.repository_url}:latest"
       portMappings = [
         {
@@ -68,31 +68,15 @@ resource "aws_ecs_task_definition" "app" {
         }
       ]
       environment = [
-        {
-          name  = "DB_URL"
-          value = var.container_environment["DB_URL"]
-        },
-        {
-          name  = "DB_USERNAME"
-          value = var.container_environment["DB_USERNAME"]
-        },
-        {
-          name  = "DB_PASSWORD"
-          value = var.container_environment["DB_PASSWORD"]
-        },
-        {
-          name  = "ENV"
-          value = var.container_environment["ENV"]
-        },
-        {
-          name  = "ALLOWED_ORIGINS"
-          value = var.container_environment["ALLOWED_ORIGINS"]
+        for key, value in var.container_environment : {
+          name  = key
+          value = value
         }
       ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/${var.project_name}-${var.team_name}-${var.environment}"
+          "awslogs-group"         = "/ecs/${var.project_name}"
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
         }
@@ -106,7 +90,7 @@ resource "aws_ecs_task_definition" "app" {
 
 # ECS Service
 resource "aws_ecs_service" "app" {
-  name            = "${var.project_name}-${var.team_name}-${var.environment}-service"
+  name            = "${var.project_name}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = var.service_desired_count
@@ -120,7 +104,7 @@ resource "aws_ecs_service" "app" {
 
   load_balancer {
     target_group_arn = var.target_group_arn
-    container_name   = "${var.project_name}-${var.team_name}-${var.environment}-container"
+    container_name   = "${var.project_name}-container"
     container_port   = var.container_port
   }
 
@@ -129,7 +113,7 @@ resource "aws_ecs_service" "app" {
 
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "ecs" {
-  name              = "/ecs/${var.project_name}-${var.team_name}-${var.environment}"
+  name              = "/ecs/${var.project_name}"
   retention_in_days = 30
 
   tags = var.tags

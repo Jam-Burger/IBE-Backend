@@ -4,11 +4,13 @@
     {
       "Effect": "Allow",
       "Action": [
-        "ssm:GetParameters",
-        "ssm:GetParameter",
-        "ssm:GetParametersByPath"
+        "dynamodb:GetItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+        "dynamodb:BatchGetItem",
+        "dynamodb:DescribeTable"
       ],
-      "Resource": "arn:aws:ssm:*:*:parameter/${project_name}-${team_name}/*"
+      "Resource": "arn:aws:dynamodb:*:*:table/${dynamodb_table_name}"
     }
   ]
-} 
+}
