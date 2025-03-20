@@ -1,17 +1,18 @@
 package com.kdu.hufflepuff.ibe.model.dynamodb;
 
+import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import lombok.Data;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 @Data
 @DynamoDbBean
-public class WebsiteConfig {
+public class WebsiteConfigModel {
     private String tenantId;
     private String sk;
-    private String configType;
+    private ConfigType configType;
     private Long updatedAt;
-    private GlobalConfig globalConfig;
-    private LandingPageConfig landingPageConfig;
+    private GlobalConfigModel globalConfigModel;
+    private LandingPageConfigModel landingPageConfigModel;
 
     @DynamoDbPartitionKey
     @DynamoDbAttribute("TenantId")
@@ -27,7 +28,7 @@ public class WebsiteConfig {
 
     @DynamoDbSecondaryPartitionKey(indexNames = "ConfigTypeIndex")
     @DynamoDbAttribute("ConfigType")
-    public String getConfigType() {
+    public ConfigType getConfigType() {
         return configType;
     }
 
@@ -36,13 +37,15 @@ public class WebsiteConfig {
         return updatedAt;
     }
 
+    @DynamoDbFlatten
     @DynamoDbAttribute("GlobalConfig")
-    public GlobalConfig getGlobalConfig() {
-        return globalConfig;
+    public GlobalConfigModel getGlobalConfigModel() {
+        return globalConfigModel;
     }
 
+    @DynamoDbFlatten
     @DynamoDbAttribute("LandingPageConfig")
-    public LandingPageConfig getLandingPageConfig() {
-        return landingPageConfig;
+    public LandingPageConfigModel getLandingPageConfigModel() {
+        return landingPageConfigModel;
     }
 } 

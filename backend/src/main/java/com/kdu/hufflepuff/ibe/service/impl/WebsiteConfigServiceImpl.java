@@ -1,73 +1,70 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
+import com.kdu.hufflepuff.ibe.exception.ConfigNotFoundException;
+import com.kdu.hufflepuff.ibe.exception.InvalidConfigException;
 import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
-import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfig;
-import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfig;
-import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfig;
+import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
+import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
+import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
+import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.repository.dynamodb.WebsiteConfigRepository;
-import com.kdu.hufflepuff.ibe.service.WebsiteConfigService;
+import com.kdu.hufflepuff.ibe.service.interfaces.WebsiteConfigService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Optional;
 
 @Service
-@Transactional
+@RequiredArgsConstructor
 public class WebsiteConfigServiceImpl implements WebsiteConfigService {
     private final WebsiteConfigRepository configRepository;
 
-    public WebsiteConfigServiceImpl(WebsiteConfigRepository configRepository) {
-        this.configRepository = configRepository;
-    }
-
     @Override
     @Transactional(readOnly = true)
-    public Optional<WebsiteConfig> getConfig(String tenantId, String configType) {
-        String sk = computeSortKey(configType);
-        return configRepository.getConfig(tenantId, sk);
+    public WebsiteConfigModel getConfig(String tenantId, ConfigType configType) {
+        validateInput(tenantId, configType);
+        return configRepository.getConfig(tenantId, configType.getKey())
+            .orElseThrow(() -> new ConfigNotFoundException(tenantId, configType.getKey()));
     }
 
     @Override
-    public <T> void saveConfig(String tenantId, String configType, ConfigRequestDTO<T> configRequest, Class<T> configClass) {
-        // Validate inputs
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalArgumentException("TenantId cannot be null or empty");
-        }
-        if (configType == null || configType.trim().isEmpty()) {
-            throw new IllegalArgumentException("ConfigType cannot be null or empty");
-        }
+    public <T> WebsiteConfigModel saveConfig(String tenantId, ConfigType configType, ConfigRequestDTO<T> configRequest, Class<T> configClass) {
+        validateInput(tenantId, configType);
         if (configRequest == null || configRequest.getConfig() == null) {
-            throw new IllegalArgumentException("Config data cannot be null");
+            throw InvalidConfigException.nullConfigData();
         }
 
-        // Create and populate WebsiteConfig
-        WebsiteConfig config = new WebsiteConfig();
+        WebsiteConfigModel config = new WebsiteConfigModel();
         config.setTenantId(tenantId);
         config.setConfigType(configType);
-        config.setSk(computeSortKey(configType));
+        config.setSk(configType.getKey());
         config.setUpdatedAt(Instant.now().getEpochSecond());
 
-        // Set the appropriate config based on type
         T configData = configRequest.getConfig();
-        if (configClass == GlobalConfig.class) {
-            config.setGlobalConfig((GlobalConfig) configData);
-        } else if (configClass == LandingPageConfig.class) {
-            config.setLandingPageConfig((LandingPageConfig) configData);
+        if (configClass == GlobalConfigModel.class) {
+            config.setGlobalConfigModel((GlobalConfigModel) configData);
+        } else if (configClass == LandingPageConfigModel.class) {
+            config.setLandingPageConfigModel((LandingPageConfigModel) configData);
         } else {
-            throw new IllegalArgumentException("Unsupported config type: " + configClass.getSimpleName());
+            throw InvalidConfigException.unsupportedConfigType(configClass.getSimpleName());
         }
 
-        configRepository.saveConfig(config);
+        return configRepository.saveConfig(config);
     }
 
     @Override
-    public void deleteConfig(String tenantId, String configType) {
-        String sk = computeSortKey(configType);
-        configRepository.deleteConfig(tenantId, sk);
+    public WebsiteConfigModel deleteConfig(String tenantId, ConfigType configType) {
+        validateInput(tenantId, configType);
+        return configRepository.deleteConfig(tenantId, configType.getKey());
     }
 
-    private String computeSortKey(String configType) {
-        return "CONFIG#" + configType.toUpperCase();
+    private void validateInput(String tenantId, ConfigType configType) {
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw InvalidConfigException.nullTenantId();
+        }
+        if (configType == null || configType.getKey().trim().isEmpty()) {
+            throw InvalidConfigException.nullConfigType();
+        }
     }
 } 

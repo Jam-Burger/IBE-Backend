@@ -1,77 +1,81 @@
 package com.kdu.hufflepuff.ibe.controller;
 
+import com.kdu.hufflepuff.ibe.model.dto.out.ConfigResponseDTO;
 import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
-import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfig;
-import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfig;
-import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfig;
+import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
+import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
+import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
+import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
-import com.kdu.hufflepuff.ibe.service.WebsiteConfigService;
+import com.kdu.hufflepuff.ibe.service.interfaces.WebsiteConfigService;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
-
 @RestController
 @RequestMapping("api/v1/config")
+@RequiredArgsConstructor
 public class ConfigController {
     private final WebsiteConfigService configService;
+    private final ModelMapper modelMapper;
 
-    public ConfigController(WebsiteConfigService configService) {
-        this.configService = configService;
+    @GetMapping("/{tenantId}/{configType}")
+    public ResponseEntity<ApiResponse<ConfigResponseDTO>> getConfig(
+        @PathVariable String tenantId,
+        @PathVariable ConfigType configType) {
+        WebsiteConfigModel config = configService.getConfig(tenantId, configType);
+        return createResponse("Configuration retrieved successfully", config, HttpStatus.OK);
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<WebsiteConfig>> getConfig(
-        @RequestParam String tenantId,
-        @RequestParam String configType) {
-        Optional<WebsiteConfig> config = configService.getConfig(tenantId, configType);
-        if (config.isPresent()) {
-            return ApiResponse.<WebsiteConfig>builder()
-                .statusCode(HttpStatus.OK)
-                .message("Configuration retrieved successfully")
-                .data(config.get())
-                .build()
-                .send();
-        } else {
-            throw new RuntimeException("Configuration not found");
+    @PostMapping("/{tenantId}/GLOBAL")
+    public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveGlobalConfig(
+        @PathVariable String tenantId,
+        @RequestBody ConfigRequestDTO<GlobalConfigModel> configRequest) {
+        WebsiteConfigModel savedConfig = configService.saveConfig(
+            tenantId,
+            ConfigType.GLOBAL,
+            configRequest,
+            GlobalConfigModel.class
+        );
+        return createResponse("Global configuration saved successfully", savedConfig, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{tenantId}/LANDING")
+    public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveLandingConfig(
+        @PathVariable String tenantId,
+        @RequestBody ConfigRequestDTO<LandingPageConfigModel> configRequest) {
+        WebsiteConfigModel savedConfig = configService.saveConfig(
+            tenantId,
+            ConfigType.LANDING,
+            configRequest,
+            LandingPageConfigModel.class
+        );
+        return createResponse("Landing page configuration saved successfully", savedConfig, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/{tenantId}/{configType}")
+    public ResponseEntity<ApiResponse<ConfigResponseDTO>> deleteConfig(
+        @PathVariable String tenantId,
+        @PathVariable ConfigType configType) {
+        WebsiteConfigModel deletedConfig = configService.deleteConfig(tenantId, configType);
+        return createResponse("Configuration deleted successfully", deletedConfig, HttpStatus.OK);
+    }
+
+    private ResponseEntity<ApiResponse<ConfigResponseDTO>> createResponse(String message, WebsiteConfigModel config, HttpStatusCode statusCode) {
+        ConfigResponseDTO response = modelMapper.map(config, ConfigResponseDTO.class);
+        if (config.getGlobalConfigModel() != null) {
+            response.setConfigData(config.getGlobalConfigModel());
+        } else if (config.getLandingPageConfigModel() != null) {
+            response.setConfigData(config.getLandingPageConfigModel());
         }
-    }
 
-    @PostMapping(value = "/{tenantId}/global", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Void>> saveGlobalConfig(
-        @PathVariable String tenantId,
-        @RequestBody ConfigRequestDTO<GlobalConfig> configRequest) {
-        configService.saveConfig(tenantId, "GLOBAL", configRequest, GlobalConfig.class);
-        return ApiResponse.<Void>builder()
-            .statusCode(HttpStatus.OK)
-            .message("Global configuration saved successfully")
-            .build()
-            .send();
-    }
-
-    @PostMapping(value = "/{tenantId}/landing", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Void>> saveLandingConfig(
-        @PathVariable String tenantId,
-        @RequestBody ConfigRequestDTO<LandingPageConfig> configRequest) {
-        configService.saveConfig(tenantId, "LANDING", configRequest, LandingPageConfig.class);
-        return ApiResponse.<Void>builder()
-            .statusCode(HttpStatus.OK)
-            .message("Landing page configuration saved successfully")
-            .build()
-            .send();
-    }
-
-    @DeleteMapping(value = "/{tenantId}/{configType}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Void>> deleteConfig(
-        @PathVariable String tenantId,
-        @PathVariable String configType) {
-        configService.deleteConfig(tenantId, configType);
-        return ApiResponse.<Void>builder()
-            .statusCode(HttpStatus.OK)
-            .message("Configuration deleted successfully")
+        return ApiResponse.<ConfigResponseDTO>builder()
+            .statusCode(statusCode)
+            .message(message)
+            .data(response)
             .build()
             .send();
     }

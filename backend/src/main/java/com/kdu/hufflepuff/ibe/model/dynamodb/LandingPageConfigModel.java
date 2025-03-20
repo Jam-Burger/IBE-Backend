@@ -3,12 +3,13 @@ package com.kdu.hufflepuff.ibe.model.dynamodb;
 import lombok.Data;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbFlatten;
 
 import java.util.List;
 
 @Data
 @DynamoDbBean
-public class LandingPageConfig {
+public class LandingPageConfigModel {
     private String pageTitle;
     private Banner banner;
     private SearchForm searchForm;
@@ -62,6 +63,7 @@ public class LandingPageConfig {
             return roomOptions;
         }
 
+        @DynamoDbFlatten
         @DynamoDbAttribute("Accessibility")
         public Accessibility getAccessibility() {
             return accessibility;
@@ -72,11 +74,23 @@ public class LandingPageConfig {
     @DynamoDbBean
     public static class GuestOptions {
         private boolean enabled;
+        private int min;
+        private int max;
         private List<GuestCategory> categories;
 
         @DynamoDbAttribute("Enabled")
         public boolean isEnabled() {
             return enabled;
+        }
+
+        @DynamoDbAttribute("Min")
+        public int getMin() {
+            return min;
+        }
+
+        @DynamoDbAttribute("Max")
+        public int getMax() {
+            return max;
         }
 
         @DynamoDbAttribute("Categories")
@@ -92,6 +106,7 @@ public class LandingPageConfig {
         private boolean enabled;
         private int min;
         private int max;
+        private int defaultValue;
         private String label;
 
         @DynamoDbAttribute("Name")
@@ -112,6 +127,11 @@ public class LandingPageConfig {
         @DynamoDbAttribute("Max")
         public int getMax() {
             return max;
+        }
+
+        @DynamoDbAttribute("DefaultValue")
+        public int getDefaultValue() {
+            return defaultValue;
         }
 
         @DynamoDbAttribute("Label")

@@ -3,17 +3,19 @@ package com.kdu.hufflepuff.ibe.model.dynamodb;
 import lombok.Data;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbFlatten;
 
 import java.util.List;
 
 @Data
 @DynamoDbBean
-public class GlobalConfig {
+public class GlobalConfigModel {
     private Brand brand;
     private List<Language> languages;
     private List<Currency> currencies;
     private List<String> properties;
 
+    @DynamoDbFlatten
     @DynamoDbAttribute("Brand")
     public Brand getBrand() {
         return brand;

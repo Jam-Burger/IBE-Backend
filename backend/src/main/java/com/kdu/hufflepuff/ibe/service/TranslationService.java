@@ -1,4 +1,4 @@
-package com.kdu.hufflepuff.ibe.service.impl;
+package com.kdu.hufflepuff.ibe.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -6,6 +6,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -44,7 +45,7 @@ public class TranslationService {
                 return (String) response.getBody().get("translatedText");
             }
         } catch (Exception e) {
-            log.error("Translation API error: " + e.getMessage());
+            log.error("Translation API error: {}", e.getMessage());
         }
 
         return text; // Return original text in case of failure

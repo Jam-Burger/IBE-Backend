@@ -9,4 +9,4 @@ import lombok.NoArgsConstructor;
 public class ConfigRequestDTO<T> {
     @JsonUnwrapped
     private T config;
-} 
+}
