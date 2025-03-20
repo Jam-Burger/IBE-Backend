@@ -1,12 +1,6 @@
 name: Deploy Infrastructure as Code - QA
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'iac/**'
-      - '.github/workflows/deploy-iac-qa.yml'
   workflow_call: {}
 
 jobs:
