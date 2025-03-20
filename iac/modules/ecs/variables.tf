@@ -79,4 +79,10 @@ variable "container_environment" {
 variable "tags" {
   description = "Tags to be applied to all resources"
   type        = map(string)
+}
+
+variable "image_tag" {
+  description = "Tag to use for the container image"
+  type        = string
+  default     = "latest"
 } 
