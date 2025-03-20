@@ -1,13 +1,14 @@
 package com.kdu.hufflepuff.ibe.controller;
 
-import com.kdu.hufflepuff.ibe.model.dto.out.ConfigResponseDTO;
 import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.ConfigResponseDTO;
 import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
 import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.WebsiteConfigService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -33,12 +34,11 @@ public class ConfigController {
     @PostMapping("/{tenantId}/GLOBAL")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveGlobalConfig(
         @PathVariable String tenantId,
-        @RequestBody ConfigRequestDTO<GlobalConfigModel> configRequest) {
+        @Valid @RequestBody ConfigRequestDTO<GlobalConfigModel> configRequest) {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
             ConfigType.GLOBAL,
-            configRequest,
-            GlobalConfigModel.class
+            configRequest
         );
         return createResponse("Global configuration saved successfully", savedConfig, HttpStatus.CREATED);
     }
@@ -46,12 +46,11 @@ public class ConfigController {
     @PostMapping("/{tenantId}/LANDING")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveLandingConfig(
         @PathVariable String tenantId,
-        @RequestBody ConfigRequestDTO<LandingPageConfigModel> configRequest) {
+        @Valid @RequestBody ConfigRequestDTO<LandingPageConfigModel> configRequest) {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
             ConfigType.LANDING,
-            configRequest,
-            LandingPageConfigModel.class
+            configRequest
         );
         return createResponse("Landing page configuration saved successfully", savedConfig, HttpStatus.CREATED);
     }
