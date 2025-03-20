@@ -1,6 +1,6 @@
 # Security Group for ALB
 resource "aws_security_group" "alb" {
-  name        = "${var.project_name}-${var.team_name}-${var.environment}-alb-sg"
+  name        = "${var.project_name}-alb-sg"
   description = "Security group for ALB"
   vpc_id      = var.vpc_id
 
@@ -30,7 +30,7 @@ resource "aws_security_group" "alb" {
 
 # Application Load Balancer
 resource "aws_lb" "app" {
-  name               = "${var.project_name}-${var.team_name}-${var.environment}-alb"
+  name               = "${var.project_name}-alb"
   internal           = false # Make it public
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
@@ -41,7 +41,7 @@ resource "aws_lb" "app" {
 
 # ALB Target Group
 resource "aws_lb_target_group" "app" {
-  name        = "${var.project_name}-${var.team_name}-${var.environment}-tg"
+  name        = "${var.project_name}-tg"
   port        = var.container_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id

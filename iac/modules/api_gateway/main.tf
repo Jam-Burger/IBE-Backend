@@ -1,6 +1,6 @@
 # REST API Gateway
 resource "aws_api_gateway_rest_api" "api" {
-  name = "${var.project_name}-${var.team_name}-${var.environment}-api"
+  name = "${var.project_name}-api"
 
   endpoint_configuration {
     types = ["REGIONAL"]
@@ -101,13 +101,27 @@ resource "aws_api_gateway_integration_response" "cors" {
 resource "aws_api_gateway_deployment" "api" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   depends_on  = [aws_api_gateway_integration.alb, aws_api_gateway_integration.cors]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.proxy.id,
+      aws_api_gateway_method.proxy.id,
+      aws_api_gateway_integration.alb.id,
+      aws_api_gateway_method.cors.id,
+      aws_api_gateway_integration.cors.id,
+    ]))
+  }
 }
 
 # API Gateway Stage
 resource "aws_api_gateway_stage" "api" {
   deployment_id = aws_api_gateway_deployment.api.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
-  stage_name    = var.environment
+  stage_name    = var.stage_name
 
   tags = var.tags
 }

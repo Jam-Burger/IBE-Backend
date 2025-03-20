@@ -21,45 +21,9 @@
         "logs:DescribeLogGroups"
       ],
       "Resource": [
-        "arn:aws:logs:*:*:log-group:/ecs/${project_name}-${team_name}*",
-        "arn:aws:logs:*:*:log-group:/ecs/${project_name}-${team_name}*:*"
+        "arn:aws:logs:*:*:log-group:/ecs/${project_name}*",
+        "arn:aws:logs:*:*:log-group:/ecs/${project_name}:*"
       ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ssm:GetParameters",
-        "ssm:GetParameter",
-        "ssm:GetParametersByPath"
-      ],
-      "Resource": [
-        "arn:aws:ssm:*:*:parameter/${project_name}/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "secretsmanager:GetSecretValue",
-        "secretsmanager:DescribeSecret"
-      ],
-      "Resource": [
-        "arn:aws:secretsmanager:*:*:secret:${project_name}/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "kms:Decrypt"
-      ],
-      "Resource": "*",
-      "Condition": {
-        "StringLike": {
-          "kms:RequestAlias": [
-            "alias/aws/ssm",
-            "alias/aws/secretsmanager"
-          ]
-        }
-      }
     }
   ]
 }

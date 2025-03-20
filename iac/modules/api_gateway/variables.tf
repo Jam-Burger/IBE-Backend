@@ -1,15 +1,10 @@
 variable "project_name" {
-  description = "Name of the project"
+  description = "Base name of the project (without environment) for the shared API Gateway"
   type        = string
 }
 
-variable "team_name" {
-  description = "Name of the team"
-  type        = string
-}
-
-variable "environment" {
-  description = "Environment name (e.g., dev, prod)"
+variable "stage_name" {
+  description = "Name of the API Gateway stage (e.g., dev, prod)"
   type        = string
 }
 

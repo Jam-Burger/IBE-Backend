@@ -3,16 +3,6 @@ variable "project_name" {
   type        = string
 }
 
-variable "team_name" {
-  description = "Name of the team, used for resource naming"
-  type        = string
-}
-
-variable "environment" {
-  description = "Environment name (e.g., dev, prod)"
-  type        = string
-}
-
 variable "aws_region" {
   description = "AWS region where resources will be created"
   type        = string
