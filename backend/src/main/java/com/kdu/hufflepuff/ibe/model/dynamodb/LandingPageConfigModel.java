@@ -24,6 +24,7 @@ public class LandingPageConfigModel {
         return banner;
     }
 
+    @DynamoDbFlatten
     @DynamoDbAttribute("SearchForm")
     public SearchForm getSearchForm() {
         return searchForm;
@@ -49,9 +50,15 @@ public class LandingPageConfigModel {
     @Data
     @DynamoDbBean
     public static class SearchForm {
+        private LengthOfStay lengthOfStay;
         private GuestOptions guestOptions;
         private RoomOptions roomOptions;
         private Accessibility accessibility;
+
+        @DynamoDbAttribute("LengthOfStay")
+        public LengthOfStay getLengthOfStay() {
+            return lengthOfStay;
+        }
 
         @DynamoDbAttribute("GuestOptions")
         public GuestOptions getGuestOptions() {
@@ -63,13 +70,28 @@ public class LandingPageConfigModel {
             return roomOptions;
         }
 
-        @DynamoDbFlatten
         @DynamoDbAttribute("Accessibility")
         public Accessibility getAccessibility() {
             return accessibility;
         }
     }
 
+    @Data
+    @DynamoDbBean
+    public static class LengthOfStay {
+        private int min;
+        private int max;
+
+        @DynamoDbAttribute("Min")
+        public int getMin() {
+            return min;
+        }
+
+        @DynamoDbAttribute("Max")
+        public int getMax() {
+            return max;
+        }
+    }
     @Data
     @DynamoDbBean
     public static class GuestOptions {
