@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@Import({SecurityConfig.class, WebConfig.class, ModelMapperConfig.class, DynamoDBConfig.class})
+@Import({SecurityConfig.class, WebConfig.class, ModelMapperConfig.class, DynamoDBConfig.class, GraphQLClientConfig.class})
 @EntityScan(basePackages = "com.kdu.hufflepuff.ibe.model.entity")
 @EnableJpaRepositories(basePackages = "com.kdu.hufflepuff.ibe.repository.jpa")
 @ComponentScan(basePackages = {
