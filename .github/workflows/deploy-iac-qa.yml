@@ -38,7 +38,6 @@ jobs:
           public_subnet_ids = ${{ vars.PUBLIC_SUBNET_IDS }}
           private_subnet_ids = ${{ vars.PRIVATE_SUBNET_IDS }}
           allowed_origins = ${{ vars.ALLOWED_ORIGINS }}
-          image_tag = "$(echo ${{ github.sha }} | cut -c1-7)"
           container_environment = {
             ENV = "qa"
             DB_URL = "${{ vars.DB_URL }}"
