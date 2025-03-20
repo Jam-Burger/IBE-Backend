@@ -1,8 +1,9 @@
 locals {
+  environment = terraform.workspace
   tags = {
     Creator     = "team-${var.team_name}"
     Purpose     = "${var.project_name}-project"
-    Environment = var.environment
+    Environment = local.environment
   }
 }
 
@@ -12,7 +13,7 @@ module "iam" {
 
   project_name = var.project_name
   team_name    = var.team_name
-  environment  = var.environment
+  environment  = local.environment
   tags         = local.tags
 }
 
@@ -22,7 +23,7 @@ module "alb" {
 
   project_name      = var.project_name
   team_name         = var.team_name
-  environment       = var.environment
+  environment       = local.environment
   vpc_id            = var.vpc_id
   container_port    = var.container_port
   public_subnet_ids = var.public_subnet_ids
@@ -35,7 +36,7 @@ module "ecs" {
 
   project_name           = var.project_name
   team_name              = var.team_name
-  environment            = var.environment
+  environment            = local.environment
   vpc_id                 = var.vpc_id
   container_port         = var.container_port
   private_subnet_ids     = var.private_subnet_ids
@@ -57,7 +58,7 @@ module "api_gateway" {
 
   project_name    = var.project_name
   team_name       = var.team_name
-  environment     = var.environment
+  environment     = local.environment
   alb_dns_name    = module.alb.alb_dns_name
   allowed_origins = var.allowed_origins
   tags            = local.tags

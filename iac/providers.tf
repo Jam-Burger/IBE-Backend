@@ -7,11 +7,11 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "ibe-hufflepuff-terraform-backend-state"
-    key            = "terraform.tfstate"
-    region         = "ap-northeast-2"
-    use_lockfile   = true
-    encrypt        = true
+    bucket       = "ibe-hufflepuff-terraform-backend-state"
+    key          = "terraform.tfstate"
+    region       = "ap-northeast-2"
+    use_lockfile = true
+    encrypt      = true
   }
 }
 

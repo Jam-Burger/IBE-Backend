@@ -1,12 +1,6 @@
 name: Deploy Infrastructure as Code - QA
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'iac/**'
-      - '.github/workflows/deploy-iac-qa.yml'
   workflow_call: {}
 
 jobs:
@@ -30,7 +24,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.5.7"
           terraform_wrapper: false
 
       - name: Create tfvars file
