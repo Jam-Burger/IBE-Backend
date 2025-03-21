@@ -1,8 +1,8 @@
 package com.kdu.hufflepuff.ibe.controller;
 
-import com.kdu.hufflepuff.ibe.model.dto.out.DailyRoomRateDTO;
+import com.kdu.hufflepuff.ibe.model.entity.SpecialDiscount;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
-import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
+import com.kdu.hufflepuff.ibe.service.interfaces.SpecialDiscountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -14,23 +14,24 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/{tenantId}/{propertyId}/room-rates")
+@RequestMapping("/api/v1/{tenantId}/{propertyId}/special-discounts")
 @RequiredArgsConstructor
-public class RoomRateController {
-    private final RoomRateService roomRateService;
+public class SpecialDiscountController {
+    private final SpecialDiscountService specialDiscountService;
 
-    @GetMapping("/daily-minimum")
-    public ResponseEntity<ApiResponse<List<DailyRoomRateDTO>>> getMinimumDailyRates(
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SpecialDiscount>>> getSpecialDiscounts(
         @PathVariable Long tenantId,
         @PathVariable Long propertyId,
         @Valid @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @Valid @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<DailyRoomRateDTO> minimumDailyRates = roomRateService.getMinimumDailyRates(tenantId, propertyId, startDate, endDate);
-        return ApiResponse.<List<DailyRoomRateDTO>>builder()
-            .data(minimumDailyRates)
-            .message("Minimum daily room rates")
+        List<SpecialDiscount> specialDiscounts = specialDiscountService.getDiscounts(tenantId, propertyId, startDate, endDate);
+        return ApiResponse.<List<SpecialDiscount>>builder()
+            .data(specialDiscounts)
+            .message("Special discounts")
             .statusCode(HttpStatus.OK)
-            .build().send();
+            .build()
+            .send();
     }
-} 
+}

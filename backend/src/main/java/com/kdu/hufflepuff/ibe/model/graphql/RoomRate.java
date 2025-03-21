@@ -1,5 +1,6 @@
 package com.kdu.hufflepuff.ibe.model.graphql;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +14,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomRate {
+    @JsonProperty("room_rate_id")
     private Long roomRateId;
-    private Integer basicNightlyRate;
+
+    @JsonProperty("basic_nightly_rate")
+    private Double basicNightlyRate;
+
+    @JsonProperty("date")
     private LocalDate date;
+
+    @JsonProperty("room_types")
     private List<RoomRateRoomTypeMapping> roomTypes;
 } 
