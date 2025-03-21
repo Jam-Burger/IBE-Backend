@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class RoomRateServiceImpl implements RoomRateService {
     private final SpecialDiscountsRepository specialDiscountsRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<DailyRoomRateDTO> getMinimumDailyRates(Long tenantId, Long propertyId, LocalDate startDate, LocalDate endDate) {
         // Fetch room rates from GraphQL
         List<RoomRate> graphqlRates = fetchRoomRatesFromGraphQL(propertyId, startDate, endDate);
