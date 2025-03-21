@@ -20,7 +20,7 @@ public interface WebsiteConfigService {
      * @throws ConfigNotFoundException if the configuration is not found
      * @throws InvalidConfigException  if the tenant ID or config type is invalid
      */
-    WebsiteConfigModel getConfig(String tenantId, ConfigType configType);
+    WebsiteConfigModel getConfig(Long tenantId, ConfigType configType);
 
     /**
      * Saves a configuration for a tenant.
@@ -32,7 +32,7 @@ public interface WebsiteConfigService {
      * @return The saved website configuration
      * @throws InvalidConfigException if any of the parameters are invalid or if the config type is unsupported
      */
-    <T> WebsiteConfigModel saveConfig(String tenantId, ConfigType configType, ConfigRequestDTO<T> configRequest);
+    <T> WebsiteConfigModel saveConfig(Long tenantId, ConfigType configType, ConfigRequestDTO<T> configRequest);
 
     /**
      * Deletes a configuration for a tenant.
@@ -43,5 +43,5 @@ public interface WebsiteConfigService {
      * @throws ConfigNotFoundException if the configuration is not found
      * @throws InvalidConfigException if the tenant ID or config type is invalid
      */
-    WebsiteConfigModel deleteConfig(String tenantId, ConfigType configType);
+    WebsiteConfigModel deleteConfig(Long tenantId, ConfigType configType);
 } 

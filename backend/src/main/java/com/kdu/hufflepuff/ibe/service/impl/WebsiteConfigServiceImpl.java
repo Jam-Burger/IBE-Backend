@@ -22,21 +22,21 @@ public class WebsiteConfigServiceImpl implements WebsiteConfigService {
 
     @Override
     @Transactional(readOnly = true)
-    public WebsiteConfigModel getConfig(String tenantId, ConfigType configType) {
+    public WebsiteConfigModel getConfig(Long tenantId, ConfigType configType) {
         validateInput(tenantId, configType);
-        return configRepository.getConfig(tenantId, configType.getKey())
-            .orElseThrow(() -> new ConfigNotFoundException(tenantId, configType.getKey()));
+        return configRepository.getConfig(getPk(tenantId), configType.getKey())
+            .orElseThrow(() -> new ConfigNotFoundException(getPk(tenantId), configType.getKey()));
     }
 
     @Override
-    public <T> WebsiteConfigModel saveConfig(String tenantId, ConfigType configType, ConfigRequestDTO<T> configRequest) {
+    public <T> WebsiteConfigModel saveConfig(Long tenantId, ConfigType configType, ConfigRequestDTO<T> configRequest) {
         validateInput(tenantId, configType);
         if (configRequest == null || configRequest.getConfig() == null) {
             throw InvalidConfigException.nullConfigData();
         }
 
         WebsiteConfigModel config = new WebsiteConfigModel();
-        config.setTenantId(tenantId);
+        config.setTenantId(getPk(tenantId));
         config.setConfigType(configType);
         config.setSk(configType.getKey());
         config.setUpdatedAt(Instant.now().getEpochSecond());
@@ -57,17 +57,21 @@ public class WebsiteConfigServiceImpl implements WebsiteConfigService {
     }
 
     @Override
-    public WebsiteConfigModel deleteConfig(String tenantId, ConfigType configType) {
+    public WebsiteConfigModel deleteConfig(Long tenantId, ConfigType configType) {
         validateInput(tenantId, configType);
-        return configRepository.deleteConfig(tenantId, configType.getKey());
+        return configRepository.deleteConfig(getPk(tenantId), configType.getKey());
     }
 
-    private void validateInput(String tenantId, ConfigType configType) {
-        if (tenantId == null || tenantId.trim().isEmpty()) {
+    private void validateInput(Long tenantId, ConfigType configType) {
+        if (tenantId == null) {
             throw InvalidConfigException.nullTenantId();
         }
         if (configType == null || configType.getKey().trim().isEmpty()) {
             throw InvalidConfigException.nullConfigType();
         }
+    }
+
+    String getPk(Long tenantId) {
+        return "TENANT#" + tenantId;
     }
 } 
