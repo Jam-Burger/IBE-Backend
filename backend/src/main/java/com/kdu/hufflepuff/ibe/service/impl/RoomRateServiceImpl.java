@@ -6,14 +6,17 @@ import com.kdu.hufflepuff.ibe.model.graphql.RoomRate;
 import com.kdu.hufflepuff.ibe.repository.jpa.SpecialDiscountsRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoomRateServiceImpl implements RoomRateService {
@@ -27,25 +30,10 @@ public class RoomRateServiceImpl implements RoomRateService {
         
         // Fetch special discounts from JPA
         List<SpecialDiscount> specialDiscounts = specialDiscountsRepository.findAllByPropertyIdAndDiscountDateBetween(propertyId, startDate, endDate);
-        
-        // Create discount lookup map
-        Map<LocalDate, Double> discountMap = specialDiscounts.stream()
-                .collect(Collectors.toMap(
-                        SpecialDiscount::getDiscountDate,
-                        SpecialDiscount::getDiscountPercentage
-                ));
 
-        // Combine data and apply discounts
-        return graphqlRates.stream()
-                .map(rate -> {
-                    double discount = discountMap.getOrDefault(rate.getDate(), 0.0);
-                    int finalRate = calculateDiscountedRate(rate.getBasicNightlyRate(), discount);
-                    
-                    return DailyRoomRateDTO.builder()
-                            .date(rate.getDate())
-                            .minimumRate(finalRate)
-                            .build();
-                }).toList();
+        log.info("GraphQL rates: {}", graphqlRates);
+        log.info("Special discounts: {}", specialDiscounts);
+        return new ArrayList<>();
     }
 
     private List<RoomRate> fetchRoomRatesFromGraphQL(Long propertyId, LocalDate startDate, LocalDate endDate) {
@@ -65,9 +53,5 @@ public class RoomRateServiceImpl implements RoomRateService {
                 .retrieve("roomRates")
                 .toEntityList(RoomRate.class)
                 .block();
-    }
-
-    private int calculateDiscountedRate(int baseRate, double discountPercentage) {
-        return (int) Math.round(baseRate * (1 - discountPercentage / 100));
     }
 } 

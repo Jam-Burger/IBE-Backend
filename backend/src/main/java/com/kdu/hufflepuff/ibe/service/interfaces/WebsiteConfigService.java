@@ -28,12 +28,11 @@ public interface WebsiteConfigService {
      * @param tenantId      The tenant ID to save configuration for
      * @param configType    The type of configuration to save
      * @param configRequest The configuration data transfer object containing the configuration
-     * @param configClass   The class type of the configuration (GlobalConfigModel or LandingPageConfigModel)
      * @param <T>          The type parameter for the configuration class
      * @return The saved website configuration
      * @throws InvalidConfigException if any of the parameters are invalid or if the config type is unsupported
      */
-    <T> WebsiteConfigModel saveConfig(String tenantId, ConfigType configType, ConfigRequestDTO<T> configRequest, Class<T> configClass);
+    <T> WebsiteConfigModel saveConfig(String tenantId, ConfigType configType, ConfigRequestDTO<T> configRequest);
 
     /**
      * Deletes a configuration for a tenant.

@@ -37,8 +37,7 @@ public class ConfigController {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
             ConfigType.GLOBAL,
-            configRequest,
-            GlobalConfigModel.class
+            configRequest
         );
         return createResponse("Global configuration saved successfully", savedConfig, HttpStatus.CREATED);
     }
@@ -50,8 +49,7 @@ public class ConfigController {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
             ConfigType.LANDING,
-            configRequest,
-            LandingPageConfigModel.class
+            configRequest
         );
         return createResponse("Landing page configuration saved successfully", savedConfig, HttpStatus.CREATED);
     }

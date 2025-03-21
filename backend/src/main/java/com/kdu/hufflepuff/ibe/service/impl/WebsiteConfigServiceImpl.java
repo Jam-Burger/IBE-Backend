@@ -29,7 +29,7 @@ public class WebsiteConfigServiceImpl implements WebsiteConfigService {
     }
 
     @Override
-    public <T> WebsiteConfigModel saveConfig(String tenantId, ConfigType configType, ConfigRequestDTO<T> configRequest, Class<T> configClass) {
+    public <T> WebsiteConfigModel saveConfig(String tenantId, ConfigType configType, ConfigRequestDTO<T> configRequest) {
         validateInput(tenantId, configType);
         if (configRequest == null || configRequest.getConfig() == null) {
             throw InvalidConfigException.nullConfigData();
@@ -42,12 +42,15 @@ public class WebsiteConfigServiceImpl implements WebsiteConfigService {
         config.setUpdatedAt(Instant.now().getEpochSecond());
 
         T configData = configRequest.getConfig();
-        if (configClass == GlobalConfigModel.class) {
-            config.setGlobalConfigModel((GlobalConfigModel) configData);
-        } else if (configClass == LandingPageConfigModel.class) {
-            config.setLandingPageConfigModel((LandingPageConfigModel) configData);
-        } else {
-            throw InvalidConfigException.unsupportedConfigType(configClass.getSimpleName());
+        switch (configType) {
+            case GLOBAL:
+                config.setGlobalConfigModel((GlobalConfigModel) configData);
+                break;
+            case LANDING:
+                config.setLandingPageConfigModel((LandingPageConfigModel) configData);
+                break;
+            default:
+                throw InvalidConfigException.unsupportedConfigType(configType.getKey());
         }
 
         return configRepository.saveConfig(config);
