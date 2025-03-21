@@ -25,7 +25,7 @@ public class ConfigController {
 
     @GetMapping("/{tenantId}/{configType}")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> getConfig(
-        @PathVariable String tenantId,
+        @PathVariable Long tenantId,
         @PathVariable ConfigType configType) {
         WebsiteConfigModel config = configService.getConfig(tenantId, configType);
         return createResponse("Configuration retrieved successfully", config, HttpStatus.OK);
@@ -33,7 +33,7 @@ public class ConfigController {
 
     @PostMapping("/{tenantId}/GLOBAL")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveGlobalConfig(
-        @PathVariable String tenantId,
+        @PathVariable Long tenantId,
         @Valid @RequestBody ConfigRequestDTO<GlobalConfigModel> configRequest) {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
@@ -45,7 +45,7 @@ public class ConfigController {
 
     @PostMapping("/{tenantId}/LANDING")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveLandingConfig(
-        @PathVariable String tenantId,
+        @PathVariable Long tenantId,
         @Valid @RequestBody ConfigRequestDTO<LandingPageConfigModel> configRequest) {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
@@ -57,7 +57,7 @@ public class ConfigController {
 
     @DeleteMapping("/{tenantId}/{configType}")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> deleteConfig(
-        @PathVariable String tenantId,
+        @PathVariable Long tenantId,
         @PathVariable ConfigType configType) {
         WebsiteConfigModel deletedConfig = configService.deleteConfig(tenantId, configType);
         return createResponse("Configuration deleted successfully", deletedConfig, HttpStatus.OK);
