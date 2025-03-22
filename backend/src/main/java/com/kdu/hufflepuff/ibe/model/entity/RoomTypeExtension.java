@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Entity(name = "room_type_extension")
+@Entity
+@Table(name = "room_type_extension")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomTypeExtension {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "room_type_id")
     private Long roomTypeId;
 
@@ -24,4 +24,4 @@ public class RoomTypeExtension {
     )
     @Column(name = "image_url", length = 1024)
     private List<String> imageUrls;
-}
+} 
