@@ -15,12 +15,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/{tenantId}")
+@RequestMapping("/api/v1/{tenantId}/{propertyId}/special-discounts")
 @RequiredArgsConstructor
 public class SpecialDiscountController {
     private final SpecialDiscountService specialDiscountService;
 
-    @GetMapping("{propertyId}/special-discounts")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<SpecialDiscount>>> getSpecialDiscounts(
         @PathVariable Long tenantId,
         @PathVariable Long propertyId,
@@ -36,7 +36,7 @@ public class SpecialDiscountController {
             .send();
     }
 
-    @PostMapping("special-discounts")
+    @PostMapping
     public ResponseEntity<ApiResponse<SpecialDiscount>> createSpecialDiscount(
         @PathVariable Long tenantId,
         @Valid @RequestBody CreateSpecialDiscountRequest request

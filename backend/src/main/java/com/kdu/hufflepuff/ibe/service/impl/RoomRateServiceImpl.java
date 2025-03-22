@@ -140,6 +140,7 @@ public class RoomRateServiceImpl implements RoomRateService {
                     }
                 }
             """;
+
         return graphQlClient.document(query)
             .variable("availableRoomIds", availableRoomIds)
             .retrieve("listRooms")
