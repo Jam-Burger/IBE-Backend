@@ -1,11 +1,9 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
 import com.kdu.hufflepuff.ibe.model.dto.out.DailyRoomRateDTO;
-import com.kdu.hufflepuff.ibe.model.entity.SpecialDiscount;
 import com.kdu.hufflepuff.ibe.model.graphql.Room;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomAvailability;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomRateRoomTypeMapping;
-import com.kdu.hufflepuff.ibe.repository.jpa.SpecialDiscountsRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,30 +82,30 @@ public class RoomRateServiceImpl implements RoomRateService {
 
     private List<RoomAvailability> fetchAvailableRooms(Long propertyId, LocalDate startDate, LocalDate endDate) {
         String query = """
-            query getAvailableRooms($propertyId: Int!, $startDate: AWSDateTime!, $endDate: AWSDateTime!) {
-                listRoomAvailabilities(where: {
-                    property: {
-                        property_id: {equals: $propertyId}
-                    },
-                    date: {
-                        gte: $startDate,
-                        lte: $endDate
-                    },
-                    booking: {
-                        booking_status: {
-                            status: {not: {equals: "BOOKED"}}
+                query getAvailableRooms($propertyId: Int!, $startDate: AWSDateTime!, $endDate: AWSDateTime!) {
+                    listRoomAvailabilities(where: {
+                        property: {
+                            property_id: {equals: $propertyId}
+                        },
+                        date: {
+                            gte: $startDate,
+                            lte: $endDate
+                        },
+                        booking: {
+                            booking_status: {
+                                status: {not: {equals: "BOOKED"}}
+                            }
+                        }
+                    }) {
+                        availability_id
+                        date
+                        room {
+                            room_id
+                            room_type_id
                         }
                     }
-                }) {
-                    availability_id
-                    date
-                    room {
-                        room_id
-                        room_type_id
-                    }
                 }
-            }
-        """;
+            """;
 
         return graphQlClient.document(query)
             .variable("propertyId", propertyId)
@@ -121,28 +119,27 @@ public class RoomRateServiceImpl implements RoomRateService {
     private List<Room> fetchAllRoomRates(List<Long> availableRoomIds) {
         log.debug("Fetching room rates for {} rooms", availableRoomIds.size());
         String query = """
-            query getRooms($availableRoomIds: [Int!]!) {
-                listRooms(where: {
-                    room_id: {in: $availableRoomIds}
-                }) {
-                    room_id
-                    room_number
-                    room_type {
-                        room_type_id
-                        room_type_name
-                        max_capacity
-                        room_rates {
-                            room_rate {
-                                room_rate_id
-                                basic_nightly_rate
-                                date
+                query getRooms($availableRoomIds: [Int!]!) {
+                    listRooms(where: {
+                        room_id: {in: $availableRoomIds}
+                    }) {
+                        room_id
+                        room_number
+                        room_type {
+                            room_type_id
+                            room_type_name
+                            max_capacity
+                            room_rates {
+                                room_rate {
+                                    room_rate_id
+                                    basic_nightly_rate
+                                    date
+                                }
                             }
                         }
                     }
                 }
-            }
-        """;
-
+            """;
         return graphQlClient.document(query)
             .variable("availableRoomIds", availableRoomIds)
             .retrieve("listRooms")
