@@ -19,11 +19,11 @@ public class GraphQLClientConfig {
     @Bean
     public GraphQlClient graphQlClient() {
         WebClient webClient = WebClient.builder()
-                .baseUrl(graphqlApiUrl)
-                .defaultHeader("x-api-key", graphqlApiKey)
-                .build();
+            .baseUrl(graphqlApiUrl)
+            .defaultHeader("x-api-key", graphqlApiKey)
+            .build();
 
         return HttpGraphQlClient.builder(webClient)
-                .build();
+            .build();
     }
 } 

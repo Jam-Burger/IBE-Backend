@@ -28,7 +28,7 @@ public interface WebsiteConfigService {
      * @param tenantId      The tenant ID to save configuration for
      * @param configType    The type of configuration to save
      * @param configRequest The configuration data transfer object containing the configuration
-     * @param <T>          The type parameter for the configuration class
+     * @param <T>           The type parameter for the configuration class
      * @return The saved website configuration
      * @throws InvalidConfigException if any of the parameters are invalid or if the config type is unsupported
      */
@@ -41,7 +41,7 @@ public interface WebsiteConfigService {
      * @param configType The type of configuration to delete
      * @return The deleted website configuration
      * @throws ConfigNotFoundException if the configuration is not found
-     * @throws InvalidConfigException if the tenant ID or config type is invalid
+     * @throws InvalidConfigException  if the tenant ID or config type is invalid
      */
     WebsiteConfigModel deleteConfig(Long tenantId, ConfigType configType);
 } 

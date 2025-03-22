@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface SpecialDiscountService {
     List<SpecialDiscount> getSpecialDiscounts(Long tenantId, Long propertyId, LocalDate startDate, LocalDate endDate);
+
     SpecialDiscount createSpecialDiscount(Long tenantId, CreateSpecialDiscountRequest request);
 }

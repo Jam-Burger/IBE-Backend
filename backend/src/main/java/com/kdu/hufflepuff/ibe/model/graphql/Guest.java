@@ -15,9 +15,9 @@ import java.util.List;
 public class Guest {
     @JsonProperty("guest_id")
     private Long guestId;
-    
+
     @JsonProperty("guest_name")
     private String guestName;
-    
+
     private List<Booking> bookings;
 } 

@@ -15,22 +15,22 @@ import java.util.List;
 public class Property {
     @JsonProperty("property_id")
     private Long propertyId;
-    
+
     @JsonProperty("property_name")
     private String propertyName;
-    
+
     @JsonProperty("property_address")
     private String propertyAddress;
-    
+
     @JsonProperty("contact_number")
     private String contactNumber;
-    
+
     @JsonProperty("tenant_id")
     private Long tenantId;
-    
+
     private Tenant tenant;
     private List<Room> rooms;
-    
+
     @JsonProperty("room_types")
     private List<RoomType> roomTypes;
 

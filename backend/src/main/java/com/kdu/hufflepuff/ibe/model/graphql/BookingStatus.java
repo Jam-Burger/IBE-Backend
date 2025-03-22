@@ -15,12 +15,12 @@ import java.util.List;
 public class BookingStatus {
     @JsonProperty("status_id")
     private Long statusId;
-    
+
     @JsonProperty("status")
     private String status;
-    
+
     @JsonProperty("is_deactivated")
     private Boolean isDeactivated;
-    
+
     private List<Booking> bookings;
 } 

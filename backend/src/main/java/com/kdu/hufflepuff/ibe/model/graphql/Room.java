@@ -15,7 +15,7 @@ import java.util.List;
 public class Room {
     @JsonProperty("room_id")
     private Long roomId;
-    
+
     @JsonProperty("room_number")
     private Integer roomNumber;
 

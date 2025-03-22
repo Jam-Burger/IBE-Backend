@@ -15,9 +15,9 @@ public class HealthCheckController {
     @GetMapping
     public ApiResponse<Map<String, String>> healthCheck() {
         return ApiResponse.<Map<String, String>>builder()
-                .statusCode(HttpStatus.OK)
-                .message("Health check successful")
-                .data(Map.of("status", "Server is Up and Running..."))
-                .build();
+            .statusCode(HttpStatus.OK)
+            .message("Health check successful")
+            .data(Map.of("status", "Server is Up and Running..."))
+            .build();
     }
 }

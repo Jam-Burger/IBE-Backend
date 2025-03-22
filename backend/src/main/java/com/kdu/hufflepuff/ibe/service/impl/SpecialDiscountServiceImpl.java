@@ -26,10 +26,10 @@ public class SpecialDiscountServiceImpl implements SpecialDiscountService {
     @Transactional
     public SpecialDiscount createSpecialDiscount(Long tenantId, CreateSpecialDiscountRequest request) {
         SpecialDiscount specialDiscount = SpecialDiscount.builder()
-                .propertyId(request.getPropertyId())
-                .discountDate(request.getDiscountDate())
-                .discountPercentage(request.getDiscountPercentage())
-                .build();
+            .propertyId(request.getPropertyId())
+            .discountDate(request.getDiscountDate())
+            .discountPercentage(request.getDiscountPercentage())
+            .build();
 
         return specialDiscountsRepository.save(specialDiscount);
     }

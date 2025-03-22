@@ -15,9 +15,9 @@ import java.util.List;
 public class Tenant {
     @JsonProperty("tenant_id")
     private Long tenantId;
-    
+
     @JsonProperty("tenant_name")
     private String tenantName;
-    
+
     private List<Property> properties;
 } 

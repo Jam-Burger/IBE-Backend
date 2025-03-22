@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Entity
-@Table(name = "room_type_extension")
+@Entity(name = "room_type_extension")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

@@ -15,12 +15,12 @@ import java.time.LocalDate;
 public class RoomAvailability {
     @JsonProperty("availability_id")
     private Long availabilityId;
-    
+
     private LocalDate date;
-    
+
     private Room room;
-    
+
     private Property property;
-    
+
     private Booking booking;
 }
