@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Getter
@@ -19,7 +21,14 @@ public class ErrorResponse {
     private final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
     public ResponseEntity<ErrorResponse> send() {
-        log.error(message);
+        // Create structured log with key-value pairs
+        Map<String, Object> logContext = new HashMap<>();
+        logContext.put("statusCode", statusCode.value());
+        logContext.put("message", message);
+        logContext.put("timestamp", timestamp);
+        logContext.put("responseType", "ErrorResponse");
+
+        log.error("API error: {}", logContext);
         return ResponseEntity.status(statusCode).body(this);
     }
 }

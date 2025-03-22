@@ -24,9 +24,9 @@ public class SpecialDiscountServiceImpl implements SpecialDiscountService {
 
     @Override
     @Transactional
-    public SpecialDiscount createSpecialDiscount(Long tenantId, CreateSpecialDiscountRequest request) {
+    public SpecialDiscount createSpecialDiscount(Long tenantId, Long propertyId, CreateSpecialDiscountRequest request) {
         SpecialDiscount specialDiscount = SpecialDiscount.builder()
-            .propertyId(request.getPropertyId())
+            .propertyId(propertyId)
             .discountDate(request.getDiscountDate())
             .discountPercentage(request.getDiscountPercentage())
             .build();

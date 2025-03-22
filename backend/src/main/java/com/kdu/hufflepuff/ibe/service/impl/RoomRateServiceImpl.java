@@ -6,7 +6,6 @@ import com.kdu.hufflepuff.ibe.model.graphql.RoomAvailability;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomRateRoomTypeMapping;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +18,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoomRateServiceImpl implements RoomRateService {
@@ -117,7 +115,6 @@ public class RoomRateServiceImpl implements RoomRateService {
     }
 
     private List<Room> fetchAllRoomRates(List<Long> availableRoomIds) {
-        log.debug("Fetching room rates for {} rooms", availableRoomIds.size());
         String query = """
                 query getRooms($availableRoomIds: [Int!]!) {
                     listRooms(where: {
