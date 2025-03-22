@@ -19,9 +19,9 @@ public class RoomTypeExtension {
 
     @ElementCollection
     @CollectionTable(
-        name = "room_type_images",
+        name = "room_type_image",
         joinColumns = @JoinColumn(name = "room_type_id")
     )
     @Column(name = "image_url", length = 1024)
     private List<String> imageUrls;
-} 
+}

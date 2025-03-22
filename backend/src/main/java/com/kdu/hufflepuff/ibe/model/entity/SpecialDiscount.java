@@ -9,14 +9,14 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "special_discounts")
+@Table(name = "special_discount")
 @Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class SpecialDiscount {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Column(nullable = false)

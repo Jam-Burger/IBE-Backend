@@ -1,6 +1,7 @@
 package com.kdu.hufflepuff.ibe.service.interfaces;
 
-import com.kdu.hufflepuff.ibe.model.dto.DailyRoomRateDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.DailyRoomRateDTO;
+
 import java.time.LocalDate;
 import java.util.List;
 

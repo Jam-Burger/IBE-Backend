@@ -1,4 +1,4 @@
-package com.kdu.hufflepuff.ibe.model.dto;
+package com.kdu.hufflepuff.ibe.model.dto.out;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
@@ -11,5 +11,5 @@ import java.time.LocalDate;
 public class DailyRoomRateDTO {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
-    private Integer minimumRate;
-} 
+    private Double minimumRate;
+}

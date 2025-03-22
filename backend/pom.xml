@@ -21,6 +21,7 @@
         <mockito.version>5.10.0</mockito.version>
         <modelmapper.version>3.2.0</modelmapper.version>
         <aws.sdk.version>2.25.11</aws.sdk.version>
+        <netty.version>4.1.118.Final</netty.version>
     </properties>
 
 
@@ -50,6 +51,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
         </dependency>
 
         <dependency>
@@ -109,6 +115,23 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>dynamodb</artifactId>
             <version>${aws.sdk.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns-native-macos</artifactId>
+            <classifier>osx-aarch_64</classifier>
+            <version>${netty.version}</version>
         </dependency>
     </dependencies>
 

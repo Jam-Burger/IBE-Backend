@@ -1,5 +1,6 @@
 package com.kdu.hufflepuff.ibe.model.graphql;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,12 +13,14 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomAvailability {
+    @JsonProperty("availability_id")
     private Long availabilityId;
+    
     private LocalDate date;
+    
     private Room room;
-    private Long roomId;
+    
     private Property property;
-    private Long propertyId;
+    
     private Booking booking;
-    private Long bookingId;
-} 
+}
