@@ -1,24 +1,24 @@
 variable "project_name" {
-  description = "Base name of the project (without environment) for the shared API Gateway"
+  description = "Name of the project, used for resource naming"
   type        = string
 }
 
 variable "stage_name" {
-  description = "Name of the API Gateway stage (e.g., dev, prod)"
+  description = "Name of the API Gateway stage"
   type        = string
 }
 
 variable "alb_dns_name" {
-  description = "DNS name of the ALB"
+  description = "DNS name of the ALB to integrate with"
   type        = string
 }
 
-variable "tags" {
-  description = "Tags to apply to all resources"
-  type        = map(string)
+variable "allowed_origins" {
+  description = "List of allowed CORS origins"
+  type        = list(string)
 }
 
-variable "allowed_origins" {
-  description = "List of allowed CORS origins (e.g., ['https://example.com', 'https://app.example.com'])"
-  type        = list(string)
+variable "tags" {
+  description = "Tags to be applied to all resources"
+  type        = map(string)
 }

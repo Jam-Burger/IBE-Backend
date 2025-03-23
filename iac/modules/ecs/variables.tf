@@ -21,19 +21,16 @@ variable "container_port" {
 variable "task_cpu" {
   description = "CPU units for the ECS task"
   type        = number
-  default     = 256
 }
 
 variable "task_memory" {
   description = "Memory for the ECS task"
   type        = number
-  default     = 512
 }
 
 variable "service_desired_count" {
   description = "Desired number of tasks running in the service"
   type        = number
-  default     = 1
 }
 
 variable "private_subnet_ids" {
@@ -71,8 +68,17 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "log_retention_days" {
-  description = "Number of days to retain logs in CloudWatch"
-  type        = number
-  default     = 30
+variable "log_group_name" {
+  description = "Name of the CloudWatch log group for ECS container logs"
+  type        = string
+}
+
+variable "alb_arn_suffix" {
+  description = "ARN suffix of the ALB for request-based autoscaling"
+  type        = string
+}
+
+variable "target_group_arn_suffix" {
+  description = "ARN suffix of the target group for request-based autoscaling"
+  type        = string
 }

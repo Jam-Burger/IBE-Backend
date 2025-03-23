@@ -6,12 +6,37 @@
       "Action": [
         "dynamodb:GetItem",
         "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
         "dynamodb:Query",
         "dynamodb:Scan",
         "dynamodb:BatchGetItem",
-        "dynamodb:DescribeTable"
+        "dynamodb:BatchWriteItem",
+        "dynamodb:DescribeTable",
+        "dynamodb:UpdateTable"
       ],
       "Resource": "arn:aws:dynamodb:*:*:table/${dynamodb_table_name}"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:Query",
+        "dynamodb:Scan"
+      ],
+      "Resource": "arn:aws:dynamodb:*:*:table/${dynamodb_table_name}/index/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::${project_name}-storage-bucket",
+        "arn:aws:s3:::${project_name}-storage-bucket/*"
+      ]
     }
   ]
 }

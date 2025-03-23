@@ -40,21 +40,21 @@ variable "private_subnet_ids" {
 }
 
 variable "task_cpu" {
-  description = "CPU units for the ECS task (.25 vCPU)"
+  description = "CPU units for the ECS task (0.5 vCPU)"
   type        = number
-  default     = 256
+  default     = 512
 }
 
 variable "task_memory" {
-  description = "Memory for the ECS task (512 MB)"
+  description = "Memory for the ECS task (1 GB)"
   type        = number
-  default     = 512
+  default     = 1024
 }
 
 variable "service_desired_count" {
   description = "Desired number of tasks running in the service"
   type        = number
-  default     = 3
+  default     = 2
 }
 
 variable "container_environment" {
@@ -66,4 +66,4 @@ variable "container_environment" {
 variable "allowed_origins" {
   description = "List of allowed CORS origins (e.g., ['https://example.com', 'https://app.example.com'])"
   type        = list(string)
-} 
+}
