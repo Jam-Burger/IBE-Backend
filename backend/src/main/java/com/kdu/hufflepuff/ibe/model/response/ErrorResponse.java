@@ -1,19 +1,17 @@
 package com.kdu.hufflepuff.ibe.model.response;
 
 import lombok.Builder;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
-@Getter
 @Builder
+@ToString
 @RequiredArgsConstructor
 public class ErrorResponse {
     private final HttpStatusCode statusCode;
@@ -21,14 +19,7 @@ public class ErrorResponse {
     private final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
     public ResponseEntity<ErrorResponse> send() {
-        // Create structured log with key-value pairs
-        Map<String, Object> logContext = new HashMap<>();
-        logContext.put("statusCode", statusCode.value());
-        logContext.put("message", message);
-        logContext.put("timestamp", timestamp);
-        logContext.put("responseType", "ErrorResponse");
-
-        log.error("API error: {}", logContext);
+        log.error("API error: {}", this);
         return ResponseEntity.status(statusCode).body(this);
     }
 }

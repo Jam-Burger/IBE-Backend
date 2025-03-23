@@ -3,6 +3,7 @@ package com.kdu.hufflepuff.ibe.util;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -13,79 +14,61 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Utility class to standardize structured logging across the application
+ * Simplified utility for business event logging
  */
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LoggingUtil {
     /**
-     * Creates a structured log entry with standard fields
-     *
-     * @param eventName Name of the event (e.g., "UserLogin", "PaymentProcessed")
-     * @return Map with base fields
+     * Create a business event log
      */
-    public static Map<String, Object> createLogEntry(String eventName) {
-        Map<String, Object> logEntry = new HashMap<>();
-        logEntry.put("event", eventName);
-        
-        // Add current HTTP request details if available
-        getCurrentHttpRequest().ifPresent(request -> {
-            logEntry.put("path", request.getRequestURI());
-            logEntry.put("method", request.getMethod());
-            logEntry.put("clientIp", request.getRemoteAddr());
-        });
-        
-        // Add requestId from MDC if present
-        if (MDC.get("requestId") != null) {
-            logEntry.put("requestId", MDC.get("requestId"));
-        }
-        
-        return logEntry;
+    public static EventBuilder event(String eventName) {
+        return new EventBuilder(eventName);
     }
-    
+
     /**
-     * Adds key-value data to a log entry
-     *
-     * @param logEntry The existing log entry
-     * @param key      The key for the data
-     * @param value    The value to add
+     * Fluent API for business events
      */
-    public static void addField(Map<String, Object> logEntry, String key, Object value) {
-        if (value != null) {
-            logEntry.put(key, value);
+    public static class EventBuilder {
+        private final Map<String, Object> data = new HashMap<>();
+
+        private EventBuilder(String eventName) {
+            data.put("event", eventName);
+
+            // Include context from MDC
+            addIfPresent("requestId");
+            addIfPresent("path");
+
+            // Add IP address for business events only
+            getCurrentRequest().ifPresent(request -> {
+                data.put("method", request.getMethod());
+                data.put("ipAddress", request.getRemoteAddr());
+            });
+        }
+
+        /**
+         * Gets the current HTTP request if available
+         */
+        private static Optional<HttpServletRequest> getCurrentRequest() {
+            try {
+                return Optional.ofNullable(RequestContextHolder.getRequestAttributes()).filter(ServletRequestAttributes.class::isInstance).map(attributes -> ((ServletRequestAttributes) attributes).getRequest());
+            } catch (Exception e) {
+                return Optional.empty();
+            }
+        }
+
+        private void addIfPresent(String key) {
+            String value = MDC.get(key);
+            if (value != null) data.put(key, value);
+        }
+
+        public EventBuilder field(String key, Object value) {
+            if (value != null) data.put(key, value);
+            return this;
+        }
+
+        public void log(Logger logger) {
+            logger.info("Business event: {}", data);
         }
     }
-    
-    /**
-     * Logs a business event with standard formatting
-     *
-     * @param logger The SLF4J logger to use
-     * @param eventName The name of the event
-     * @param message Human-readable message
-     * @param data Additional data to include
-     */
-    public static void logBusinessEvent(Logger logger, String eventName, String message, Map<String, Object> data) {
-        Map<String, Object> logEntry = createLogEntry(eventName);
-        logEntry.put("message", message);
-        
-        if (data != null) {
-            logEntry.putAll(data);
-        }
-        
-        logger.info("Business event: {}", logEntry);
-    }
-    
-    /**
-     * Gets the current HTTP request if available
-     *
-     * @return Optional containing the request, or empty if not in a request context
-     */
-    private static Optional<HttpServletRequest> getCurrentHttpRequest() {
-        try {
-            return Optional.ofNullable(RequestContextHolder.getRequestAttributes())
-                    .filter(ServletRequestAttributes.class::isInstance)
-                    .map(attributes -> ((ServletRequestAttributes) attributes).getRequest());
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
-} 
+}

@@ -8,10 +8,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
 @Import({
-    SecurityConfig.class, 
-    WebConfig.class, 
-    ModelMapperConfig.class, 
-    DynamoDBConfig.class, 
+    SecurityConfig.class,
+    WebConfig.class,
+    ModelMapperConfig.class,
+    DynamoDBConfig.class,
     GraphQLClientConfig.class,
     LoggingConfig.class
 })
@@ -20,8 +20,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ComponentScan(basePackages = {
     "com.kdu.hufflepuff.ibe.service.impl",
     "com.kdu.hufflepuff.ibe.exception",
-    "com.kdu.hufflepuff.ibe.controller",
-    "com.kdu.hufflepuff.ibe.aspect"
+    "com.kdu.hufflepuff.ibe.controller"
 })
 public class ProjectConfig {
 }

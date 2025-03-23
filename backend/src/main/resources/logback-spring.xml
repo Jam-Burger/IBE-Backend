@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <!-- Properties for configuration -->
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+    <springProperty scope="context" name="env" source="spring.profiles.active"/>
+
+    <!-- Console appender for local development -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <!-- Include MDC values in logs -->
@@ -13,16 +18,17 @@
                 <level>level</level>
             </fieldNames>
             <!-- Additional fields to include in every log entry -->
-            <customFields>{"application":"ibe-backend","environment":"${ENV}"}</customFields>
+            <customFields>{"application":"${appName}","environment":"${env}"}</customFields>
         </encoder>
     </appender>
 
+    <!-- File appender for local development -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
-            <totalSizeCap>3GB</totalSizeCap>
+            <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <includeMdc>true</includeMdc>
@@ -33,18 +39,31 @@
                 <thread>thread</thread>
                 <level>level</level>
             </fieldNames>
-            <customFields>{"application":"ibe-backend","environment":"${SPRING_PROFILES_ACTIVE:-local}"}</customFields>
+            <customFields>{"application":"${appName}","environment":"${env}"}</customFields>
         </encoder>
     </appender>
 
-    <!-- Configure log levels -->
-    <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
-    </root>
+    <!-- Environment specific configurations -->
+    <springProfile name="dev">
+        <!-- Development environment logging configuration -->
+        <logger name="com.kdu.hufflepuff.ibe" level="DEBUG"/>
+        <logger name="org.springframework" level="INFO"/>
+        <logger name="org.hibernate" level="INFO"/>
 
-    <!-- Set specific package log levels -->
-    <logger name="com.kdu.hufflepuff.ibe" level="DEBUG" />
-    <logger name="org.springframework" level="INFO" />
-    <logger name="org.hibernate" level="INFO" />
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="qa">
+        <!-- QA environment logging configuration -->
+        <logger name="com.kdu.hufflepuff.ibe" level="WARN"/>
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
 </configuration> 
