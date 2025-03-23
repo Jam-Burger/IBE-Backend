@@ -54,6 +54,7 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
   role = aws_iam_role.ecs_task_role.id
 
   policy = templatefile("${path.module}/policies/ecs_task_role_policy.tftpl", {
+    project_name        = var.project_name
     dynamodb_table_name = var.dynamodb_table_name
   })
 } 
