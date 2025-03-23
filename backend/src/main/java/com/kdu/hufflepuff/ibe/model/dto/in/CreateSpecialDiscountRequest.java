@@ -10,9 +10,6 @@ import java.time.LocalDate;
 
 @Data
 public class CreateSpecialDiscountRequest {
-    @NotNull(message = "Property ID is required")
-    private Long propertyId;
-
     @NotNull(message = "Discount date is required")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate discountDate;

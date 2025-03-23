@@ -4,12 +4,14 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 
 @Entity
 @Table(name = "room_type_extension")
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomTypeExtension {

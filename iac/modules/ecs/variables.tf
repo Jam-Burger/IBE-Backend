@@ -70,3 +70,9 @@ variable "tags" {
   description = "Tags to be applied to all resources"
   type        = map(string)
 }
+
+variable "log_retention_days" {
+  description = "Number of days to retain logs in CloudWatch"
+  type        = number
+  default     = 30
+}
