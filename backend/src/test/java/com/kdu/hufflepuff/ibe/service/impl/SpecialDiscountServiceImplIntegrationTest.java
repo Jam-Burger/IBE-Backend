@@ -16,9 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = IbeApplication.class)
 @ActiveProfiles("test")
@@ -49,16 +47,16 @@ class SpecialDiscountServiceImplIntegrationTest {
 
         // Create some test data
         SpecialDiscount discount1 = SpecialDiscount.builder()
-                .propertyId(propertyId)
-                .discountDate(startDate)
-                .discountPercentage(10.0)
-                .build();
+            .propertyId(propertyId)
+            .discountDate(startDate)
+            .discountPercentage(10.0)
+            .build();
 
         SpecialDiscount discount2 = SpecialDiscount.builder()
-                .propertyId(propertyId)
-                .discountDate(startDate.plusDays(1))
-                .discountPercentage(15.0)
-                .build();
+            .propertyId(propertyId)
+            .discountDate(startDate.plusDays(1))
+            .discountPercentage(15.0)
+            .build();
 
         specialDiscountsRepository.saveAll(List.of(discount1, discount2));
 
@@ -80,7 +78,7 @@ class SpecialDiscountServiceImplIntegrationTest {
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        
+
         // Verify properties match
         assertTrue(result.stream().allMatch(discount -> discount.getPropertyId().equals(propertyId)));
         assertTrue(result.stream().anyMatch(discount -> discount.getDiscountPercentage().equals(10.0)));
@@ -101,10 +99,10 @@ class SpecialDiscountServiceImplIntegrationTest {
 
         // Verify it was persisted to the repository
         List<SpecialDiscount> allDiscounts = specialDiscountsRepository.findAllByPropertyIdAndDiscountDateBetween(
-                propertyId, startDate, endDate);
+            propertyId, startDate, endDate);
         assertEquals(3, allDiscounts.size());
-        assertTrue(allDiscounts.stream().anyMatch(discount -> 
-                discount.getDiscountDate().equals(request.getDiscountDate()) &&
+        assertTrue(allDiscounts.stream().anyMatch(discount ->
+            discount.getDiscountDate().equals(request.getDiscountDate()) &&
                 discount.getDiscountPercentage().equals(request.getDiscountPercentage())));
     }
 } 

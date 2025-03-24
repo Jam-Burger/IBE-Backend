@@ -44,10 +44,10 @@ class SpecialDiscountServiceImplTest {
         endDate = LocalDate.now().plusDays(7);
 
         mockDiscount = SpecialDiscount.builder()
-                .propertyId(propertyId)
-                .discountDate(startDate)
-                .discountPercentage(10.0)
-                .build();
+            .propertyId(propertyId)
+            .discountDate(startDate)
+            .discountPercentage(10.0)
+            .build();
 
         mockDiscounts = List.of(mockDiscount);
 
@@ -60,7 +60,7 @@ class SpecialDiscountServiceImplTest {
     void getSpecialDiscounts_ShouldReturnDiscountsFromRepository() {
         // Arrange
         when(specialDiscountsRepository.findAllByPropertyIdAndDiscountDateBetween(propertyId, startDate, endDate))
-                .thenReturn(mockDiscounts);
+            .thenReturn(mockDiscounts);
 
         // Act
         List<SpecialDiscount> result = specialDiscountService.getSpecialDiscounts(tenantId, propertyId, startDate, endDate);
