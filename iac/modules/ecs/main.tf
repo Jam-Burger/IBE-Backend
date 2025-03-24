@@ -73,10 +73,17 @@ resource "aws_ecs_task_definition" "app" {
           value = value
         }
       ]
+      healthCheck = {
+        command     = ["CMD-SHELL", "wget -q -O - http://localhost:${var.container_port}/health || exit 1"]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      }
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/${var.project_name}"
+          "awslogs-group"         = var.log_group_name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
         }
@@ -111,10 +118,66 @@ resource "aws_ecs_service" "app" {
   tags = var.tags
 }
 
-# CloudWatch Log Group
-resource "aws_cloudwatch_log_group" "ecs" {
-  name              = "/ecs/${var.project_name}"
-  retention_in_days = 30
+# Application Auto Scaling for ECS Service
+resource "aws_appautoscaling_target" "ecs_target" {
+  max_capacity       = 5
+  min_capacity       = 1
+  resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.app.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
 
-  tags = var.tags
+# CPU Based Auto Scaling
+resource "aws_appautoscaling_policy" "cpu_scaling" {
+  name               = "${var.project_name}-cpu-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value       = 70
+    scale_in_cooldown  = 300
+    scale_out_cooldown = 60
+  }
+}
+
+# Memory Based Auto Scaling
+resource "aws_appautoscaling_policy" "memory_scaling" {
+  name               = "${var.project_name}-memory-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+    target_value       = 70
+    scale_in_cooldown  = 300
+    scale_out_cooldown = 60
+  }
+}
+
+# Request Count Based Auto Scaling
+resource "aws_appautoscaling_policy" "request_scaling" {
+  name               = "${var.project_name}-request-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ALBRequestCountPerTarget"
+      resource_label         = "${var.alb_arn_suffix}/${var.target_group_arn_suffix}"
+    }
+    target_value       = 1000
+    scale_in_cooldown  = 300
+    scale_out_cooldown = 60
+  }
 } 

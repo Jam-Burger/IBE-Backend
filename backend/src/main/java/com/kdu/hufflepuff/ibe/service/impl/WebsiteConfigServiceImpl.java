@@ -9,12 +9,15 @@ import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
 import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.repository.dynamodb.WebsiteConfigRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.WebsiteConfigService;
+import com.kdu.hufflepuff.ibe.util.LoggingUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WebsiteConfigServiceImpl implements WebsiteConfigService {
@@ -53,13 +56,30 @@ public class WebsiteConfigServiceImpl implements WebsiteConfigService {
                 throw InvalidConfigException.unsupportedConfigType(configType.getKey());
         }
 
-        return configRepository.saveConfig(config);
+        WebsiteConfigModel savedConfig = configRepository.saveConfig(config);
+
+        // Log business event for configuration update with builder pattern
+        LoggingUtil.event("ConfigurationSaved")
+            .field("tenantId", tenantId)
+            .field("configType", configType.name())
+            .field("updatedAt", config.getUpdatedAt())
+            .log(log);
+
+        return savedConfig;
     }
 
     @Override
     public WebsiteConfigModel deleteConfig(Long tenantId, ConfigType configType) {
         validateInput(tenantId, configType);
-        return configRepository.deleteConfig(getPk(tenantId), configType.getKey());
+        WebsiteConfigModel deletedConfig = configRepository.deleteConfig(getPk(tenantId), configType.getKey());
+
+        // Log business event for configuration deletion with builder pattern
+        LoggingUtil.event("ConfigurationDeleted")
+            .field("tenantId", tenantId)
+            .field("configType", configType.name())
+            .log(log);
+
+        return deletedConfig;
     }
 
     private void validateInput(Long tenantId, ConfigType configType) {

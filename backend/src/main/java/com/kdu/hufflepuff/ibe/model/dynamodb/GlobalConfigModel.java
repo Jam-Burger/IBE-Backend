@@ -28,7 +28,7 @@ public class GlobalConfigModel {
     private List<Currency> currencies;
 
     @NotEmpty(message = "At least one property must be configured")
-    private List<String> properties;
+    private List<Long> properties;
 
     @DynamoDbFlatten
     @DynamoDbAttribute("Brand")
@@ -47,7 +47,7 @@ public class GlobalConfigModel {
     }
 
     @DynamoDbAttribute("Properties")
-    public List<String> getProperties() {
+    public List<Long> getProperties() {
         return properties;
     }
 

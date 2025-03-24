@@ -4,18 +4,13 @@ resource "aws_security_group" "alb" {
   description = "Security group for ALB"
   vpc_id      = var.vpc_id
 
+  # Allow traffic only from API Gateway service
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allow HTTP traffic from anywhere
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allow HTTPS traffic from anywhere
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTP access from API Gateway"
   }
 
   egress {
@@ -23,6 +18,7 @@ resource "aws_security_group" "alb" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
   }
 
   tags = var.tags
@@ -31,10 +27,13 @@ resource "aws_security_group" "alb" {
 # Application Load Balancer
 resource "aws_lb" "app" {
   name               = "${var.project_name}-alb"
-  internal           = false # Make it public
+  internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = var.public_subnet_ids # Use public subnets
+  subnets            = var.public_subnet_ids
+  ip_address_type    = "ipv4"
+
+  enable_deletion_protection = true
 
   tags = var.tags
 }
@@ -50,22 +49,22 @@ resource "aws_lb_target_group" "app" {
   health_check {
     enabled             = true
     healthy_threshold   = 2
-    interval            = 60
+    interval            = 30
     timeout             = 5
     path                = "/health"
     port                = "traffic-port"
     protocol            = "HTTP"
-    unhealthy_threshold = 5
+    unhealthy_threshold = 3
     matcher             = "200"
   }
 
   tags = var.tags
 }
 
-# ALB Listener for HTTP
+# HTTP Listener
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.app.arn
-  port              = "80"
+  port              = 80
   protocol          = "HTTP"
 
   default_action {
