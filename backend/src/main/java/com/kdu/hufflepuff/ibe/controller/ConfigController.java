@@ -17,13 +17,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/v1/config")
+@RequestMapping("api/v1/{tenantId}/config")
 @RequiredArgsConstructor
 public class ConfigController {
     private final WebsiteConfigService configService;
     private final ModelMapper modelMapper;
 
-    @GetMapping("/{tenantId}/{configType}")
+    @GetMapping("/{configType}")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> getConfig(
         @PathVariable Long tenantId,
         @PathVariable ConfigType configType) {
@@ -31,7 +31,7 @@ public class ConfigController {
         return createResponse("Configuration retrieved successfully", config, HttpStatus.OK);
     }
 
-    @PostMapping("/{tenantId}/GLOBAL")
+    @PostMapping("/GLOBAL")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveGlobalConfig(
         @PathVariable Long tenantId,
         @Valid @RequestBody ConfigRequestDTO<GlobalConfigModel> configRequest) {
@@ -43,7 +43,7 @@ public class ConfigController {
         return createResponse("Global configuration saved successfully", savedConfig, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{tenantId}/LANDING")
+    @PostMapping("/LANDING")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveLandingConfig(
         @PathVariable Long tenantId,
         @Valid @RequestBody ConfigRequestDTO<LandingPageConfigModel> configRequest) {
@@ -55,7 +55,7 @@ public class ConfigController {
         return createResponse("Landing page configuration saved successfully", savedConfig, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{tenantId}/{configType}")
+    @DeleteMapping("/{configType}")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> deleteConfig(
         @PathVariable Long tenantId,
         @PathVariable ConfigType configType) {
