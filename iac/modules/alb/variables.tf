@@ -1,15 +1,15 @@
 variable "project_name" {
-  description = "Name of the project"
+  description = "Name of the project, used for resource naming"
   type        = string
 }
 
 variable "vpc_id" {
-  description = "ID of the VPC"
+  description = "ID of the VPC where resources will be created"
   type        = string
 }
 
 variable "container_port" {
-  description = "Port on which the container will receive traffic"
+  description = "Port exposed by the container"
   type        = number
 }
 

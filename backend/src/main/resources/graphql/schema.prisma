@@ -1,0 +1,167 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("GRAPHQL_API_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+}
+
+generator appsync {
+  provider = "prisma-appsync"
+}
+
+model BookingStatus {
+  status_id      Int     @id @default(autoincrement())
+  status         String  @unique @db.VarChar(255)
+  is_deactivated Boolean @default(false)
+
+  booking Booking[]
+
+  @@map(name: "booking_status")
+}
+
+model Tenant {
+  tenant_id   Int    @id @default(autoincrement())
+  tenant_name String @unique @db.VarChar(255)
+
+  property Property[]
+
+  @@map(name: "tenant")
+}
+
+model Property {
+  property_id      Int    @id @default(autoincrement())
+  property_name    String @unique @db.VarChar(255)
+  property_address String @db.VarChar(512)
+  contact_number   String @db.VarChar(16)
+
+  tenant    Tenant @relation(fields: [tenant_id], references: [tenant_id])
+  tenant_id Int
+
+  room              Room[]
+  room_type         RoomType[]
+  room_availability RoomAvailability[]
+  booking           Booking[]
+
+  @@map(name: "property")
+}
+
+model Room {
+  room_id     Int @id @default(autoincrement())
+  room_number Int @db.SmallInt
+
+  property_of    Property           @relation(fields: [property_id], references: [property_id])
+  property_id    Int
+  room_type      RoomType           @relation(fields: [room_type_id], references: [room_type_id])
+  room_type_id   Int
+  room_available RoomAvailability[]
+
+  @@map(name: "room")
+}
+
+model RoomType {
+  room_type_id        Int    @id @default(autoincrement())
+  room_type_name      String @unique @db.VarChar(255)
+  max_capacity        Int    @db.SmallInt
+  area_in_square_feet Int    @db.SmallInt
+  single_bed          Int    @db.SmallInt
+  double_bed          Int    @db.SmallInt
+
+  property_of Property @relation(fields: [property_id], references: [property_id])
+  property_id Int
+
+  room_rates RoomRateRoomTypeMappings[]
+
+  room Room[]
+
+  @@map(name: "room_type")
+}
+
+model RoomRate {
+  room_rate_id       Int      @id @default(autoincrement())
+  basic_nightly_rate Int      @db.SmallInt
+  date               DateTime @db.Date
+
+  room_types RoomRateRoomTypeMappings[]
+
+  @@map(name: "room_rate")
+}
+
+model RoomRateRoomTypeMappings {
+  id           Int      @id @default(autoincrement())
+  room_rate    RoomRate @relation(fields: [room_rate_id], references: [room_rate_id])
+  room_rate_id Int      @unique
+
+  room_type    RoomType @relation(fields: [room_type_id], references: [room_type_id])
+  room_type_id Int      @unique
+
+  @@unique([room_rate_id, room_type_id])
+  @@map(name: "room_rate_room_type_mapping")
+}
+
+model Promotion {
+  promotion_id          Int     @id @default(autoincrement())
+  price_factor          Float   @db.DoublePrecision
+  promotion_title       String  @unique @db.VarChar(255)
+  promotion_description String  @db.VarChar(1000)
+  is_deactivated        Boolean @default(false)
+  minimum_days_of_stay  Int     @default(1) @db.SmallInt
+
+  booking Booking[]
+
+  @@map(name: "promotion")
+}
+
+model RoomAvailability {
+  availability_id Int      @id @default(autoincrement())
+  date            DateTime @db.Date
+  room            Room     @relation(fields: [room_id], references: [room_id])
+  room_id         Int
+
+  property    Property @relation(fields: [property_id], references: [property_id])
+  property_id Int
+  booking     Booking  @relation(fields: [booking_id], references: [booking_id])
+  booking_id  Int
+
+  @@map(name: "room_availability")
+}
+
+model Booking {
+  booking_id           Int      @id @default(autoincrement())
+  check_in_date        DateTime @db.Date
+  check_out_date       DateTime @db.Date
+  adult_count          Int      @db.SmallInt
+  child_count          Int      @db.SmallInt
+  total_cost           Int      @db.SmallInt
+  amount_due_at_resort Int      @db.SmallInt
+
+  property_booked Property @relation(fields: [property_id], references: [property_id])
+  property_id     Int
+
+  booking_status BookingStatus @relation(fields: [status_id], references: [status_id])
+  status_id      Int
+
+  guest    Guest @relation(fields: [guest_id], references: [guest_id])
+  guest_id Int
+
+  promotion_applied Promotion? @relation(fields: [promotion_id], references: [promotion_id])
+  promotion_id      Int?
+
+  room_booked RoomAvailability[]
+
+  @@map(name: "booking")
+}
+
+model Guest {
+  guest_id   Int    @id @default(autoincrement())
+  guest_name String @db.VarChar(255)
+
+  booking Booking[]
+
+  @@map(name: "guest")
+}

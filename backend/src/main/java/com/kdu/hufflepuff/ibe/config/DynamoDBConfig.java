@@ -2,6 +2,7 @@ package com.kdu.hufflepuff.ibe.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -9,8 +10,11 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 @Configuration
+@ComponentScan(basePackages = {
+    "com.kdu.hufflepuff.ibe.repository.dynamodb",
+    "com.kdu.hufflepuff.ibe.model.dynamodb"
+})
 public class DynamoDBConfig {
-
     @Value("${aws.region}")
     private String awsRegion;
 

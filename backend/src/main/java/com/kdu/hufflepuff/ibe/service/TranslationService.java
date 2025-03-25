@@ -2,21 +2,20 @@ package com.kdu.hufflepuff.ibe.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
 @Service
 public class TranslationService {
 
+    private final RestTemplate restTemplate;
     @Value("${translation.api.url}")
     private String translationApiUrl;
-
-    private final RestTemplate restTemplate;
 
     public TranslationService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -25,9 +24,9 @@ public class TranslationService {
     public String translateText(String text, String sourceLang, String targetLang) {
         // Prepare the request body
         Map<String, String> requestBody = Map.of(
-                "q", text,
-                "source", sourceLang,
-                "target", targetLang
+            "q", text,
+            "source", sourceLang,
+            "target", targetLang
         );
 
         // Set headers
@@ -38,7 +37,13 @@ public class TranslationService {
         HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(translationApiUrl, HttpMethod.POST, entity, Map.class);
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                translationApiUrl,
+                HttpMethod.POST,
+                entity,
+                new ParameterizedTypeReference<>() {
+                }
+            );
 
             // Extract translated text from the response
             if (response.getBody() != null && response.getBody().containsKey("translatedText")) {

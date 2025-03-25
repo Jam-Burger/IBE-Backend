@@ -1,13 +1,14 @@
 package com.kdu.hufflepuff.ibe.controller;
 
-import com.kdu.hufflepuff.ibe.model.dto.out.ConfigResponseDTO;
 import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.ConfigResponseDTO;
 import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
 import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.WebsiteConfigService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -16,49 +17,47 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/v1/config")
+@RequestMapping("api/v1/{tenantId}/config")
 @RequiredArgsConstructor
 public class ConfigController {
     private final WebsiteConfigService configService;
     private final ModelMapper modelMapper;
 
-    @GetMapping("/{tenantId}/{configType}")
+    @GetMapping("/{configType}")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> getConfig(
-        @PathVariable String tenantId,
+        @PathVariable Long tenantId,
         @PathVariable ConfigType configType) {
         WebsiteConfigModel config = configService.getConfig(tenantId, configType);
         return createResponse("Configuration retrieved successfully", config, HttpStatus.OK);
     }
 
-    @PostMapping("/{tenantId}/GLOBAL")
+    @PostMapping("/GLOBAL")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveGlobalConfig(
-        @PathVariable String tenantId,
-        @RequestBody ConfigRequestDTO<GlobalConfigModel> configRequest) {
+        @PathVariable Long tenantId,
+        @Valid @RequestBody ConfigRequestDTO<GlobalConfigModel> configRequest) {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
             ConfigType.GLOBAL,
-            configRequest,
-            GlobalConfigModel.class
+            configRequest
         );
         return createResponse("Global configuration saved successfully", savedConfig, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{tenantId}/LANDING")
+    @PostMapping("/LANDING")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveLandingConfig(
-        @PathVariable String tenantId,
-        @RequestBody ConfigRequestDTO<LandingPageConfigModel> configRequest) {
+        @PathVariable Long tenantId,
+        @Valid @RequestBody ConfigRequestDTO<LandingPageConfigModel> configRequest) {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
             ConfigType.LANDING,
-            configRequest,
-            LandingPageConfigModel.class
+            configRequest
         );
         return createResponse("Landing page configuration saved successfully", savedConfig, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{tenantId}/{configType}")
+    @DeleteMapping("/{configType}")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> deleteConfig(
-        @PathVariable String tenantId,
+        @PathVariable Long tenantId,
         @PathVariable ConfigType configType) {
         WebsiteConfigModel deletedConfig = configService.deleteConfig(tenantId, configType);
         return createResponse("Configuration deleted successfully", deletedConfig, HttpStatus.OK);
