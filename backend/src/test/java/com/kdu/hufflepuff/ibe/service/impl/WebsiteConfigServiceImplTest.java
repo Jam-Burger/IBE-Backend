@@ -99,7 +99,6 @@ class WebsiteConfigServiceImplTest {
         Long tenantId = 1L;
         ConfigType configType = ConfigType.LANDING;
         LandingPageConfigModel landingConfig = new LandingPageConfigModel();
-        landingConfig.setPageTitle("Test Landing Page");
 
         ConfigRequestDTO<LandingPageConfigModel> request = new ConfigRequestDTO<>();
         request.setConfig(landingConfig);

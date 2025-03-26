@@ -108,11 +108,12 @@ class GlobalConfigModelTest {
         Set<ConstraintViolation<GlobalConfigModel.Brand>> violations = validator.validate(brand);
 
         // Then
-        assertThat(violations).hasSize(2);
+        assertThat(violations).hasSize(3);
         assertThat(violations).extracting("message")
             .containsExactlyInAnyOrder(
                 "Logo URL is required",
-                "Company name is required"
+                "Company name is required",
+                "Page title is required"
             );
     }
 
@@ -163,6 +164,7 @@ class GlobalConfigModelTest {
         GlobalConfigModel.Brand brand = new GlobalConfigModel.Brand();
         brand.setLogoUrl("https://example.com/logo.png");
         brand.setCompanyName("Test Company");
+        brand.setPageTitle("Test Page");
         return brand;
     }
 

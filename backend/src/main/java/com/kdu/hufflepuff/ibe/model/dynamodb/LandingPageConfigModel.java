@@ -13,10 +13,6 @@ import java.util.List;
 @Data
 @DynamoDbBean
 public class LandingPageConfigModel {
-    @NotBlank(message = "Page title is required")
-    @Size(max = 255, message = "Page title cannot exceed 255 characters")
-    private String pageTitle;
-
     @Valid
     @NotNull(message = "Banner configuration is required")
     private Banner banner;
@@ -24,11 +20,6 @@ public class LandingPageConfigModel {
     @Valid
     @NotNull(message = "Search form configuration is required")
     private SearchForm searchForm;
-
-    @DynamoDbAttribute("PageTitle")
-    public String getPageTitle() {
-        return pageTitle;
-    }
 
     @DynamoDbAttribute("Banner")
     public Banner getBanner() {

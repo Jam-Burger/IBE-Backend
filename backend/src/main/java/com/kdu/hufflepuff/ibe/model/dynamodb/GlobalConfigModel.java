@@ -62,6 +62,10 @@ public class GlobalConfigModel {
         @Size(max = 255, message = "Company name cannot exceed 255 characters")
         private String companyName;
 
+        @NotBlank(message = "Page title is required")
+        @Size(max = 255, message = "Page title cannot exceed 255 characters")
+        private String pageTitle;
+
         @DynamoDbAttribute("LogoUrl")
         public String getLogoUrl() {
             return logoUrl;
@@ -70,6 +74,11 @@ public class GlobalConfigModel {
         @DynamoDbAttribute("CompanyName")
         public String getCompanyName() {
             return companyName;
+        }
+
+        @DynamoDbAttribute("PageTitle")
+        public String getPageTitle() {
+            return pageTitle;
         }
     }
 
