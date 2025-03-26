@@ -35,12 +35,10 @@ class LandingPageConfigModelTest {
         LandingPageConfigModel.SearchForm searchForm = createValidSearchForm();
 
         // When
-        model.setPageTitle(pageTitle);
         model.setBanner(banner);
         model.setSearchForm(searchForm);
 
         // Then
-        assertThat(model.getPageTitle()).isEqualTo(pageTitle);
         assertThat(model.getBanner()).isEqualTo(banner);
         assertThat(model.getSearchForm()).isEqualTo(searchForm);
     }
@@ -51,9 +49,6 @@ class LandingPageConfigModelTest {
         Class<LandingPageConfigModel> clazz = LandingPageConfigModel.class;
 
         // Then
-        Method getPageTitle = clazz.getMethod("getPageTitle");
-        assertThat(getPageTitle.getAnnotation(DynamoDbAttribute.class).value()).isEqualTo("PageTitle");
-
         Method getBanner = clazz.getMethod("getBanner");
         assertThat(getBanner.getAnnotation(DynamoDbAttribute.class).value()).isEqualTo("Banner");
 
@@ -83,10 +78,9 @@ class LandingPageConfigModelTest {
         Set<ConstraintViolation<LandingPageConfigModel>> violations = validator.validate(model);
 
         // Then
-        assertThat(violations).hasSize(3);
+        assertThat(violations).hasSize(2);
         assertThat(violations).extracting("message")
             .containsExactlyInAnyOrder(
-                "Page title is required",
                 "Banner configuration is required",
                 "Search form configuration is required"
             );
@@ -129,7 +123,6 @@ class LandingPageConfigModelTest {
 
     private LandingPageConfigModel createValidLandingPageConfig() {
         LandingPageConfigModel model = new LandingPageConfigModel();
-        model.setPageTitle("Welcome to Our Hotel");
         model.setBanner(createValidBanner());
         model.setSearchForm(createValidSearchForm());
         return model;
