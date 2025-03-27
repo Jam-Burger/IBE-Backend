@@ -11,3 +11,4 @@ import java.util.List;
 public interface SpecialDiscountsRepository extends JpaRepository<SpecialDiscount, Long> {
     List<SpecialDiscount> findAllByPropertyIdAndDiscountDateBetween(Long propertyId, LocalDate discountDateAfter, LocalDate discountDateBefore);
 }
+
