@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -14,7 +15,6 @@ import java.util.UUID;
 
 @Service
 public class S3ServiceImpl implements S3Service {
-
     private final S3Client s3Client;
 
     @Value("${aws.s3.bucket-name}")
@@ -26,7 +26,7 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public String uploadFile(MultipartFile file) throws IOException {
-        String fileName = UUID.randomUUID();
+        String fileName = UUID.randomUUID().toString();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -34,8 +34,8 @@ public class S3ServiceImpl implements S3Service {
                 .contentType(file.getContentType())
                 .build();
 
-        s3Client.putObject(putObjectRequest, RequestBody.fromByteBuffer(ByteBuffer.wrap(file.getBytes())));
+        PutObjectResponse putObjectResponse= s3Client.putObject(putObjectRequest, RequestBody.fromByteBuffer(ByteBuffer.wrap(file.getBytes())));
 
-        return "https://" + bucketName + ".s3.amazonaws.com/" + fileName;
+        return putObjectResponse.responseMetadata().cloudFrontId();
     }
 }
