@@ -19,6 +19,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories(basePackages = "com.kdu.hufflepuff.ibe.repository.jpa")
 @ComponentScan(basePackages = {
     "com.kdu.hufflepuff.ibe.service.impl",
+    "com.kdu.hufflepuff.ibe.mapper",
     "com.kdu.hufflepuff.ibe.exception",
     "com.kdu.hufflepuff.ibe.controller"
 })

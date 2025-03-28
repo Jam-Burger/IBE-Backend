@@ -10,11 +10,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface SpecialDiscountsRepository extends JpaRepository<SpecialOffer, Long> {
+public interface SpecialOfferRepository extends JpaRepository<SpecialOffer, Long> {
     @Query(nativeQuery = true, value = """
-        SELECT * FROM special_discount 
-        WHERE property_id = :propertyId 
-        AND start_date <= :endDate 
+        SELECT * FROM special_offer
+        WHERE property_id = :propertyId
+        AND start_date <= :endDate
         AND end_date >= :startDate
         """)
     List<SpecialOffer> findAllByPropertyIdAndDateRange(
@@ -22,5 +22,6 @@ public interface SpecialDiscountsRepository extends JpaRepository<SpecialOffer, 
         @Param("startDate") LocalDate startDate,
         @Param("endDate") LocalDate endDate
     );
-}
 
+    SpecialOffer findByPropertyIdAndPromoCode(Long propertyId, String promoCode);
+}

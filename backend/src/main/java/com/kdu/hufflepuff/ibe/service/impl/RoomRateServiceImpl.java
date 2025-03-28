@@ -5,7 +5,7 @@ import com.kdu.hufflepuff.ibe.model.entity.SpecialOffer;
 import com.kdu.hufflepuff.ibe.model.graphql.Room;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomAvailability;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomRateRoomTypeMapping;
-import com.kdu.hufflepuff.ibe.repository.jpa.SpecialDiscountsRepository;
+import com.kdu.hufflepuff.ibe.repository.jpa.SpecialOfferRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.client.GraphQlClient;
@@ -27,7 +27,7 @@ public class RoomRateServiceImpl implements RoomRateService {
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(2);
 
     private final GraphQlClient graphQlClient;
-    private final SpecialDiscountsRepository specialDiscountsRepository;
+    private final SpecialOfferRepository specialOfferRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -36,7 +36,7 @@ public class RoomRateServiceImpl implements RoomRateService {
             () -> fetchAvailableRooms(propertyId, startDate, endDate), EXECUTOR);
 
         CompletableFuture<List<SpecialOffer>> discountsFuture = CompletableFuture.supplyAsync(
-            () -> specialDiscountsRepository.findAllByPropertyIdAndDateRange(propertyId, startDate, endDate), EXECUTOR);
+            () -> specialOfferRepository.findAllByPropertyIdAndDateRange(propertyId, startDate, endDate), EXECUTOR);
 
         List<RoomAvailability> availabilities = availabilitiesFuture.join();
         List<SpecialOffer> specialOffers = discountsFuture.join();
@@ -92,7 +92,7 @@ public class RoomRateServiceImpl implements RoomRateService {
                 if (applicableDiscount.isPresent()) {
                     SpecialOffer discount = applicableDiscount.get();
                     double discountedRate = currentRate * (1 - (discount.getDiscountPercentage() / 100.0));
-                    
+
                     // Update discounted rate if current discounted rate is lower
                     if (discountedRate < dto.getDiscountedRate()) {
                         dto.setDiscountedRate(discountedRate);

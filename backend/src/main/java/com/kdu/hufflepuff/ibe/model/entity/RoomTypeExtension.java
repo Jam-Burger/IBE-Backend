@@ -23,7 +23,7 @@ public class RoomTypeExtension extends BaseEntity {
     @Column(name = "landmark")
     private String landmark;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @ElementCollection

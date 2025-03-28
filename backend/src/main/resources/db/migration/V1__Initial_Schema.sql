@@ -8,7 +8,8 @@ CREATE TABLE special_offer
     start_date          date                                                  NOT NULL,
     end_date            date                                                  NOT NULL,
     discount_percentage DOUBLE PRECISION                                      NOT NULL,
-    title               VARCHAR(100)                                         NOT NULL,
-    description         VARCHAR(255),
+    title               VARCHAR(100)                                          NOT NULL,
+    description         TEXT,
+    promo_code          VARCHAR(255),
     CONSTRAINT pk_special_offer PRIMARY KEY (id)
 );

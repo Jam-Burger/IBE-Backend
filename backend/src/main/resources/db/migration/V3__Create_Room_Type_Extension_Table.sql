@@ -13,7 +13,7 @@ CREATE TABLE room_type_extension
     rating         DOUBLE PRECISION,
     num_of_reviews BIGINT,
     landmark       VARCHAR(255),
-    description    VARCHAR(255),
+    description    TEXT,
     CONSTRAINT pk_room_type_extension PRIMARY KEY (id)
 );
 

@@ -36,6 +36,16 @@ public class GlobalExceptionHandler {
             .send();
     }
 
+    @ExceptionHandler(InvalidPromoCodeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleInvalidPromoCode(InvalidPromoCodeException ex) {
+        return ErrorResponse.builder()
+            .statusCode(HttpStatus.BAD_REQUEST)
+            .message(ex.getMessage())
+            .build()
+            .send();
+    }
+
     @ExceptionHandler(InvalidImageTypeException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleInvalidImageType(InvalidImageTypeException ex) {
@@ -49,7 +59,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ImageUploadException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleImageUpload(ImageUploadException ex) {
-        log.error("Failed to upload image: {}", ex.getMessage(), ex);
         return ErrorResponse.builder()
             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
             .message("Failed to upload image: " + ex.getMessage())
@@ -60,7 +69,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConfigUpdateException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleConfigUpdate(ConfigUpdateException ex) {
-        log.error("Failed to update configuration: {}", ex.getMessage(), ex);
         return ErrorResponse.builder()
             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
             .message("Failed to update configuration: " + ex.getMessage())
@@ -85,7 +93,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
         return ErrorResponse.builder()
             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
             .message("An unexpected error occurred: " + ex.getMessage())

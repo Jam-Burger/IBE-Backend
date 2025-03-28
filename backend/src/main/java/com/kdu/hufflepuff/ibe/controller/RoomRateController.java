@@ -23,14 +23,15 @@ public class RoomRateController {
     public ResponseEntity<ApiResponse<List<DailyRoomRateDTO>>> getMinimumDailyRates(
         @PathVariable Long tenantId,
         @PathVariable Long propertyId,
-        @Valid @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @Valid @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+        @Valid @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @Valid @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
         List<DailyRoomRateDTO> minimumDailyRates = roomRateService.getMinimumDailyRates(tenantId, propertyId, startDate, endDate);
         return ApiResponse.<List<DailyRoomRateDTO>>builder()
             .data(minimumDailyRates)
             .message("Minimum daily room rates")
             .statusCode(HttpStatus.OK)
-            .build().send();
+            .build()
+            .send();
     }
 } 
