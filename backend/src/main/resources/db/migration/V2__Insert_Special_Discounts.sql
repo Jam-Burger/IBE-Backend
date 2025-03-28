@@ -4,15 +4,16 @@ WITH RECURSIVE
               SELECT date + 1
               FROM dates
               WHERE date < '2025-06-30'::date),
-    weekend_discounts AS (SELECT (random() * 23 + 1)::bigint                                                                                                                                                                                as property_id,
-                                 date::date                                                                                                                                                                                                 as start_date,
-                                 (date + 1)::date                                                                                                                                                                                           as end_date,
+    weekend_discounts AS (SELECT p.property_id,
+                                 d.date::date                                                                                                                                                                                               as start_date,
+                                 (d.date + (random() * 2)::integer + 1)::date                                                                                                                                                               as end_date, -- 1-3 days weekend offers
                                  (random() * 15 + 5)::double precision                                                                                                                                                                      as discount_percentage,
                                  'Weekend Getaway'::varchar(100)                                                                                                                                                                            as title,
                                  'Escape the weekday hustle with our special weekend rates. Perfect for a quick getaway, enjoy our premium amenities and services at discounted rates. Limited time offer for weekend stays.'::varchar(255) as description
-                          FROM dates
-                          WHERE EXTRACT(DOW FROM date) IN (5, 6) -- Saturday and Sunday
-                            AND random() < 0.6 -- Increased from 0.3 to 0.6 (60% of weekends get discounts)
+                          FROM generate_series(1, 24) p(property_id)
+                                   CROSS JOIN dates d
+                          WHERE EXTRACT(DOW FROM d.date) IN (5, 6) -- Saturday and Sunday
+                            AND random() < 0.2 -- 20% of weekends get discounts
     ),
     holiday_discounts AS (SELECT p.property_id,
                                  h.start_date::date,
@@ -47,56 +48,33 @@ WITH RECURSIVE
                                    CROSS JOIN generate_series(1, 24) p(property_id)
                           WHERE random() < 0.7 -- 70% chance for each property to offer a holiday discount
     ),
-    property_discounts AS (SELECT property_id,
-                                  start_date::date,
-                                  end_date::date,
-                                  discount_percentage::double precision,
-                                  title::varchar(100),
-                                  long_description::varchar(255) as description
-                           FROM (SELECT p.property_id,
-                                        d.start_date,
-                                        d.end_date,
-                                        d.discount_percentage,
-                                        d.title,
-                                        d.long_description
-                                 FROM generate_series(1, 24) p(property_id)
-                                          CROSS JOIN LATERAL (
-                                     SELECT '2025-03-01'::date + (random() * 121)::integer                      as start_date,
-                                            '2025-03-01'::date + (random() * 121 + (random() * 3 + 1))::integer as end_date,
-                                            (random() * 20 + 5)::double precision                               as discount_percentage,
-                                            CASE
-                                                WHEN random() < 0.15 THEN 'Book Early & Save'
-                                                WHEN random() < 0.30 THEN 'Property Anniversary'
-                                                WHEN random() < 0.45 THEN 'Seasonal Special'
-                                                WHEN random() < 0.60 THEN 'Exclusive Offer'
-                                                WHEN random() < 0.75 THEN 'Limited Time Deal'
-                                                WHEN random() < 0.85 THEN 'Weekday Escape'
-                                                WHEN random() < 0.95 THEN 'Last Minute Deal'
-                                                ELSE 'Flash Sale'
-                                                END                                                             as title,
-                                            CASE
-                                                WHEN random() < 0.15
-                                                    THEN 'Plan ahead and save more! Book your stay in advance and enjoy our special early bird rates. Perfect for organized travelers who want the best deals.'
-                                                WHEN random() < 0.30
-                                                    THEN 'Join us in celebrating our property anniversary with exclusive rates and special amenities. Experience our commitment to excellence with anniversary-themed decorations and activities.'
-                                                WHEN random() < 0.45
-                                                    THEN 'Experience the best of the season with our special rates. Enjoy seasonal activities, themed decorations, and special amenities tailored to the current season.'
-                                                WHEN random() < 0.60
-                                                    THEN 'Indulge in our exclusive offer with premium services and special rates. Experience luxury and comfort with our carefully curated special amenities and services.'
-                                                WHEN random() < 0.75
-                                                    THEN 'Don''t miss out on this limited-time opportunity! Enjoy special rates and exclusive benefits for a limited period. Perfect for spontaneous getaways.'
-                                                WHEN random() < 0.85
-                                                    THEN 'Escape the weekend crowds with our special weekday rates. Enjoy a peaceful stay with all our premium services at discounted rates during weekdays.'
-                                                WHEN random() < 0.95
-                                                    THEN 'Grab this last-minute deal for an unexpected getaway! Enjoy our premium services at special rates for immediate bookings.'
-                                                ELSE 'Flash sale alert! Book now and save big on your stay. Limited time offer with exclusive benefits and special amenities.'
-                                                END                                                             as long_description
-                                     FROM generate_series(1, (random() * 8 + 3)::integer) -- Increased from 2-7 to 3-10 discounts per property
-                                     ) d) t
-                           WHERE start_date < end_date            -- Ensure valid date ranges
-                             AND start_date <= '2025-06-30'::date -- Ensure within our date range
-                             AND end_date <= '2025-06-30'::date
-                             AND random() < 0.9 -- Increased from 0.85 to 0.9 (90% of generated discounts will be applied)
+    property_discounts AS (SELECT p.property_id,
+                                  start_date,
+                                  start_date + (random() * 4)::integer + 1 as end_date,
+                                  (random() * 20 + 5)::double precision    as discount_percentage,
+                                  o.title,
+                                  o.description
+                           FROM generate_series(1, 24) p(property_id)
+                                    CROSS JOIN (VALUES ('Book Early & Save',
+                                                        'Plan ahead and save more! Book your stay in advance and enjoy our special early bird rates. Perfect for organized travelers who want the best deals.'),
+                                                       ('Property Anniversary',
+                                                        'Join us in celebrating our property anniversary with exclusive rates and special amenities. Experience our commitment to excellence with anniversary-themed decorations and activities.'),
+                                                       ('Seasonal Special',
+                                                        'Experience the best of the season with our special rates. Enjoy seasonal activities, themed decorations, and special amenities tailored to the current season.'),
+                                                       ('Exclusive Offer',
+                                                        'Indulge in our exclusive offer with premium services and special rates. Experience luxury and comfort with our carefully curated special amenities and services.'),
+                                                       ('Limited Time Deal',
+                                                        'Don''t miss out on this limited-time opportunity! Enjoy special rates and exclusive benefits for a limited period. Perfect for spontaneous getaways.'),
+                                                       ('Weekday Escape',
+                                                        'Escape the weekend crowds with our special weekday rates. Enjoy a peaceful stay with all our premium services at discounted rates during weekdays.'),
+                                                       ('Last Minute Deal',
+                                                        'Grab this last-minute deal for an unexpected getaway! Enjoy our premium services at special rates for immediate bookings.'),
+                                                       ('Flash Sale',
+                                                        'Flash sale alert! Book now and save big on your stay. Limited time offer with exclusive benefits and special amenities.')) AS o(title, description)
+                                    CROSS JOIN LATERAL (
+                               SELECT '2025-03-01'::date + (random() * 121)::integer as start_date
+                               ) dates
+                           WHERE random() < 0.5 -- 50% chance for each property to have each type of offer
     )
 INSERT
 INTO special_offer (property_id, start_date, end_date, discount_percentage, title, description)
@@ -106,8 +84,11 @@ UNION ALL
 SELECT *
 FROM weekend_discounts
 UNION ALL
-SELECT *
-FROM property_discounts;
+SELECT property_id, start_date, end_date, discount_percentage, title, description
+FROM property_discounts
+WHERE start_date < end_date
+  AND start_date <= '2025-06-30'::date
+  AND end_date <= '2025-06-30'::date;
 
 -- Additional special offers with promo codes
 WITH additional_offers AS (SELECT p.property_id,

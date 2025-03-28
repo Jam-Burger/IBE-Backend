@@ -72,9 +72,8 @@ public class RoomRateServiceImpl implements RoomRateService {
                 LocalDate date = rate.getDate();
                 double currentRate = rate.getBasicNightlyRate();
 
-                // Find applicable discount for this date
-                Optional<SpecialOffer> applicableDiscount = specialOffers.stream()
-                    .filter(discount -> !date.isBefore(discount.getStartDate()) && !date.isAfter(discount.getEndDate()))
+                Optional<SpecialOffer> applicableOffer = specialOffers.stream()
+                    .filter(discount -> !date.isBefore(discount.getStartDate()) && !date.isAfter(discount.getEndDate()) && discount.getPromoCode() == null)
                     .max(Comparator.comparingDouble(SpecialOffer::getDiscountPercentage));
 
                 DailyRoomRateDTO dto = ratesByDate.computeIfAbsent(date, k -> DailyRoomRateDTO.builder()
@@ -83,17 +82,14 @@ public class RoomRateServiceImpl implements RoomRateService {
                     .discountedRate(currentRate)
                     .build());
 
-                // Update minimum rate if current rate is lower
                 if (currentRate < dto.getMinimumRate()) {
                     dto.setMinimumRate(currentRate);
                 }
 
-                // Apply discount if found
-                if (applicableDiscount.isPresent()) {
-                    SpecialOffer discount = applicableDiscount.get();
+                if (applicableOffer.isPresent()) {
+                    SpecialOffer discount = applicableOffer.get();
                     double discountedRate = currentRate * (1 - (discount.getDiscountPercentage() / 100.0));
 
-                    // Update discounted rate if current discounted rate is lower
                     if (discountedRate < dto.getDiscountedRate()) {
                         dto.setDiscountedRate(discountedRate);
                     }
