@@ -16,16 +16,14 @@ import software.amazon.awssdk.services.s3.S3Client;
     "com.kdu.hufflepuff.ibe.model.dynamodb"
 })
 public class AwsConfig {
+    private final DefaultCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
     @Value("${aws.region}")
     private String awsRegion;
-
-    private final DefaultCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
-    private final Region awsRegionRegion = Region.of(awsRegion);
 
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
-            .region(awsRegionRegion)
+            .region(Region.of(awsRegion))
             .credentialsProvider(credentialsProvider)
             .build();
     }
@@ -33,7 +31,7 @@ public class AwsConfig {
     @Bean
     public DynamoDbClient dynamoDbClient() {
         return DynamoDbClient.builder()
-            .region(awsRegionRegion)
+            .region(Region.of(awsRegion))
             .credentialsProvider(credentialsProvider)
             .build();
     }
