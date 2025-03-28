@@ -12,4 +12,5 @@ public class DailyRoomRateDTO {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
     private Double minimumRate;
+    private Double discountedRate;
 }

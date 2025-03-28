@@ -1,9 +1,11 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
 import com.kdu.hufflepuff.ibe.model.dto.out.DailyRoomRateDTO;
+import com.kdu.hufflepuff.ibe.model.entity.SpecialOffer;
 import com.kdu.hufflepuff.ibe.model.graphql.Room;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomAvailability;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomRateRoomTypeMapping;
+import com.kdu.hufflepuff.ibe.repository.jpa.SpecialDiscountsRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.client.GraphQlClient;
@@ -25,6 +27,7 @@ public class RoomRateServiceImpl implements RoomRateService {
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(2);
 
     private final GraphQlClient graphQlClient;
+    private final SpecialDiscountsRepository specialDiscountsRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -32,7 +35,11 @@ public class RoomRateServiceImpl implements RoomRateService {
         CompletableFuture<List<RoomAvailability>> availabilitiesFuture = CompletableFuture.supplyAsync(
             () -> fetchAvailableRooms(propertyId, startDate, endDate), EXECUTOR);
 
+        CompletableFuture<List<SpecialOffer>> discountsFuture = CompletableFuture.supplyAsync(
+            () -> specialDiscountsRepository.findAllByPropertyIdAndDateRange(propertyId, startDate, endDate), EXECUTOR);
+
         List<RoomAvailability> availabilities = availabilitiesFuture.join();
+        List<SpecialOffer> specialOffers = discountsFuture.join();
 
         if (availabilities.isEmpty()) {
             return List.of();
@@ -49,7 +56,7 @@ public class RoomRateServiceImpl implements RoomRateService {
 
         List<Room> rooms = roomsFuture.join();
 
-        Map<LocalDate, Double> minimumRatesByDate = new HashMap<>();
+        Map<LocalDate, DailyRoomRateDTO> ratesByDate = new HashMap<>();
 
         rooms.stream()
             .map(Room::getRoomType)
@@ -65,15 +72,35 @@ public class RoomRateServiceImpl implements RoomRateService {
                 LocalDate date = rate.getDate();
                 double currentRate = rate.getBasicNightlyRate();
 
-                minimumRatesByDate.compute(date, (k, existingMin) ->
-                    existingMin == null ? currentRate : Math.min(existingMin, currentRate));
+                // Find applicable discount for this date
+                Optional<SpecialOffer> applicableDiscount = specialOffers.stream()
+                    .filter(discount -> !date.isBefore(discount.getStartDate()) && !date.isAfter(discount.getEndDate()))
+                    .max(Comparator.comparingDouble(SpecialOffer::getDiscountPercentage));
+
+                DailyRoomRateDTO dto = ratesByDate.computeIfAbsent(date, k -> DailyRoomRateDTO.builder()
+                    .date(k)
+                    .minimumRate(currentRate)
+                    .discountedRate(currentRate)
+                    .build());
+
+                // Update minimum rate if current rate is lower
+                if (currentRate < dto.getMinimumRate()) {
+                    dto.setMinimumRate(currentRate);
+                }
+
+                // Apply discount if found
+                if (applicableDiscount.isPresent()) {
+                    SpecialOffer discount = applicableDiscount.get();
+                    double discountedRate = currentRate * (1 - (discount.getDiscountPercentage() / 100.0));
+                    
+                    // Update discounted rate if current discounted rate is lower
+                    if (discountedRate < dto.getDiscountedRate()) {
+                        dto.setDiscountedRate(discountedRate);
+                    }
+                }
             });
 
-        return minimumRatesByDate.entrySet().stream()
-            .map(entry -> DailyRoomRateDTO.builder()
-                .date(entry.getKey())
-                .minimumRate(entry.getValue())
-                .build())
+        return ratesByDate.values().stream()
             .sorted(Comparator.comparing(DailyRoomRateDTO::getDate))
             .toList();
     }
