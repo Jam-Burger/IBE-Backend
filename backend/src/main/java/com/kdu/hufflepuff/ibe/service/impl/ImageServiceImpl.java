@@ -2,13 +2,15 @@ package com.kdu.hufflepuff.ibe.service.impl;
 
 import com.kdu.hufflepuff.ibe.exception.ConfigUpdateException;
 import com.kdu.hufflepuff.ibe.exception.ImageUploadException;
+import com.kdu.hufflepuff.ibe.exception.InvalidImageTypeException;
 import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
 import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.model.enums.ImageType;
-import com.kdu.hufflepuff.ibe.service.interfaces.S3Service;
+import com.kdu.hufflepuff.ibe.service.interfaces.ImageService;
+import com.kdu.hufflepuff.ibe.service.interfaces.RoomTypeService;
 import com.kdu.hufflepuff.ibe.service.interfaces.WebsiteConfigService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,14 +22,20 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class S3ServiceImpl implements S3Service {
+public class ImageServiceImpl implements ImageService {
+    private static final List<String> VALID_IMAGE_MIME_TYPES = Arrays.asList(
+        "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml", "image/avif"
+    );
     private final S3Client s3Client;
     private final WebsiteConfigService websiteConfigService;
-
+    private final RoomTypeService roomTypeService;
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
@@ -35,28 +43,15 @@ public class S3ServiceImpl implements S3Service {
     private String cloudFrontBaseUrl;
 
     @Override
-    public String uploadFile(MultipartFile file, ImageType imageType, Long tenantId, Long roomTypeId) {
+    public String uploadImage(MultipartFile file, ImageType imageType, Long tenantId) {
+        if (imageType == ImageType.ROOM) {
+            throw new IllegalArgumentException("Cannot upload room images using this method.");
+        }
+
         try {
-            String fileName = UUID.randomUUID().toString();
-            String key;
-
-            if (imageType == ImageType.ROOM) {
-                if (roomTypeId == null) {
-                    throw new IllegalArgumentException("roomTypeId is required for room images");
-                }
-                key = String.format("%s/%d/%s", imageType.getPath(), roomTypeId, fileName);
-            } else {
-                key = String.format("%s/%s", imageType.getPath(), fileName);
-            }
-
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .contentType(file.getContentType())
-                .build();
-
-            s3Client.putObject(putObjectRequest, RequestBody.fromByteBuffer(ByteBuffer.wrap(file.getBytes())));
-            String fileUrl = String.format("%s/%s", cloudFrontBaseUrl, key);
+            validateImage(file);
+            String path = String.format("%d/%s", tenantId, imageType.getPath());
+            String fileUrl = uploadFileToS3(file, path);
 
             switch (imageType) {
                 case LOGO:
@@ -65,15 +60,60 @@ public class S3ServiceImpl implements S3Service {
                 case BANNER:
                     updateBannerUrl(tenantId, fileUrl);
                     break;
-                case ROOM:
-                    updateRoomUrl(tenantId, roomTypeId, fileUrl);
+                default:
                     break;
             }
-
             return fileUrl;
         } catch (IOException e) {
             throw new ImageUploadException("Failed to upload file to S3", e);
         }
+    }
+
+    @Override
+    public List<String> uploadImages(List<MultipartFile> files, Long tenantId, Long roomTypeId) {
+        List<String> imageUrls = new ArrayList<>();
+        String path = String.format("%d/%s/%d", tenantId, ImageType.ROOM.getPath(), roomTypeId);
+        try {
+            for (MultipartFile file : files) {
+                validateImage(file);
+                String fileUrl = uploadFileToS3(file, path);
+                imageUrls.add(fileUrl);
+            }
+            updateRoomImageUrls(tenantId, roomTypeId, imageUrls);
+            return imageUrls;
+        } catch (IOException e) {
+            throw new ImageUploadException("Failed to upload multiple room images", e);
+        }
+    }
+
+    /**
+     * Validates that the uploaded file is actually an image
+     *
+     * @param file The file to validate
+     * @throws InvalidImageTypeException if the file is not a valid image type
+     */
+    private void validateImage(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (!VALID_IMAGE_MIME_TYPES.contains(contentType)) {
+            throw new InvalidImageTypeException("Invalid file type. Only images are allowed: " + VALID_IMAGE_MIME_TYPES + ". Received: " + contentType);
+        }
+    }
+
+    /**
+     * Central method for uploading files to S3
+     */
+    private String uploadFileToS3(MultipartFile file, String path) throws IOException {
+        String fileName = UUID.randomUUID().toString();
+        String key = String.format("%s/%s", path, fileName);
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .contentType(file.getContentType())
+            .build();
+
+        s3Client.putObject(putObjectRequest, RequestBody.fromByteBuffer(ByteBuffer.wrap(file.getBytes())));
+        return String.format("%s/%s", cloudFrontBaseUrl, key);
     }
 
     private void updateLogoUrl(Long tenantId, String fileUrl) {
@@ -113,12 +153,11 @@ public class S3ServiceImpl implements S3Service {
         }
     }
 
-    private void updateRoomUrl(Long tenantId, Long roomTypeId, String fileUrl) {
+    private void updateRoomImageUrls(Long tenantId, Long roomTypeId, List<String> fileUrls) {
         try {
-            // TODO: Implement room image update in room type configuration
-            // This will be implemented when we have the room type configuration model
+            roomTypeService.updateRoomTypeImages(tenantId, roomTypeId, fileUrls);
         } catch (Exception e) {
-            throw new ConfigUpdateException("Failed to update room URL in configuration", e);
+            throw new ConfigUpdateException("Failed to update room URLs in configuration", e);
         }
     }
 }

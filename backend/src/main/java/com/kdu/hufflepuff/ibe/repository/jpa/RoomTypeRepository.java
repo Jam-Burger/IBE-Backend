@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RoomTypeExtensionRepository extends JpaRepository<RoomTypeExtension, Long> {
+public interface RoomTypeRepository extends JpaRepository<RoomTypeExtension, Long> {
 } 

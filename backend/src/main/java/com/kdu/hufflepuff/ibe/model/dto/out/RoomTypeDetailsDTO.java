@@ -20,16 +20,10 @@ public class RoomTypeDetailsDTO {
     private Integer singleBed;
     private Integer doubleBed;
     private Long propertyId;
-
-    // Extension fields
     private Double rating;
     private Long numberOfReviews;
     private String landmark;
     private String description;
-
-    @Builder.Default
     private List<String> amenities = new ArrayList<>();
-
-    @Builder.Default
     private List<String> images = new ArrayList<>();
 } 

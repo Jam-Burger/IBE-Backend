@@ -10,6 +10,7 @@ import java.util.List;
 @Table(name = "room_type_extension")
 @Builder
 @Getter
+@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,11 +27,13 @@ public class RoomTypeExtension extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Builder.Default
     @ElementCollection
     @Column(name = "amenity")
     @CollectionTable(name = "room_type_amenities", joinColumns = @JoinColumn(name = "room_type_id"))
     private List<String> amenities = new ArrayList<>();
 
+    @Builder.Default
     @ElementCollection
     @Column(name = "image")
     @CollectionTable(name = "room_type_images", joinColumns = @JoinColumn(name = "room_type_id"))

@@ -31,7 +31,8 @@ public class RoomType {
     @JsonProperty("double_bed")
     private Integer doubleBed;
 
-    private Property property;
+    @JsonProperty("property_id")
+    private Long propertyId;
 
     @JsonProperty("room_rates")
     private List<RoomRateRoomTypeMapping> roomRates;
