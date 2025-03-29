@@ -4,6 +4,7 @@ import com.kdu.hufflepuff.ibe.exception.ConfigUpdateException;
 import com.kdu.hufflepuff.ibe.exception.ImageUploadException;
 import com.kdu.hufflepuff.ibe.exception.InvalidImageTypeException;
 import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
+import com.kdu.hufflepuff.ibe.model.dynamodb.Banner;
 import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
@@ -139,7 +140,7 @@ public class ImageServiceImpl implements ImageService {
             WebsiteConfigModel config = websiteConfigService.getConfig(tenantId, ConfigType.LANDING);
             LandingPageConfigModel landingConfig = config.getLandingPageConfigModel();
 
-            LandingPageConfigModel.Banner banner = landingConfig.getBanner();
+            Banner banner = landingConfig.getBanner();
             banner.setImageUrl(fileUrl);
             banner.setEnabled(true);
             landingConfig.setBanner(banner);

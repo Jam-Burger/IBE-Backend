@@ -30,8 +30,7 @@ class LandingPageConfigModelTest {
     void testGettersAndSetters() {
         // Given
         LandingPageConfigModel model = new LandingPageConfigModel();
-        String pageTitle = "Welcome to Our Hotel";
-        LandingPageConfigModel.Banner banner = createValidBanner();
+        Banner banner = createValidBanner();
         LandingPageConfigModel.SearchForm searchForm = createValidSearchForm();
 
         // When
@@ -50,7 +49,7 @@ class LandingPageConfigModelTest {
 
         // Then
         Method getBanner = clazz.getMethod("getBanner");
-        assertThat(getBanner.getAnnotation(DynamoDbAttribute.class).value()).isEqualTo("Banner");
+        assertThat(getBanner.getAnnotation(DynamoDbAttribute.class).value()).isEqualTo("LandingBanner");
 
         Method getSearchForm = clazz.getMethod("getSearchForm");
         assertThat(getSearchForm.isAnnotationPresent(DynamoDbFlatten.class)).isTrue();
@@ -89,12 +88,12 @@ class LandingPageConfigModelTest {
     @Test
     void testBannerValidation() {
         // Given
-        LandingPageConfigModel.Banner banner = new LandingPageConfigModel.Banner();
+        Banner banner = new Banner();
         banner.setEnabled(true);
         banner.setImageUrl("https://example.com/image.jpg" + "a".repeat(1000)); // Too long URL
 
         // When
-        Set<ConstraintViolation<LandingPageConfigModel.Banner>> violations = validator.validate(banner);
+        Set<ConstraintViolation<Banner>> violations = validator.validate(banner);
 
         // Then
         assertThat(violations).hasSize(1);
@@ -128,8 +127,8 @@ class LandingPageConfigModelTest {
         return model;
     }
 
-    private LandingPageConfigModel.Banner createValidBanner() {
-        LandingPageConfigModel.Banner banner = new LandingPageConfigModel.Banner();
+    private Banner createValidBanner() {
+        Banner banner = new Banner();
         banner.setEnabled(true);
         banner.setImageUrl("https://example.com/image.jpg");
         return banner;

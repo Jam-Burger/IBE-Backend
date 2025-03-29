@@ -21,6 +21,7 @@ class WebsiteConfigModelTest {
         Long updatedAt = Instant.now().getEpochSecond();
         GlobalConfigModel globalConfig = new GlobalConfigModel();
         LandingPageConfigModel landingConfig = new LandingPageConfigModel();
+        RoomsListConfigModel roomsConfig = new RoomsListConfigModel();
 
         // When
         model.setTenantId(tenantId);
@@ -29,6 +30,7 @@ class WebsiteConfigModelTest {
         model.setUpdatedAt(updatedAt);
         model.setGlobalConfigModel(globalConfig);
         model.setLandingPageConfigModel(landingConfig);
+        model.setRoomsListConfigModel(roomsConfig);
 
         // Then
         assertThat(model.getTenantId()).isEqualTo(tenantId);
@@ -37,6 +39,7 @@ class WebsiteConfigModelTest {
         assertThat(model.getUpdatedAt()).isEqualTo(updatedAt);
         assertThat(model.getGlobalConfigModel()).isEqualTo(globalConfig);
         assertThat(model.getLandingPageConfigModel()).isEqualTo(landingConfig);
+        assertThat(model.getRoomsListConfigModel()).isEqualTo(roomsConfig);
     }
 
     @Test
@@ -69,5 +72,9 @@ class WebsiteConfigModelTest {
         Method getLandingConfig = clazz.getMethod("getLandingPageConfigModel");
         assertThat(getLandingConfig.isAnnotationPresent(DynamoDbFlatten.class)).isTrue();
         assertThat(getLandingConfig.getAnnotation(DynamoDbAttribute.class).value()).isEqualTo("LandingPageConfig");
+
+        Method getRoomsListConfig = clazz.getMethod("getRoomsListConfigModel");
+        assertThat(getRoomsListConfig.isAnnotationPresent(DynamoDbFlatten.class)).isTrue();
+        assertThat(getRoomsListConfig.getAnnotation(DynamoDbAttribute.class).value()).isEqualTo("RoomsListConfig");
     }
 } 

@@ -4,6 +4,7 @@ import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.ConfigResponseDTO;
 import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
+import com.kdu.hufflepuff.ibe.model.dynamodb.RoomsListConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
 import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
@@ -55,6 +56,18 @@ public class ConfigController {
         return createResponse("Landing page configuration saved successfully", savedConfig, HttpStatus.CREATED);
     }
 
+    @PostMapping("/ROOMS_LIST")
+    public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveRoomsListConfig(
+        @PathVariable Long tenantId,
+        @Valid @RequestBody ConfigRequestDTO<RoomsListConfigModel> configRequest) {
+        WebsiteConfigModel savedConfig = configService.saveConfig(
+            tenantId,
+            ConfigType.ROOMS_LIST,
+            configRequest
+        );
+        return createResponse("Rooms list configuration saved successfully", savedConfig, HttpStatus.CREATED);
+    }
+
     @DeleteMapping("/{configType}")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> deleteConfig(
         @PathVariable Long tenantId,
@@ -69,6 +82,8 @@ public class ConfigController {
             response.setConfigData(config.getGlobalConfigModel());
         } else if (config.getLandingPageConfigModel() != null) {
             response.setConfigData(config.getLandingPageConfigModel());
+        } else if (config.getRoomsListConfigModel() != null) {
+            response.setConfigData(config.getRoomsListConfigModel());
         }
 
         return ApiResponse.<ConfigResponseDTO>builder()
