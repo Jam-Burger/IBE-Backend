@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/{tenantId}/{propertyId}/room-types")
+@RequestMapping("/api/v1/{tenantId}/{propertyId}")
 @RequiredArgsConstructor
 public class RoomTypeController {
     private final RoomTypeService roomTypeService;
 
-    @GetMapping
+    @GetMapping("/room-types")
     public ResponseEntity<ApiResponse<List<RoomTypeDetailsDTO>>> getRoomTypesByPropertyId(
         @PathVariable Long tenantId,
         @PathVariable Long propertyId
@@ -27,6 +27,19 @@ public class RoomTypeController {
         return ApiResponse.<List<RoomTypeDetailsDTO>>builder()
             .data(roomTypeService.getRoomTypesByPropertyId(tenantId, propertyId))
             .message("Room types retrieved successfully")
+            .statusCode(HttpStatus.OK)
+            .build()
+            .send();
+    }
+
+    @GetMapping("/amenities")
+    public ResponseEntity<ApiResponse<List<String>>> getAmenitiesByPropertyId(
+        @PathVariable Long tenantId,
+        @PathVariable Long propertyId
+    ) {
+        return ApiResponse.<List<String>>builder()
+            .data(roomTypeService.getAmenitiesByPropertyId(tenantId, propertyId))
+            .message("Amenities retrieved successfully")
             .statusCode(HttpStatus.OK)
             .build()
             .send();

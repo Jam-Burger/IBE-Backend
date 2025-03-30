@@ -2,7 +2,6 @@ package com.kdu.hufflepuff.ibe.model.dynamodb;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kdu.hufflepuff.ibe.model.enums.SortOption;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
@@ -13,15 +12,12 @@ import java.util.List;
 @Data
 @DynamoDbBean
 public class RoomsListConfigModel {
-    @Valid
     @NotNull(message = "Banner configuration is required")
     private Banner banner;
 
-    @Valid
     @NotNull(message = "Steps configuration is required")
     private Steps steps;
 
-    @Valid
     @NotNull(message = "Filters configuration is required")
     private Filters filters;
 
@@ -62,11 +58,9 @@ public class RoomsListConfigModel {
     @Data
     @DynamoDbBean
     public static class Filters {
-        @Valid
         @NotNull(message = "Sort options configuration is required")
         private SortOptions sortOptions;
 
-        @Valid
         @NotNull(message = "Filter groups configuration is required")
         private FilterGroups filterGroups;
 
@@ -89,7 +83,6 @@ public class RoomsListConfigModel {
         @NotNull(message = "Default sort option is required")
         private SortOption defaultSort;
 
-        @Valid
         @NotEmpty(message = "At least one sort option must be configured")
         private List<SortOptionConfig> options;
 
@@ -140,23 +133,18 @@ public class RoomsListConfigModel {
     @Data
     @DynamoDbBean
     public static class FilterGroups {
-        @Valid
         @NotNull(message = "Ratings filter configuration is required")
         private RatingsFilter ratings;
 
-        @Valid
         @NotNull(message = "Bed types filter configuration is required")
         private BedTypesFilter bedTypes;
 
-        @Valid
         @NotNull(message = "Bed count filter configuration is required")
         private BedCountFilter bedCount;
 
-        @Valid
         @NotNull(message = "Room size filter configuration is required")
         private RoomSizeFilter roomSize;
 
-        @Valid
         @NotNull(message = "Amenities filter configuration is required")
         private AmenitiesFilter amenities;
 
@@ -195,7 +183,6 @@ public class RoomsListConfigModel {
         @Size(max = 50, message = "Ratings filter label cannot exceed 50 characters")
         private String label;
 
-        @Valid
         @NotEmpty(message = "At least one rating option must be configured")
         private List<RatingOption> options;
 

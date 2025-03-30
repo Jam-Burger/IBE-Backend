@@ -6,7 +6,6 @@ import com.kdu.hufflepuff.ibe.model.dto.out.RoomTypeDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.entity.RoomTypeExtension;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomType;
 import com.kdu.hufflepuff.ibe.repository.jpa.RoomTypeRepository;
-import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.client.GraphQlClient;
@@ -21,11 +20,9 @@ import java.util.Optional;
 public class RoomTypeServiceImpl implements RoomTypeService {
     private final GraphQlClient graphQlClient;
     private final RoomTypeRepository roomTypeRepository;
-    private final RoomRateService roomRateService;
     private final RoomTypeMapper roomTypeMapper;
 
     @Override
-    @Transactional(readOnly = true)
     public List<RoomTypeDetailsDTO> getRoomTypesByPropertyId(Long tenantId, Long propertyId) {
         List<RoomType> roomTypes = fetchRoomTypesByPropertyId(propertyId)
             .orElseThrow(() -> new ResourceNotFoundException("Root types not found for property: " + propertyId));
@@ -72,5 +69,16 @@ public class RoomTypeServiceImpl implements RoomTypeService {
             .orElseThrow(() -> new ResourceNotFoundException("Room type extension not found: " + roomTypeId));
         extension.setImages(imageUrls);
         roomTypeRepository.save(extension);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getAmenitiesByPropertyId(Long tenantId, Long propertyId) {
+        List<RoomTypeDetailsDTO> roomTypes = getRoomTypesByPropertyId(tenantId, propertyId);
+        return roomTypes.stream()
+            .map(RoomTypeDetailsDTO::getAmenities)
+            .flatMap(List::stream)
+            .distinct()
+            .toList();
     }
 } 
