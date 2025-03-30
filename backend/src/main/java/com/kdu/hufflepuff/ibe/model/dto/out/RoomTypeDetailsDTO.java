@@ -22,6 +22,7 @@ public class RoomTypeDetailsDTO {
     private Long propertyId;
     private Double rating;
     private Long numberOfReviews;
+    private Double averagePrice;
     private String landmark;
     private String description;
     private List<String> amenities = new ArrayList<>();

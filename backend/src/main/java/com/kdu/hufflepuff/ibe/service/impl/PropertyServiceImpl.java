@@ -3,6 +3,7 @@ package com.kdu.hufflepuff.ibe.service.impl;
 import com.kdu.hufflepuff.ibe.model.dto.out.PropertyDTO;
 import com.kdu.hufflepuff.ibe.model.graphql.Property;
 import com.kdu.hufflepuff.ibe.service.interfaces.PropertyService;
+import com.kdu.hufflepuff.ibe.util.GraphQLQueries;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.graphql.client.GraphQlClient;
@@ -17,16 +18,7 @@ public class PropertyServiceImpl implements PropertyService {
     private final ModelMapper modelMapper;
 
     public List<PropertyDTO> getProperties(Long tenantId) {
-        String query = """
-                query MyQuery ($tenantId: Int!) {
-                  listProperties(where: {tenant: {tenant_id: {equals: $tenantId}}}) {
-                    property_name
-                    property_id
-                  }
-                }
-            """;
-
-        List<Property> properties = graphQlClient.document(query)
+        List<Property> properties = graphQlClient.document(GraphQLQueries.GET_PROPERTIES_BY_TENANT)
             .variable("tenantId", tenantId)
             .retrieve("listProperties")
             .toEntityList(Property.class)

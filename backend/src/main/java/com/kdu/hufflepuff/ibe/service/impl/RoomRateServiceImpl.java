@@ -7,7 +7,9 @@ import com.kdu.hufflepuff.ibe.model.graphql.RoomAvailability;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomRateRoomTypeMapping;
 import com.kdu.hufflepuff.ibe.repository.jpa.SpecialOfferRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
+import com.kdu.hufflepuff.ibe.util.GraphQLQueries;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoomRateServiceImpl implements RoomRateService {
@@ -50,7 +53,6 @@ public class RoomRateServiceImpl implements RoomRateService {
             .distinct()
             .toList();
 
-        // Fetch room rates asynchronously
         CompletableFuture<List<Room>> roomsFuture = CompletableFuture.supplyAsync(
             () -> fetchAllRoomRates(availableRoomIds), EXECUTOR);
 
@@ -101,34 +103,67 @@ public class RoomRateServiceImpl implements RoomRateService {
             .toList();
     }
 
-    private List<RoomAvailability> fetchAvailableRooms(Long propertyId, LocalDate startDate, LocalDate endDate) {
-        String query = """
-                query getAvailableRooms($propertyId: Int!, $startDate: AWSDateTime!, $endDate: AWSDateTime!) {
-                    listRoomAvailabilities(where: {
-                        property: {
-                            property_id: {equals: $propertyId}
-                        },
-                        date: {
-                            gte: $startDate,
-                            lte: $endDate
-                        },
-                        booking: {
-                            booking_status: {
-                                status: {not: {equals: "BOOKED"}}
-                            }
-                        }
-                    }) {
-                        availability_id
-                        date
-                        room {
-                            room_id
-                            room_type_id
-                        }
-                    }
-                }
-            """;
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Double> getAveragePricesByRoomType(Long propertyId, LocalDate startDate, LocalDate endDate) {
+        final LocalDate effectiveStartDate;
+        final LocalDate effectiveEndDate;
 
-        return graphQlClient.document(query)
+        if (startDate == null || endDate == null) {
+            effectiveStartDate = LocalDate.now();
+            effectiveEndDate = effectiveStartDate.plusDays(1);
+        } else {
+            effectiveStartDate = startDate;
+            effectiveEndDate = endDate;
+        }
+
+        List<RoomAvailability> availabilities = fetchAvailableRooms(propertyId, effectiveStartDate, effectiveEndDate);
+        if (availabilities == null || availabilities.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> roomTypeIds = availabilities.stream()
+            .map(RoomAvailability::getRoom)
+            .map(Room::getRoomTypeId)
+            .distinct()
+            .toList();
+
+        if (roomTypeIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<RoomRateRoomTypeMapping> rateMappings = fetchRoomRatesByRoomTypes(roomTypeIds, effectiveStartDate, effectiveEndDate);
+
+        log.info("Get average price by room type: {}", rateMappings);
+
+        Map<Long, List<Double>> ratesByRoomType = new HashMap<>();
+        rateMappings.forEach(mapping -> {
+            if (mapping.getRoomType() != null && mapping.getRoomRate() != null) {
+                Long roomTypeId = mapping.getRoomType().getRoomTypeId();
+                Double rate = mapping.getRoomRate().getBasicNightlyRate();
+
+                if (roomTypeId != null && rate != null) {
+                    ratesByRoomType.computeIfAbsent(roomTypeId, k -> new ArrayList<>()).add(rate);
+                }
+            }
+        });
+
+        Map<Long, Double> result = new HashMap<>();
+        ratesByRoomType.forEach((roomTypeId, rates) -> {
+            if (!rates.isEmpty()) {
+                double average = rates.stream()
+                    .mapToDouble(Double::doubleValue)
+                    .average()
+                    .orElse(0.0);
+                result.put(roomTypeId, average);
+            }
+        });
+
+        return result;
+    }
+
+    private List<RoomAvailability> fetchAvailableRooms(Long propertyId, LocalDate startDate, LocalDate endDate) {
+        return graphQlClient.document(GraphQLQueries.GET_AVAILABLE_ROOMS)
             .variable("propertyId", propertyId)
             .variable("startDate", startDate.atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
             .variable("endDate", endDate.atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
@@ -138,33 +173,20 @@ public class RoomRateServiceImpl implements RoomRateService {
     }
 
     private List<Room> fetchAllRoomRates(List<Long> availableRoomIds) {
-        String query = """
-                query getRooms($availableRoomIds: [Int!]!) {
-                    listRooms(where: {
-                        room_id: {in: $availableRoomIds}
-                    }) {
-                        room_id
-                        room_number
-                        room_type {
-                            room_type_id
-                            room_type_name
-                            max_capacity
-                            room_rates {
-                                room_rate {
-                                    room_rate_id
-                                    basic_nightly_rate
-                                    date
-                                }
-                            }
-                        }
-                    }
-                }
-            """;
-
-        return graphQlClient.document(query)
+        return graphQlClient.document(GraphQLQueries.GET_ROOMS_BY_IDS)
             .variable("availableRoomIds", availableRoomIds)
             .retrieve("listRooms")
             .toEntityList(Room.class)
+            .block();
+    }
+
+    private List<RoomRateRoomTypeMapping> fetchRoomRatesByRoomTypes(List<Long> roomTypeIds, LocalDate startDate, LocalDate endDate) {
+        return graphQlClient.document(GraphQLQueries.GET_ROOM_RATE_MAPPINGS_BY_ROOM_TYPES)
+            .variable("roomTypeIds", roomTypeIds)
+            .variable("startDate", startDate.atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
+            .variable("endDate", endDate.atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
+            .retrieve("listRoomRateRoomTypeMappings")
+            .toEntityList(RoomRateRoomTypeMapping.class)
             .block();
     }
 }
