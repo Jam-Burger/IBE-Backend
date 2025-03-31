@@ -25,4 +25,6 @@ public class RoomTypeFilterDTO {
     private Integer roomSizeMin;
     private Integer roomSizeMax;
     private SortOption sortBy;
+    private Integer page;
+    private Integer pageSize;
 } 

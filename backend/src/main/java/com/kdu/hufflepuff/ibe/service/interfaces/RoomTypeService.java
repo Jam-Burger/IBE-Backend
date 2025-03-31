@@ -1,6 +1,7 @@
 package com.kdu.hufflepuff.ibe.service.interfaces;
 
 import com.kdu.hufflepuff.ibe.model.dto.in.RoomTypeFilterDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.PaginatedResponseDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.RoomTypeDetailsDTO;
 
 import java.util.List;
@@ -32,9 +33,9 @@ public interface RoomTypeService {
      * @param tenantId   The tenant ID
      * @param propertyId The property ID
      * @param filter     The filter criteria
-     * @return Filtered list of room types
+     * @return Paginated response containing filtered room types
      */
-    List<RoomTypeDetailsDTO> filterRoomTypes(
+    PaginatedResponseDTO<RoomTypeDetailsDTO> filterRoomTypes(
         Long tenantId,
         Long propertyId,
         RoomTypeFilterDTO filter

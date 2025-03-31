@@ -13,10 +13,10 @@ public final class GraphQLQueries {
     // Property Queries
     public static final String GET_PROPERTIES_BY_TENANT = """
             query MyQuery ($tenantId: Int!) {
-              listProperties(where: {tenant: {tenant_id: {equals: $tenantId}}}) {
-                property_name
-                property_id
-              }
+                listProperties(where: {tenant: {tenant_id: {equals: $tenantId}}}) {
+                    property_name
+                    property_id
+                }
             }
         """;
 
@@ -46,51 +46,51 @@ public final class GraphQLQueries {
 
     public static final String GET_ROOM_RATE_MAPPINGS_BY_ROOM_TYPES = """
             query getRoomRateMappings($roomTypeIds: [Int!]!, $startDate: AWSDateTime!, $endDate: AWSDateTime!) {
-              listRoomRateRoomTypeMappings(
-                where: {
-                  room_type_id: {in: $roomTypeIds},
-                  room_rate: {date: {gte: $startDate, lte: $endDate}}
+                listRoomRateRoomTypeMappings(
+                    where: {
+                        room_type_id: {in: $roomTypeIds},
+                        room_rate: {date: {gte: $startDate, lte: $endDate}}
+                    }
+                ) {
+                    room_rate {
+                        basic_nightly_rate
+                        date
+                    }
+                    room_type {
+                        room_type_id
+                    }
                 }
-              ) {
-                room_rate {
-                  basic_nightly_rate
-                  date
-                }
-                room_type {
-                  room_type_id
-                }
-              }
             }
         """;
 
     // Room Availability Queries
     public static final String GET_AVAILABLE_ROOMS = """
-                query getAvailableRooms($propertyId: Int!, $startDate: AWSDateTime!, $endDate: AWSDateTime!) {
-                    listRoomAvailabilities(
-                        where: {
-                            property: {
-                                property_id: {equals: $propertyId}
-                            },
-                            date: {
-                                gte: $startDate,
-                                lte: $endDate
-                            },
-                            booking: {
-                                booking_status: {
-                                    status: {not: {equals: "BOOKED"}}
-                                }
+            query getAvailableRooms($propertyId: Int!, $startDate: AWSDateTime!, $endDate: AWSDateTime!) {
+                listRoomAvailabilities(
+                    where: {
+                        property: {
+                            property_id: {equals: $propertyId}
+                        },
+                        date: {
+                            gte: $startDate,
+                            lte: $endDate
+                        },
+                        booking: {
+                            booking_status: {
+                                status: {not: {equals: "BOOKED"}}
                             }
                         }
-                        take: 1000
-                    ) {
-                    availability_id
-                    date
-                    room {
-                        room_id
-                        room_type_id
                     }
+                    take: 1000
+                ) {
+                availability_id
+                date
+                room {
+                    room_id
+                    room_type_id
                 }
             }
+        }
         """;
 
     // Room Type Queries
@@ -106,6 +106,19 @@ public final class GraphQLQueries {
                     single_bed
                     double_bed
                     property_id
+                }
+            }
+        """;
+
+    public static final String GET_ALL_PROMOTIONS = """
+            query getRoomRateMappings {
+                listPromotions {
+                    minimum_days_of_stay
+                    price_factor
+                    promotion_description
+                    promotion_id
+                    promotion_title
+                    is_deactivated
                 }
             }
         """;

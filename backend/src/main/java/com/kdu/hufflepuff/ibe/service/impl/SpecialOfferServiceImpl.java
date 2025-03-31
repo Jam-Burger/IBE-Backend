@@ -3,10 +3,13 @@ package com.kdu.hufflepuff.ibe.service.impl;
 import com.kdu.hufflepuff.ibe.exception.InvalidPromoCodeException;
 import com.kdu.hufflepuff.ibe.model.dto.out.SpecialOfferResponseDTO;
 import com.kdu.hufflepuff.ibe.model.entity.SpecialOffer;
+import com.kdu.hufflepuff.ibe.model.graphql.Promotion;
 import com.kdu.hufflepuff.ibe.repository.jpa.SpecialOfferRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.SpecialOfferService;
+import com.kdu.hufflepuff.ibe.util.GraphQLQueries;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +21,31 @@ import java.util.List;
 public class SpecialOfferServiceImpl implements SpecialOfferService {
     private final SpecialOfferRepository specialOfferRepository;
     private final ModelMapper modelMapper;
+    private final GraphQlClient graphQlClient;
 
     @Override
     @Transactional(readOnly = true)
-    public List<SpecialOfferResponseDTO> getSpecialDiscounts(Long tenantId, Long propertyId, LocalDate startDate, LocalDate endDate) {
-        List<SpecialOffer> specialOffers = specialOfferRepository.findAllByPropertyIdAndDateRange(propertyId, startDate, endDate);
+    public List<SpecialOfferResponseDTO> getSpecialDiscounts(Long tenantId, Long propertyId, LocalDate startDate,
+                                                             LocalDate endDate) {
+        List<SpecialOffer> specialOffers = specialOfferRepository.findAllByPropertyIdAndDateRange(propertyId, startDate,
+            endDate);
+
+        List<Promotion> promotions = getGraphQLPromotions();
+
+        if(promotions == null) {
+            return List.of();
+        }
+
+        promotions.forEach(promotion -> {
+            SpecialOffer specialOffer = SpecialOffer.builder()
+                .propertyId(propertyId)
+                .title(promotion.getPromotionTitle())
+                .discountPercentage((1 - promotion.getPriceFactor()) * 100)
+                .description(promotion.getPromotionDescription())
+                .build();
+            specialOffers.add(specialOffer);
+        });
+
         return specialOffers.stream()
             .map(this::convertToDTO)
             .toList();
@@ -30,21 +53,19 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
 
     @Override
     @Transactional(readOnly = true)
-    public SpecialOfferResponseDTO getPromoOffer(Long tenantId, Long propertyId, String promoCode, LocalDate startDate, LocalDate endDate) {
+    public SpecialOfferResponseDTO getPromoOffer(Long tenantId, Long propertyId, String promoCode, LocalDate startDate,
+                                                 LocalDate endDate) {
 
-        // Find the promo offer
         SpecialOffer specialOffer = specialOfferRepository.findByPropertyIdAndPromoCode(propertyId, promoCode);
         if (specialOffer == null) {
             throw InvalidPromoCodeException.notFound(promoCode);
         }
 
-        // Validate dates
         LocalDate today = LocalDate.now();
         if (specialOffer.getEndDate().isBefore(today)) {
             throw InvalidPromoCodeException.expired(promoCode);
         }
 
-        // Check if the promo code is applicable for the requested date range
         if (startDate.isAfter(specialOffer.getEndDate()) || endDate.isBefore(specialOffer.getStartDate())) {
             throw InvalidPromoCodeException.notApplicable(promoCode);
         }
@@ -54,5 +75,12 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
 
     private SpecialOfferResponseDTO convertToDTO(SpecialOffer specialOffer) {
         return modelMapper.map(specialOffer, SpecialOfferResponseDTO.class);
+    }
+
+    private List<Promotion> getGraphQLPromotions() {
+        return graphQlClient.document(GraphQLQueries.GET_ALL_PROMOTIONS)
+            .retrieve("listPromotions")
+            .toEntityList(Promotion.class)
+            .block();
     }
 }

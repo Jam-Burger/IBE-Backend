@@ -3,6 +3,7 @@ package com.kdu.hufflepuff.ibe.service.impl;
 import com.kdu.hufflepuff.ibe.exception.ResourceNotFoundException;
 import com.kdu.hufflepuff.ibe.mapper.RoomTypeMapper;
 import com.kdu.hufflepuff.ibe.model.dto.in.RoomTypeFilterDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.PaginatedResponseDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.RoomTypeDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.entity.RoomTypeExtension;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomType;
@@ -10,6 +11,7 @@ import com.kdu.hufflepuff.ibe.repository.jpa.RoomTypeRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomTypeService;
 import com.kdu.hufflepuff.ibe.util.GraphQLQueries;
+import com.kdu.hufflepuff.ibe.util.PaginationUtil;
 import com.kdu.hufflepuff.ibe.util.RoomTypeFilterUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +68,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     }
 
     @Override
-    public List<RoomTypeDetailsDTO> filterRoomTypes(Long tenantId, Long propertyId, RoomTypeFilterDTO filter) {
+    public PaginatedResponseDTO<RoomTypeDetailsDTO> filterRoomTypes(Long tenantId, Long propertyId, RoomTypeFilterDTO filter) {
         List<RoomTypeDetailsDTO> allRoomTypes = getRoomTypesByPropertyId(tenantId, propertyId);
 
         Map<Long, Double> averagePrices = roomRateService.getAveragePricesByRoomType(
@@ -79,7 +81,8 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
         List<RoomTypeDetailsDTO> filteredRoomTypes = RoomTypeFilterUtil.filterAndSortRoomTypes(allRoomTypes, filter);
         log.info("Found {} room types after filtering", filteredRoomTypes.size());
-        return filteredRoomTypes;
+
+        return PaginationUtil.paginate(filteredRoomTypes, filter.getPage(), filter.getPageSize());
     }
 
     @Override

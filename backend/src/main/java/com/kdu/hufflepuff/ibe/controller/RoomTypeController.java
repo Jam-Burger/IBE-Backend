@@ -1,6 +1,7 @@
 package com.kdu.hufflepuff.ibe.controller;
 
 import com.kdu.hufflepuff.ibe.model.dto.in.RoomTypeFilterDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.PaginatedResponseDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.RoomTypeDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.enums.SortOption;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
@@ -37,7 +38,7 @@ public class RoomTypeController {
     }
 
     @GetMapping("/room-types/filter")
-    public ResponseEntity<ApiResponse<List<RoomTypeDetailsDTO>>> filterRoomTypes(
+    public ResponseEntity<ApiResponse<PaginatedResponseDTO<RoomTypeDetailsDTO>>> filterRoomTypes(
         @PathVariable Long tenantId,
         @PathVariable Long propertyId,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
@@ -50,7 +51,9 @@ public class RoomTypeController {
         @RequestParam(required = false) String amenities,
         @RequestParam(required = false) Integer roomSizeMin,
         @RequestParam(required = false) Integer roomSizeMax,
-        @RequestParam(required = false) SortOption sortBy
+        @RequestParam(required = false) SortOption sortBy,
+        @RequestParam(required = false) Integer page,
+        @RequestParam(required = false) Integer pageSize
     ) {
 
         List<String> bedTypesList = bedTypes != null
@@ -77,10 +80,14 @@ public class RoomTypeController {
             .roomSizeMin(roomSizeMin)
             .roomSizeMax(roomSizeMax)
             .sortBy(sortBy)
+            .page(page)
+            .pageSize(pageSize)
             .build();
 
-        return ApiResponse.<List<RoomTypeDetailsDTO>>builder()
-            .data(roomTypeService.filterRoomTypes(tenantId, propertyId, filter))
+        PaginatedResponseDTO<RoomTypeDetailsDTO> paginatedResponse = roomTypeService.filterRoomTypes(tenantId, propertyId, filter);
+
+        return ApiResponse.<PaginatedResponseDTO<RoomTypeDetailsDTO>>builder()
+            .data(paginatedResponse)
             .message("Filtered room types retrieved successfully")
             .statusCode(HttpStatus.OK)
             .build()

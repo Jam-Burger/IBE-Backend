@@ -25,6 +25,8 @@ public class RoomTypeDetailsDTO {
     private Double averagePrice;
     private String landmark;
     private String description;
+    @Builder.Default
     private List<String> amenities = new ArrayList<>();
+    @Builder.Default
     private List<String> images = new ArrayList<>();
 } 
