@@ -14,8 +14,8 @@ public interface SpecialOfferRepository extends JpaRepository<SpecialOffer, Long
     @Query(nativeQuery = true, value = """
         SELECT * FROM special_offer
         WHERE property_id = :propertyId
-        AND start_date >= :startDate
-        AND end_date < :endDate
+        AND start_date <= :startDate
+        AND end_date >= :endDate
         """)
     List<SpecialOffer> findAllByPropertyIdAndDateRange(
         @Param("propertyId") Long propertyId,

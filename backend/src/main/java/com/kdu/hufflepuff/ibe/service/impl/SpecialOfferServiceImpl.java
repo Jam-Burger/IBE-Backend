@@ -66,7 +66,6 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
     @Transactional(readOnly = true)
     public SpecialOfferResponseDTO getPromoOffer(Long tenantId, Long propertyId, String promoCode, LocalDate startDate,
                                                  LocalDate endDate) {
-
         SpecialOffer specialOffer = specialOfferRepository.findByPropertyIdAndPromoCode(propertyId, promoCode);
         if (specialOffer == null) {
             throw InvalidPromoCodeException.notFound(promoCode);

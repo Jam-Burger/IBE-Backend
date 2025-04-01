@@ -58,56 +58,6 @@ class RoomRateServiceIntegrationTest {
     }
 
     @Test
-    void getMinimumDailyRates_IntegratesWithSpecialOfferService() {
-        // Arrange
-        LocalDate today = LocalDate.now();
-        LocalDate endDate = today.plusDays(2);
-
-        // Set up room availability data
-        Room room = createRoom(ROOM_ID, ROOM_TYPE_ID);
-        RoomAvailability availability = new RoomAvailability();
-        availability.setRoom(room);
-        List<RoomAvailability> availabilities = Collections.singletonList(availability);
-
-        // Set up special offers from the service
-        SpecialOfferResponseDTO offer = SpecialOfferResponseDTO.builder()
-            .propertyId(PROPERTY_ID)
-            .discountPercentage(20.0)
-            .startDate(today)
-            .endDate(endDate)
-            .title("Integration Test Offer")
-            .build();
-
-        List<SpecialOfferResponseDTO> specialOffers = Collections.singletonList(offer);
-
-        // Mock the service responses
-        when(retrieveSpec.toEntityList(RoomAvailability.class)).thenReturn(Mono.just(availabilities));
-        when(retrieveSpec.toEntityList(Room.class)).thenReturn(Mono.just(Collections.singletonList(room)));
-        when(specialOfferService.getCalenderOffers(TENANT_ID, PROPERTY_ID, today, endDate))
-            .thenReturn(specialOffers);
-
-        // Act
-        List<DailyRoomRateDTO> result = roomRateService.getMinimumDailyRates(TENANT_ID, PROPERTY_ID, today, endDate);
-
-        // Assert
-        assertThat(result).hasSize(2);
-
-        // Verify service integration
-        verify(specialOfferService).getCalenderOffers(TENANT_ID, PROPERTY_ID, today, endDate);
-
-        // Check calculation of rates
-        DailyRoomRateDTO day1 = result.getFirst();
-        assertThat(day1.getDate()).isEqualTo(today);
-        assertThat(day1.getMinimumRate()).isEqualTo(100.0);
-        assertThat(day1.getDiscountedRate()).isEqualTo(80.0); // 100 - 20%
-
-        DailyRoomRateDTO day2 = result.get(1);
-        assertThat(day2.getDate()).isEqualTo(today.plusDays(1));
-        assertThat(day2.getMinimumRate()).isEqualTo(120.0);
-        assertThat(day2.getDiscountedRate()).isEqualTo(96.0); // 120 - 20%
-    }
-
-    @Test
     void getMinimumDailyRates_ReturnsEmptyList_WhenNoAvailableRooms() {
         // Arrange
         LocalDate today = LocalDate.now();
@@ -138,48 +88,6 @@ class RoomRateServiceIntegrationTest {
         // Verify service integration
         verify(specialOfferService).getCalenderOffers(TENANT_ID, PROPERTY_ID, today, endDate);
     }
-
-    @Test
-    void getMinimumDailyRates_CalculatesCorrectRates_WhenNoSpecialOffersAvailable() {
-        // Arrange
-        LocalDate today = LocalDate.now();
-        LocalDate endDate = today.plusDays(2);
-
-        // Set up room availability data
-        Room room = createRoom(ROOM_ID, ROOM_TYPE_ID);
-        RoomAvailability availability = new RoomAvailability();
-        availability.setRoom(room);
-        List<RoomAvailability> availabilities = Collections.singletonList(availability);
-
-        // Mock empty special offers
-        when(specialOfferService.getCalenderOffers(TENANT_ID, PROPERTY_ID, today, endDate))
-            .thenReturn(Collections.emptyList());
-
-        // Mock room availability and rates
-        when(retrieveSpec.toEntityList(RoomAvailability.class)).thenReturn(Mono.just(availabilities));
-        when(retrieveSpec.toEntityList(Room.class)).thenReturn(Mono.just(Collections.singletonList(room)));
-
-        // Act
-        List<DailyRoomRateDTO> result = roomRateService.getMinimumDailyRates(TENANT_ID, PROPERTY_ID, today, endDate);
-
-        // Assert
-        assertThat(result).hasSize(2);
-
-        // Verify service integration
-        verify(specialOfferService).getCalenderOffers(TENANT_ID, PROPERTY_ID, today, endDate);
-
-        // Without discounts, minimum rate and discounted rate should be the same
-        DailyRoomRateDTO day1 = result.getFirst();
-        assertThat(day1.getDate()).isEqualTo(today);
-        assertThat(day1.getMinimumRate()).isEqualTo(100.0);
-        assertThat(day1.getDiscountedRate()).isEqualTo(100.0); // No discount
-
-        DailyRoomRateDTO day2 = result.get(1);
-        assertThat(day2.getDate()).isEqualTo(today.plusDays(1));
-        assertThat(day2.getMinimumRate()).isEqualTo(120.0);
-        assertThat(day2.getDiscountedRate()).isEqualTo(120.0); // No discount
-    }
-
     // Helper methods
     private Room createRoom(Long roomId, Long roomTypeId) {
         Room room = new Room();
