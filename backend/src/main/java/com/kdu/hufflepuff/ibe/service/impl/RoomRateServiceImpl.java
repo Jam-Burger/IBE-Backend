@@ -1,12 +1,12 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
 import com.kdu.hufflepuff.ibe.model.dto.out.DailyRoomRateDTO;
-import com.kdu.hufflepuff.ibe.model.entity.SpecialOffer;
+import com.kdu.hufflepuff.ibe.model.dto.out.SpecialOfferResponseDTO;
 import com.kdu.hufflepuff.ibe.model.graphql.Room;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomAvailability;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomRateRoomTypeMapping;
-import com.kdu.hufflepuff.ibe.repository.jpa.SpecialOfferRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
+import com.kdu.hufflepuff.ibe.service.interfaces.SpecialOfferService;
 import com.kdu.hufflepuff.ibe.util.GraphQLQueries;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class RoomRateServiceImpl implements RoomRateService {
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(2);
 
     private final GraphQlClient graphQlClient;
-    private final SpecialOfferRepository specialOfferRepository;
+    private final SpecialOfferService specialOfferService;
 
     @Override
     @Transactional(readOnly = true)
@@ -38,11 +38,11 @@ public class RoomRateServiceImpl implements RoomRateService {
         CompletableFuture<List<RoomAvailability>> availabilitiesFuture = CompletableFuture.supplyAsync(
             () -> fetchAvailableRooms(propertyId, startDate, endDate), EXECUTOR);
 
-        CompletableFuture<List<SpecialOffer>> discountsFuture = CompletableFuture.supplyAsync(
-            () -> specialOfferRepository.findAllByPropertyIdAndDateRange(propertyId, startDate, endDate), EXECUTOR);
+        CompletableFuture<List<SpecialOfferResponseDTO>> discountsFuture = CompletableFuture.supplyAsync(
+            () -> specialOfferService.getCalenderOffers(tenantId, propertyId, startDate, endDate), EXECUTOR);
 
         List<RoomAvailability> availabilities = availabilitiesFuture.join();
-        List<SpecialOffer> specialOffers = discountsFuture.join();
+        List<SpecialOfferResponseDTO> specialOffers = discountsFuture.join();
 
         if (availabilities.isEmpty()) {
             return List.of();
@@ -74,9 +74,9 @@ public class RoomRateServiceImpl implements RoomRateService {
                 LocalDate date = rate.getDate();
                 double currentRate = rate.getBasicNightlyRate();
 
-                Optional<SpecialOffer> applicableOffer = specialOffers.stream()
-                    .filter(discount -> !date.isBefore(discount.getStartDate()) && !date.isAfter(discount.getEndDate()) && discount.getPromoCode() == null)
-                    .max(Comparator.comparingDouble(SpecialOffer::getDiscountPercentage));
+                Optional<SpecialOfferResponseDTO> applicableOffer = specialOffers.stream()
+                    .filter(discount -> !date.isBefore(discount.getStartDate()) && !date.isAfter(discount.getEndDate()))
+                    .max(Comparator.comparingDouble(SpecialOfferResponseDTO::getDiscountPercentage));
 
                 DailyRoomRateDTO dto = ratesByDate.computeIfAbsent(date, k -> DailyRoomRateDTO.builder()
                     .date(k)
@@ -89,7 +89,8 @@ public class RoomRateServiceImpl implements RoomRateService {
                 }
 
                 if (applicableOffer.isPresent()) {
-                    SpecialOffer discount = applicableOffer.get();
+                    log.info("Applicable offer: {}", applicableOffer.get());
+                    SpecialOfferResponseDTO discount = applicableOffer.get();
                     double discountedRate = currentRate * (1 - (discount.getDiscountPercentage() / 100.0));
 
                     if (discountedRate < dto.getDiscountedRate()) {

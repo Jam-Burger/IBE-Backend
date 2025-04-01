@@ -49,7 +49,7 @@ public final class GraphQLQueries {
                 listRoomRateRoomTypeMappings(
                     where: {
                         room_type_id: {in: $roomTypeIds},
-                        room_rate: {date: {gte: $startDate, lte: $endDate}}
+                        room_rate: {date: {gte: $startDate, lt: $endDate}}
                     }
                 ) {
                     room_rate {
@@ -73,7 +73,7 @@ public final class GraphQLQueries {
                         },
                         date: {
                             gte: $startDate,
-                            lte: $endDate
+                            lt: $endDate
                         },
                         booking: {
                             booking_status: {
@@ -81,7 +81,7 @@ public final class GraphQLQueries {
                             }
                         }
                     }
-                    take: 1000
+                    take: 100
                 ) {
                 availability_id
                 date

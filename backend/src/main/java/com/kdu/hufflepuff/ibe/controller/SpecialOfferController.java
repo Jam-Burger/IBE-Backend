@@ -29,7 +29,7 @@ public class SpecialOfferController {
         @Valid @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @Valid @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<SpecialOfferResponseDTO> specialOffers = specialOfferService.getSpecialDiscounts(tenantId, propertyId, startDate, endDate);
+        List<SpecialOfferResponseDTO> specialOffers = specialOfferService.getSpecialOffers(tenantId, propertyId, startDate, endDate);
         return ApiResponse.<List<SpecialOfferResponseDTO>>builder()
             .data(specialOffers)
             .message("Special discounts retrieved successfully")

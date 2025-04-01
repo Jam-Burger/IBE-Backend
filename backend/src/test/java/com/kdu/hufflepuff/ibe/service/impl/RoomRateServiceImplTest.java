@@ -1,9 +1,9 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
 import com.kdu.hufflepuff.ibe.model.dto.out.DailyRoomRateDTO;
-import com.kdu.hufflepuff.ibe.model.entity.SpecialOffer;
+import com.kdu.hufflepuff.ibe.model.dto.out.SpecialOfferResponseDTO;
 import com.kdu.hufflepuff.ibe.model.graphql.*;
-import com.kdu.hufflepuff.ibe.repository.jpa.SpecialOfferRepository;
+import com.kdu.hufflepuff.ibe.service.interfaces.SpecialOfferService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,21 +19,21 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RoomRateServiceImplTest {
 
+    private static final Long TENANT_ID = 1L;
     private static final Long PROPERTY_ID = 100L;
     private static final Long ROOM_TYPE_ID = 200L;
     private static final Long ROOM_ID = 300L;
     @Mock
     private GraphQlClient graphQlClient;
     @Mock
-    private SpecialOfferRepository specialOfferRepository;
+    private SpecialOfferService specialOfferService;
     @Mock
     private GraphQlClient.RequestSpec requestSpec;
     @Mock
@@ -42,7 +42,7 @@ class RoomRateServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        roomRateService = new RoomRateServiceImpl(graphQlClient, specialOfferRepository);
+        roomRateService = new RoomRateServiceImpl(graphQlClient, specialOfferService);
     }
 
     @Test
@@ -57,11 +57,11 @@ class RoomRateServiceImplTest {
         when(retrieveSpec.toEntityList(RoomAvailability.class)).thenReturn(Mono.just(Collections.emptyList()));
 
         // Act
-        List<DailyRoomRateDTO> result = roomRateService.getMinimumDailyRates(1L, PROPERTY_ID, startDate, endDate);
+        List<DailyRoomRateDTO> result = roomRateService.getMinimumDailyRates(TENANT_ID, PROPERTY_ID, startDate, endDate);
 
         // Assert
         assertThat(result).isEmpty();
-        verify(specialOfferRepository).findAllByPropertyIdAndDateRange(PROPERTY_ID, startDate, endDate);
+        verify(specialOfferService).getSpecialOffers(TENANT_ID, PROPERTY_ID, startDate, endDate);
     }
 
     @Test
@@ -81,14 +81,15 @@ class RoomRateServiceImplTest {
         List<RoomAvailability> availabilities = Collections.singletonList(availability);
 
         // Mock special offers
-        SpecialOffer offer = SpecialOffer.builder()
+        SpecialOfferResponseDTO offer = SpecialOfferResponseDTO.builder()
             .propertyId(PROPERTY_ID)
             .discountPercentage(20.0) // 20% discount
             .startDate(today)
             .endDate(endDate)
+            .title("Test Offer")
             .build();
 
-        List<SpecialOffer> specialOffers = Collections.singletonList(offer);
+        List<SpecialOfferResponseDTO> specialOffers = Collections.singletonList(offer);
 
         // Mock room type with rates
         RoomType roomType = new RoomType();
@@ -129,11 +130,11 @@ class RoomRateServiceImplTest {
         when(retrieveSpec.toEntityList(Room.class)).thenReturn(Mono.just(Collections.singletonList(room)));
 
         // Mock special offers
-        when(specialOfferRepository.findAllByPropertyIdAndDateRange(PROPERTY_ID, today, endDate))
+        when(specialOfferService.getSpecialOffers(TENANT_ID, PROPERTY_ID, today, endDate))
             .thenReturn(specialOffers);
 
         // Act
-        List<DailyRoomRateDTO> result = roomRateService.getMinimumDailyRates(1L, PROPERTY_ID, today, endDate);
+        List<DailyRoomRateDTO> result = roomRateService.getMinimumDailyRates(TENANT_ID, PROPERTY_ID, today, endDate);
 
         // Assert
         assertThat(result).hasSize(2);

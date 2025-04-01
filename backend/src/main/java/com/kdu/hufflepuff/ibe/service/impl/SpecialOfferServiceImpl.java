@@ -25,8 +25,8 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SpecialOfferResponseDTO> getSpecialDiscounts(Long tenantId, Long propertyId, LocalDate startDate,
-                                                             LocalDate endDate) {
+    public List<SpecialOfferResponseDTO> getSpecialOffers(Long tenantId, Long propertyId, LocalDate startDate,
+                                                          LocalDate endDate) {
         List<SpecialOffer> specialOffers = specialOfferRepository.findAllByPropertyIdAndDateRange(propertyId, startDate,
             endDate);
 
@@ -46,6 +46,17 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
             specialOffers.add(specialOffer);
         });
 
+        return specialOffers.stream()
+            .map(this::convertToDTO)
+            .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SpecialOfferResponseDTO> getCalenderOffers(Long tenantId, Long propertyId, LocalDate startDate,
+                                                           LocalDate endDate){
+        List<SpecialOffer> specialOffers = specialOfferRepository.findAllByPropertyIdAndDateRangeWithNoPromoCode(propertyId, startDate,
+            endDate);
         return specialOffers.stream()
             .map(this::convertToDTO)
             .toList();
