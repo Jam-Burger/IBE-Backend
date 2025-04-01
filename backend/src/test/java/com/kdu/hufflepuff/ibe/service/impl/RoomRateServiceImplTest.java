@@ -19,7 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,7 +62,7 @@ class RoomRateServiceImplTest {
 
         // Assert
         assertThat(result).isEmpty();
-        verify(specialOfferService).getSpecialOffers(TENANT_ID, PROPERTY_ID, startDate, endDate);
+        verify(specialOfferService).getCalenderOffers(TENANT_ID, PROPERTY_ID, startDate, endDate);
     }
 
     @Test
@@ -130,7 +131,7 @@ class RoomRateServiceImplTest {
         when(retrieveSpec.toEntityList(Room.class)).thenReturn(Mono.just(Collections.singletonList(room)));
 
         // Mock special offers
-        when(specialOfferService.getSpecialOffers(TENANT_ID, PROPERTY_ID, today, endDate))
+        when(specialOfferService.getCalenderOffers(TENANT_ID, PROPERTY_ID, today, endDate))
             .thenReturn(specialOffers);
 
         // Act
@@ -140,7 +141,7 @@ class RoomRateServiceImplTest {
         assertThat(result).hasSize(2);
 
         // Check first day
-        DailyRoomRateDTO day1 = result.get(0);
+        DailyRoomRateDTO day1 = result.getFirst();
         assertThat(day1.getDate()).isEqualTo(today);
         assertThat(day1.getMinimumRate()).isEqualTo(100.0);
         assertThat(day1.getDiscountedRate()).isEqualTo(80.0); // 100 - 20%

@@ -32,7 +32,7 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
 
         List<Promotion> promotions = getGraphQLPromotions();
 
-        if(promotions == null) {
+        if (promotions == null) {
             return List.of();
         }
 
@@ -54,7 +54,7 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
     @Override
     @Transactional(readOnly = true)
     public List<SpecialOfferResponseDTO> getCalenderOffers(Long tenantId, Long propertyId, LocalDate startDate,
-                                                           LocalDate endDate){
+                                                           LocalDate endDate) {
         List<SpecialOffer> specialOffers = specialOfferRepository.findAllByPropertyIdAndDateRangeWithNoPromoCode(propertyId, startDate,
             endDate);
         return specialOffers.stream()

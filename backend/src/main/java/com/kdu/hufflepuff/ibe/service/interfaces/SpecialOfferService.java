@@ -11,5 +11,5 @@ public interface SpecialOfferService {
     SpecialOfferResponseDTO getPromoOffer(Long tenantId, Long propertyId, String promoCode, LocalDate startDate, LocalDate endDate);
 
     List<SpecialOfferResponseDTO> getCalenderOffers(Long tenantId, Long propertyId, LocalDate startDate,
-                                                           LocalDate endDate);
+                                                    LocalDate endDate);
 }
