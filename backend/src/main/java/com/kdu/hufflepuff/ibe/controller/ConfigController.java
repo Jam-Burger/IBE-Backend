@@ -2,10 +2,7 @@ package com.kdu.hufflepuff.ibe.controller;
 
 import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.ConfigResponseDTO;
-import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
-import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
-import com.kdu.hufflepuff.ibe.model.dynamodb.RoomsListConfigModel;
-import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
+import com.kdu.hufflepuff.ibe.model.dynamodb.*;
 import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.WebsiteConfigService;
@@ -21,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/v1/{tenantId}/config")
 @RequiredArgsConstructor
 public class ConfigController {
+
     private final WebsiteConfigService configService;
     private final ModelMapper modelMapper;
 
@@ -68,6 +66,18 @@ public class ConfigController {
         return createResponse("Rooms list configuration saved successfully", savedConfig, HttpStatus.CREATED);
     }
 
+    @PostMapping("/CHECKOUT")
+    public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveCheckoutConfig(
+        @PathVariable Long tenantId,
+        @Valid @RequestBody ConfigRequestDTO<CheckoutConfigModel> configRequest) {
+        WebsiteConfigModel savedConfig = configService.saveConfig(
+            tenantId,
+            ConfigType.CHECKOUT,
+            configRequest
+        );
+        return createResponse("Checkout configuration saved successfully", savedConfig, HttpStatus.CREATED);
+    }
+
     @DeleteMapping("/{configType}")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> deleteConfig(
         @PathVariable Long tenantId,
@@ -84,6 +94,8 @@ public class ConfigController {
             response.setConfigData(config.getLandingPageConfigModel());
         } else if (config.getRoomsListConfigModel() != null) {
             response.setConfigData(config.getRoomsListConfigModel());
+        } else if (config.getCheckoutConfigModel() != null) {
+            response.setConfigData(config.getCheckoutConfigModel());
         }
 
         return ApiResponse.<ConfigResponseDTO>builder()
@@ -93,4 +105,5 @@ public class ConfigController {
             .build()
             .send();
     }
+
 }
