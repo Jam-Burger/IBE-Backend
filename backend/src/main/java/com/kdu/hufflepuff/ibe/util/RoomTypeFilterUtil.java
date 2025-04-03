@@ -3,7 +3,6 @@ package com.kdu.hufflepuff.ibe.util;
 import com.kdu.hufflepuff.ibe.model.dto.in.RoomTypeFilterDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.RoomRateDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.RoomTypeDetailsDTO;
-import com.kdu.hufflepuff.ibe.model.enums.SortOption;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

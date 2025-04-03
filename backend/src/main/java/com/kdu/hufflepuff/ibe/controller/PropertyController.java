@@ -16,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PropertyController {
     private final PropertyService propertyService;
+
     @GetMapping
     public List<PropertyDTO> getProperties(@PathVariable Long tenantId) {
         return propertyService.getProperties(tenantId);

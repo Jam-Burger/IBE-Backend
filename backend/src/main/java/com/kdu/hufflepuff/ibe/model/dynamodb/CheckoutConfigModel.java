@@ -1,6 +1,6 @@
 package com.kdu.hufflepuff.ibe.model.dynamodb;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
@@ -22,10 +22,10 @@ public class CheckoutConfigModel {
     public static class Section {
         @NotBlank
         private String title;
-        
+
         @NotBlank
         private String id;
-        
+
         private boolean enabled;
         private List<Field> fields;
 
@@ -55,10 +55,10 @@ public class CheckoutConfigModel {
     public static class Field {
         @NotBlank
         private String label;
-        
+
         @NotBlank
         private String type;
-        
+
         private boolean required;
         private boolean enabled;
         private String pattern;

@@ -4,10 +4,7 @@ import com.kdu.hufflepuff.ibe.exception.ConfigUpdateException;
 import com.kdu.hufflepuff.ibe.exception.ImageUploadException;
 import com.kdu.hufflepuff.ibe.exception.InvalidImageTypeException;
 import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
-import com.kdu.hufflepuff.ibe.model.dynamodb.Banner;
-import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
-import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
-import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
+import com.kdu.hufflepuff.ibe.model.dynamodb.*;
 import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.model.enums.ImageType;
 import com.kdu.hufflepuff.ibe.service.interfaces.ImageService;
@@ -22,7 +19,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,8 +54,11 @@ public class ImageServiceImpl implements ImageService {
                 case LOGO:
                     updateLogoUrl(tenantId, fileUrl);
                     break;
-                case BANNER:
+                case LANDING_BANNER:
                     updateBannerUrl(tenantId, fileUrl);
+                    break;
+                case ROOMS_PAGE_BANNER:
+                    updateRoomsPageBannerUrl(tenantId, fileUrl);
                     break;
                 default:
                     break;
@@ -113,7 +112,7 @@ public class ImageServiceImpl implements ImageService {
             .contentType(file.getContentType())
             .build();
 
-        s3Client.putObject(putObjectRequest, RequestBody.fromByteBuffer(ByteBuffer.wrap(file.getBytes())));
+        s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
         return String.format("%s/%s", cloudFrontBaseUrl, key);
     }
 
@@ -151,6 +150,31 @@ public class ImageServiceImpl implements ImageService {
             websiteConfigService.saveConfig(tenantId, ConfigType.LANDING, request);
         } catch (Exception e) {
             throw new ConfigUpdateException("Failed to update banner URL in configuration", e);
+        }
+    }
+
+    private void updateRoomsPageBannerUrl(Long tenantId, String fileUrl) {
+        try {
+            WebsiteConfigModel config = websiteConfigService.getConfig(tenantId, ConfigType.ROOMS_LIST);
+            if (config.getRoomsListConfigModel() == null) {
+                config.setRoomsListConfigModel(new RoomsListConfigModel());
+            }
+            RoomsListConfigModel roomsConfig = config.getRoomsListConfigModel();
+
+            if (roomsConfig.getBanner() == null) {
+                roomsConfig.setBanner(new Banner());
+            }
+            Banner banner = roomsConfig.getBanner();
+            banner.setImageUrl(fileUrl);
+            banner.setEnabled(true);
+            roomsConfig.setBanner(banner);
+            config.setRoomsListConfigModel(roomsConfig);
+
+            ConfigRequestDTO<RoomsListConfigModel> request = new ConfigRequestDTO<>();
+            request.setConfig(roomsConfig);
+            websiteConfigService.saveConfig(tenantId, ConfigType.ROOMS_LIST, request);
+        } catch (Exception e) {
+            throw new ConfigUpdateException("Failed to update rooms list banner URL in configuration", e);
         }
     }
 

@@ -20,7 +20,6 @@ public class ApiResponse<T> {
     private final String message;
     private final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
-    @ToString.Exclude
     private final T data;
 
     public ResponseEntity<ApiResponse<T>> send() {

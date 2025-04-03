@@ -162,9 +162,9 @@ public class RoomRateServiceImpl implements RoomRateService {
     @Transactional(readOnly = true)
     public Map<Long, List<RoomRateDetailsDTO>> getRoomRatesByRoomType(Long propertyId, LocalDate startDate, LocalDate endDate) {
         List<RoomRateDetailsDTO> allRates = getAllRoomRates(propertyId, startDate, endDate);
-        
+
         Map<Long, List<RoomRateDetailsDTO>> ratesByRoomType = new HashMap<>();
-        allRates.forEach(rate -> 
+        allRates.forEach(rate ->
             ratesByRoomType.computeIfAbsent(rate.getRoomTypeId(), k -> new ArrayList<>())
                 .add(rate)
         );
@@ -175,17 +175,17 @@ public class RoomRateServiceImpl implements RoomRateService {
     private List<RoomAvailability> fetchAvailableRooms(Long propertyId, LocalDate startDate, LocalDate endDate) {
         // Split the date range into chunks of 7 days
         List<DateRange> dateRanges = splitDateRange(startDate, endDate, 15);
-        
+
         // Create a list of futures for each chunk
         List<CompletableFuture<List<RoomAvailability>>> futures = dateRanges.stream()
-            .map(range -> CompletableFuture.supplyAsync(() -> 
-                graphQlClient.document(GraphQLQueries.GET_AVAILABLE_ROOMS)
-                    .variable("propertyId", propertyId)
-                    .variable("startDate", range.start().atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
-                    .variable("endDate", range.end().atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
-                    .retrieve("listRoomAvailabilities")
-                    .toEntityList(RoomAvailability.class)
-                    .block(),
+            .map(range -> CompletableFuture.supplyAsync(() ->
+                    graphQlClient.document(GraphQLQueries.GET_AVAILABLE_ROOMS)
+                        .variable("propertyId", propertyId)
+                        .variable("startDate", range.start().atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
+                        .variable("endDate", range.end().atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
+                        .retrieve("listRoomAvailabilities")
+                        .toEntityList(RoomAvailability.class)
+                        .block(),
                 EXECUTOR
             ))
             .toList();
@@ -198,12 +198,10 @@ public class RoomRateServiceImpl implements RoomRateService {
             .toList();
     }
 
-    private record DateRange(LocalDate start, LocalDate end) {}
-
     private List<DateRange> splitDateRange(LocalDate startDate, LocalDate endDate, int chunkSizeInDays) {
         List<DateRange> ranges = new ArrayList<>();
         LocalDate currentStart = startDate;
-        
+
         while (!currentStart.isAfter(endDate)) {
             LocalDate currentEnd = currentStart.plusDays(chunkSizeInDays - 1);
             if (currentEnd.isAfter(endDate)) {
@@ -212,28 +210,28 @@ public class RoomRateServiceImpl implements RoomRateService {
             ranges.add(new DateRange(currentStart, currentEnd));
             currentStart = currentEnd.plusDays(1);
         }
-        
+
         return ranges;
     }
 
     private List<RoomRateRoomTypeMapping> fetchRoomRatesByRoomTypes(List<Long> roomTypeIds, LocalDate startDate, LocalDate endDate) {
         // Split room type IDs into chunks of 10
         List<List<Long>> roomTypeChunks = splitList(roomTypeIds, 10);
-        
+
         // Split the date range into chunks of 15 days
         List<DateRange> dateRanges = splitDateRange(startDate, endDate, 15);
-        
+
         // Create a list of futures for each combination of room type chunk and date range
         List<CompletableFuture<List<RoomRateRoomTypeMapping>>> futures = roomTypeChunks.stream()
             .flatMap(roomTypeChunk -> dateRanges.stream()
-                .map(dateRange -> CompletableFuture.supplyAsync(() -> 
-                    graphQlClient.document(GraphQLQueries.GET_ROOM_RATE_MAPPINGS_BY_ROOM_TYPES)
-                        .variable("roomTypeIds", roomTypeChunk)
-                        .variable("startDate", dateRange.start().atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
-                        .variable("endDate", dateRange.end().atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
-                        .retrieve("listRoomRateRoomTypeMappings")
-                        .toEntityList(RoomRateRoomTypeMapping.class)
-                        .block(),
+                .map(dateRange -> CompletableFuture.supplyAsync(() ->
+                        graphQlClient.document(GraphQLQueries.GET_ROOM_RATE_MAPPINGS_BY_ROOM_TYPES)
+                            .variable("roomTypeIds", roomTypeChunk)
+                            .variable("startDate", dateRange.start().atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
+                            .variable("endDate", dateRange.end().atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
+                            .retrieve("listRoomRateRoomTypeMappings")
+                            .toEntityList(RoomRateRoomTypeMapping.class)
+                            .block(),
                     EXECUTOR
                 ))
             )
@@ -253,5 +251,8 @@ public class RoomRateServiceImpl implements RoomRateService {
             chunks.add(list.subList(i, Math.min(i + chunkSize, list.size())));
         }
         return chunks;
+    }
+
+    private record DateRange(LocalDate start, LocalDate end) {
     }
 }
