@@ -24,11 +24,11 @@ module "iam" {
 module "alb" {
   source = "./modules/alb"
 
-  project_name       = local.name_prefix
-  vpc_id             = var.vpc_id
-  container_port     = var.container_port
-  public_subnet_ids  = var.public_subnet_ids
-  tags               = local.tags
+  project_name      = local.name_prefix
+  vpc_id            = var.vpc_id
+  container_port    = var.container_port
+  public_subnet_ids = var.public_subnet_ids
+  tags              = local.tags
 }
 
 # ECS Module
@@ -51,8 +51,8 @@ module "ecs" {
     ENV                     = local.environment
     AWS_DYNAMODB_REGION     = var.aws_region
     AWS_DYNAMODB_TABLE_NAME = module.dynamodb.ddb_table_name
-    S3_BUCKET_NAME          = module.storage.bucket_name
-    CLOUDFRONT_URL          = module.storage.cloudfront_url
+    AWS_S3_BUCKET_NAME      = module.storage.bucket_name
+    AWS_CLOUDFRONT_BASE_URL = module.storage.cloudfront_url
   })
   alb_arn_suffix          = regex("app/[^/]+/[^/]+$", module.alb.alb_arn)
   target_group_arn_suffix = regex("targetgroup/[^/]+/[^/]+$", module.alb.target_group_arn)

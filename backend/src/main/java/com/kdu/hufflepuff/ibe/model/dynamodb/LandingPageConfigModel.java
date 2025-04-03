@@ -14,6 +14,7 @@ import java.util.List;
 @DynamoDbBean
 public class LandingPageConfigModel {
     @Valid
+    @JsonProperty("banner")
     @NotNull(message = "Banner configuration is required")
     private Banner banner;
 
@@ -21,7 +22,7 @@ public class LandingPageConfigModel {
     @NotNull(message = "Search form configuration is required")
     private SearchForm searchForm;
 
-    @DynamoDbAttribute("Banner")
+    @DynamoDbAttribute("LandingBanner")
     public Banner getBanner() {
         return banner;
     }
@@ -30,25 +31,6 @@ public class LandingPageConfigModel {
     @DynamoDbAttribute("SearchForm")
     public SearchForm getSearchForm() {
         return searchForm;
-    }
-
-    @Data
-    @DynamoDbBean
-    public static class Banner {
-        private boolean enabled;
-
-        @Size(max = 1024, message = "Image URL cannot exceed 1024 characters")
-        private String imageUrl;
-
-        @DynamoDbAttribute("Enabled")
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        @DynamoDbAttribute("ImageUrl")
-        public String getImageUrl() {
-            return imageUrl;
-        }
     }
 
     @Data

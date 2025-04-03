@@ -1,29 +1,41 @@
 package com.kdu.hufflepuff.ibe.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "room_type_extension")
 @Builder
+@Getter
+@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoomTypeExtension {
-    @Id
-    @Column(name = "room_type_id")
-    private Long roomTypeId;
+public class RoomTypeExtension extends BaseEntity {
+    @Column(name = "rating")
+    private Double rating;
 
+    @Column(name = "num_of_reviews")
+    private Long noOfReviews;
+
+    @Column(name = "landmark")
+    private String landmark;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
+    @Builder.Default
     @ElementCollection
-    @CollectionTable(
-        name = "room_type_image",
-        joinColumns = @JoinColumn(name = "room_type_id")
-    )
-    @Column(name = "image_url", length = 1024)
-    private List<String> imageUrls;
-} 
+    @Column(name = "amenity")
+    @CollectionTable(name = "room_type_amenities", joinColumns = @JoinColumn(name = "room_type_id"))
+    private List<String> amenities = new ArrayList<>();
+
+    @Builder.Default
+    @ElementCollection
+    @Column(name = "image")
+    @CollectionTable(name = "room_type_images", joinColumns = @JoinColumn(name = "room_type_id"))
+    private List<String> images = new ArrayList<>();
+}

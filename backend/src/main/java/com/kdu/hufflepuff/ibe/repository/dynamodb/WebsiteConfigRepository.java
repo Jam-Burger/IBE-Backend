@@ -14,10 +14,9 @@ import java.util.Optional;
 public class WebsiteConfigRepository {
     private final DynamoDbTable<WebsiteConfigModel> table;
 
-    public WebsiteConfigRepository(
-        DynamoDbEnhancedClient dynamoDbEnhancedClient,
-        @Value("${aws.dynamodb.table-name}") String tableName) {
-        this.table = dynamoDbEnhancedClient.table(tableName, TableSchema.fromBean(WebsiteConfigModel.class));
+    public WebsiteConfigRepository(DynamoDbEnhancedClient dynamoDbEnhancedClient,
+                                   @Value("${aws.dynamodb.table-name}") String tableName) {
+        table = dynamoDbEnhancedClient.table(tableName, TableSchema.fromBean(WebsiteConfigModel.class));
     }
 
     /**

@@ -17,6 +17,6 @@ public class RoomRateRoomTypeMapping {
     @JsonProperty("room_rate")
     private RoomRate roomRate;
 
-    @JsonProperty("room_type_id")
+    @JsonProperty("room_type")
     private RoomType roomType;
 }

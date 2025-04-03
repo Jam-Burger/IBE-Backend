@@ -5,6 +5,7 @@ import com.kdu.hufflepuff.ibe.exception.InvalidConfigException;
 import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
+import com.kdu.hufflepuff.ibe.model.dynamodb.RoomsListConfigModel;
 import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
 import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.repository.dynamodb.WebsiteConfigRepository;
@@ -51,6 +52,9 @@ public class WebsiteConfigServiceImpl implements WebsiteConfigService {
                 break;
             case LANDING:
                 config.setLandingPageConfigModel((LandingPageConfigModel) configData);
+                break;
+            case ROOMS_LIST:
+                config.setRoomsListConfigModel((RoomsListConfigModel) configData);
                 break;
             default:
                 throw InvalidConfigException.unsupportedConfigType(configType.getKey());

@@ -11,14 +11,15 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
     SecurityConfig.class,
     WebConfig.class,
     ModelMapperConfig.class,
-    DynamoDBConfig.class,
     GraphQLClientConfig.class,
-    LoggingConfig.class
+    LoggingConfig.class,
+    AwsConfig.class
 })
 @EntityScan(basePackages = "com.kdu.hufflepuff.ibe.model.entity")
 @EnableJpaRepositories(basePackages = "com.kdu.hufflepuff.ibe.repository.jpa")
 @ComponentScan(basePackages = {
     "com.kdu.hufflepuff.ibe.service.impl",
+    "com.kdu.hufflepuff.ibe.mapper",
     "com.kdu.hufflepuff.ibe.exception",
     "com.kdu.hufflepuff.ibe.controller"
 })
