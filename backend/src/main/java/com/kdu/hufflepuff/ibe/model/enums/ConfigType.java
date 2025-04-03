@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum ConfigType {
     GLOBAL,
     LANDING,
-    ROOMS_LIST;
+    ROOMS_LIST,
+    CHECKOUT;
 
     public String getKey() {
         return "CONFIG#" + this.name();
