@@ -57,8 +57,11 @@ public class CheckoutConfigModel {
         private String label;
 
         @NotBlank
-        private String type;
+        private String name;
 
+        @NotBlank
+        private String type;
+        
         private boolean required;
         private boolean enabled;
         private String pattern;
@@ -67,6 +70,11 @@ public class CheckoutConfigModel {
         @DynamoDbAttribute("Label")
         public String getLabel() {
             return label;
+        }
+
+        @DynamoDbAttribute("Name")
+        public String getName() {
+            return name;
         }
 
         @DynamoDbAttribute("Type")
