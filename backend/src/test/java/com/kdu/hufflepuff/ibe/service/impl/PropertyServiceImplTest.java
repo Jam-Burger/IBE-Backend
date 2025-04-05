@@ -2,6 +2,7 @@ package com.kdu.hufflepuff.ibe.service.impl;
 
 import com.kdu.hufflepuff.ibe.model.dto.out.PropertyDTO;
 import com.kdu.hufflepuff.ibe.model.graphql.Property;
+import com.kdu.hufflepuff.ibe.repository.jpa.PropertyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,8 @@ class PropertyServiceImplTest {
     @Mock
     private ModelMapper modelMapper;
     @Mock
+    private PropertyRepository propertyRepository;
+    @Mock
     private GraphQlClient.RequestSpec requestSpec;
     @Mock
     private GraphQlClient.RetrieveSpec retrieveSpec;
@@ -34,7 +37,7 @@ class PropertyServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        propertyService = new PropertyServiceImpl(graphQlClient, modelMapper);
+        propertyService = new PropertyServiceImpl(graphQlClient, modelMapper, propertyRepository);
     }
 
     @Test

@@ -61,7 +61,7 @@ public class CheckoutConfigModel {
 
         @NotBlank
         private String type;
-        
+
         private boolean required;
         private boolean enabled;
         private String pattern;

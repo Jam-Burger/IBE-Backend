@@ -44,7 +44,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
     @Override
     public PaginatedResponseDTO<RoomTypeDetailsDTO> filterRoomTypes(Long tenantId, Long propertyId, RoomTypeFilterDTO filter) {
-        List<RoomTypeDetailsDTO> allRoomTypes = getRoomTypesByPropertyId(tenantId, propertyId);
+        List<RoomTypeDetailsDTO> allRoomTypes = getRoomTypesByPropertyId(propertyId);
 
         Map<Long, List<RoomRateDetailsDTO>> roomRatesByType = roomRateService.getRoomRatesByRoomType(
             propertyId, filter.getDateFrom(), filter.getDateTo());
@@ -55,7 +55,6 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         });
 
         List<RoomTypeDetailsDTO> filteredRoomTypes = RoomTypeFilterUtil.filterAndSortRoomTypes(allRoomTypes, filter);
-        log.info("Found {} room types after filtering", filteredRoomTypes.size());
 
         return PaginationUtil.paginate(filteredRoomTypes, filter.getPage(), filter.getPageSize());
     }
@@ -63,7 +62,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Override
     @Transactional(readOnly = true)
     public List<String> getAmenitiesByPropertyId(Long tenantId, Long propertyId) {
-        List<RoomTypeDetailsDTO> roomTypes = getRoomTypesByPropertyId(tenantId, propertyId);
+        List<RoomTypeDetailsDTO> roomTypes = getRoomTypesByPropertyId(propertyId);
         return roomTypes.stream()
             .map(RoomTypeDetailsDTO::getAmenities)
             .flatMap(List::stream)
@@ -87,10 +86,9 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         return roomTypeMapper.toDto(roomType, extension);
     }
 
-    private List<RoomTypeDetailsDTO> getRoomTypesByPropertyId(Long tenantId, Long propertyId) {
+    private List<RoomTypeDetailsDTO> getRoomTypesByPropertyId(Long propertyId) {
         List<RoomType> roomTypes = fetchRoomTypesByPropertyId(propertyId)
             .orElseThrow(() -> new ResourceNotFoundException("Root types not found for property: " + propertyId));
-
         return roomTypes.stream()
             .map(this::convertToRoomTypeDetailsDTO)
             .toList();
