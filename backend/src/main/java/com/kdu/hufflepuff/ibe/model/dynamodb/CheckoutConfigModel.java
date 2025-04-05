@@ -22,10 +22,10 @@ public class CheckoutConfigModel {
     public static class Section {
         @NotBlank
         private String title;
-        
+
         @NotBlank
         private String id;
-        
+
         private boolean enabled;
         private List<Field> fields;
 
@@ -55,10 +55,13 @@ public class CheckoutConfigModel {
     public static class Field {
         @NotBlank
         private String label;
-        
+
+        @NotBlank
+        private String name;
+
         @NotBlank
         private String type;
-        
+
         private boolean required;
         private boolean enabled;
         private String pattern;
@@ -67,6 +70,11 @@ public class CheckoutConfigModel {
         @DynamoDbAttribute("Label")
         public String getLabel() {
             return label;
+        }
+
+        @DynamoDbAttribute("Name")
+        public String getName() {
+            return name;
         }
 
         @DynamoDbAttribute("Type")
@@ -94,4 +102,4 @@ public class CheckoutConfigModel {
             return options;
         }
     }
-} 
+}
