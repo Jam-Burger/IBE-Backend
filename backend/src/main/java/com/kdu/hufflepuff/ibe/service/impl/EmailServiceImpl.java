@@ -38,7 +38,9 @@ public class EmailServiceImpl implements EmailService {
 
         if (attachmentPath != null && !attachmentPath.isEmpty()) {
             FileSystemResource file = new FileSystemResource(new File(attachmentPath));
-            helper.addAttachment(attachmentName, file);
+            if (file.exists()) {
+                helper.addAttachment(attachmentName, file);
+            }
         }
 
         emailSender.send(message);

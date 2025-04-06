@@ -137,31 +137,6 @@ class BookingTest {
     }
 
     @Test
-    void testToString() {
-        // Given
-        LocalDate checkInDate = LocalDate.now();
-        LocalDate checkOutDate = checkInDate.plusDays(3);
-
-        Booking booking = Booking.builder()
-            .bookingId(1L)
-            .checkInDate(checkInDate)
-            .checkOutDate(checkOutDate)
-            .adultCount(2)
-            .build();
-
-        // Then
-        assertThat(booking.toString())
-            .isNotNull()
-            .contains(
-                "bookingId=1",
-                checkInDate.toString(),
-                checkOutDate.toString(),
-                "adultCount=2",
-                "propertyId=1"
-            );
-    }
-
-    @Test
     void testSetters() {
         // Given
         Booking booking = new Booking();

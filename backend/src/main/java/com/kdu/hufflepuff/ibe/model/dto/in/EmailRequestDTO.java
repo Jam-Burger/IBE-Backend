@@ -6,7 +6,6 @@ import lombok.Data;
 
 @Data
 public class EmailRequestDTO {
-
     @NotBlank(message = "Email recipient is required")
     @Email(message = "Invalid email format")
     private String to;
