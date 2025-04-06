@@ -16,6 +16,22 @@ public final class GraphQLQueries {
                 listProperties(where: {tenant: {tenant_id: {equals: $tenantId}}}) {
                     property_name
                     property_id
+                    property_address
+                }
+            }
+        """;
+
+    public static final String GET_PROPERTY_BY_ID = """
+            query getProperty($propertyId: Int!, $tenantId: Int!) {
+                getProperty(where: {
+                    property_id: {equals: $propertyId},
+                    tenant: {tenant_id: {equals: $tenantId}}
+                }) {
+                    property_id
+                    property_name
+                    property_address
+                    contact_number
+                    tenant_id
                 }
             }
         """;
@@ -84,7 +100,10 @@ public final class GraphQLQueries {
                     area_in_square_feet
                     single_bed
                     double_bed
-                    property_id
+                    property_of {
+                        property_id
+                        property_address
+                    }
                 }
             }
         """;
@@ -101,4 +120,59 @@ public final class GraphQLQueries {
                 }
             }
         """;
+
+    public static final String CREATE_BOOKING = """
+        mutation CreateBooking(
+            $checkInDate: Date!,
+            $checkOutDate: Date!,
+            $adultCount: Int!,
+            $childCount: Int!,
+            $totalCost: Int!,
+            $amountDueAtResort: Int!,
+            $propertyId: Int!,
+            $promotionId: Int,
+            $roomIds: [Int!]!
+        ) {
+            createBooking(
+                data: {
+                    check_in_date: $checkInDate,
+                    check_out_date: $checkOutDate,
+                    adult_count: $adultCount,
+                    child_count: $childCount,
+                    total_cost: $totalCost,
+                    amount_due_at_resort: $amountDueAtResort,
+                    property_booked: { connect: { property_id: $propertyId } },
+                    promotion_applied: { connect: { promotion_id: $promotionId } },
+                    room_booked: {
+                        create: $roomIds
+                    }
+                }
+            ) {
+                booking_id
+                check_in_date
+                check_out_date
+                adult_count
+                child_count
+                total_cost
+                amount_due_at_resort
+                guest {
+                    guest_id
+                    guest_name
+                }
+                promotion_applied {
+                    promotion_id
+                    price_factor
+                    promotion_title
+                    promotion_description
+                    minimum_days_of_stay
+                    is_deactivated
+                }
+                room_booked {
+                    room_id
+                    date
+                    booking_id
+                }
+            }
+        }
+    """;
 }

@@ -20,6 +20,9 @@ public class SpecialOfferResponseDTO {
     private Long propertyId;
 
     @NotNull
+    private Long id;
+
+    @NotNull
     @JsonProperty("start_date")
     private LocalDate startDate;
 

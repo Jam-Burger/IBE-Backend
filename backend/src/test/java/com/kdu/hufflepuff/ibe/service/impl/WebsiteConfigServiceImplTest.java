@@ -255,15 +255,6 @@ class WebsiteConfigServiceImplTest {
     }
 
     @Test
-    void getPk_ShouldReturnFormattedTenantId() {
-        Long tenantId = 123L;
-
-        String result = websiteConfigService.getPk(tenantId);
-
-        assertThat(result).isEqualTo("TENANT#123");
-    }
-
-    @Test
     void saveConfig_ShouldNotSaveInvalidConfigs() {
         Long tenantId = 1L;
         ConfigType configType = ConfigType.GLOBAL;

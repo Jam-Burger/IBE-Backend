@@ -95,7 +95,7 @@ public class WebsiteConfigServiceImpl implements WebsiteConfigService {
         }
     }
 
-    String getPk(Long tenantId) {
+    private String getPk(Long tenantId) {
         return "TENANT#" + tenantId;
     }
 } 
