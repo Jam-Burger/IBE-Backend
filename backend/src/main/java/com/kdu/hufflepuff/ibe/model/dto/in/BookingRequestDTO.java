@@ -19,9 +19,6 @@ public class BookingRequestDTO {
     private Map<String, String> formData;
 
     @NotNull
-    private Long propertyId;
-
-    @NotNull
     private DateRange dateRange;
 
     @NotNull

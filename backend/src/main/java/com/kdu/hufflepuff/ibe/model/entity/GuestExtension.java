@@ -49,7 +49,7 @@ public class GuestExtension extends BaseEntity {
     @Column(name = "traveler_last_name", nullable = false)
     private String travelerLastName;
 
-    @Column(name = "traveler_email", nullable = false)
+    @Column(name = "traveler_email", nullable = false, unique = true)
     private String travelerEmail;
 
     @Column(name = "traveler_phone", nullable = false)

@@ -4,10 +4,10 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 CREATE TABLE room_date_lock
 (
     room_id    BIGINT, -- room_type_id
-    start_date DATE             NOT NULL,
-    end_date   DATE             NOT NULL,
-    created_at TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    version    BIGINT DEFAULT 0 NOT NULL,
+    start_date DATE      NOT NULL,
+    end_date   DATE      NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version    BIGINT             DEFAULT 0 NOT NULL,
 
     -- Composite primary key
     PRIMARY KEY (room_id, start_date, end_date),

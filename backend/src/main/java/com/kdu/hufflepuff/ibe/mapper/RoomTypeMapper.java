@@ -18,9 +18,7 @@ public class RoomTypeMapper {
     @PostConstruct
     public void setupMapper() {
         modelMapper.createTypeMap(RoomType.class, RoomTypeDetailsDTO.class)
-            .addMappings(mapper -> {
-                mapper.map(RoomType::getRoomTypeId, RoomTypeDetailsDTO::setRoomTypeId);
-            });
+            .addMappings(mapper -> mapper.map(RoomType::getRoomTypeId, RoomTypeDetailsDTO::setRoomTypeId));
 
         modelMapper.createTypeMap(RoomTypeExtension.class, RoomTypeDetailsDTO.class)
             .addMappings(mapper -> mapper.map(RoomTypeExtension::getNoOfReviews, RoomTypeDetailsDTO::setNumberOfReviews));

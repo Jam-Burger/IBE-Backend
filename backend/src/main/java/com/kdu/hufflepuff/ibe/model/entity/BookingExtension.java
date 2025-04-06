@@ -1,10 +1,6 @@
 package com.kdu.hufflepuff.ibe.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -15,10 +11,18 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookingExtension extends BaseEntity {
-    @Column(name = "transaction_id", nullable = false, unique = true)
-    private String transactionId;
+    @Column(name = "booking_id", nullable = false, unique = true)
+    private Long bookingId;
+
+    @OneToOne
+    @JoinColumn(name = "transaction_id", nullable = false, unique = true, referencedColumnName = "transaction_id")
+    private Transaction transaction;
 
     @ManyToOne
     @JoinColumn(name = "guest_id", nullable = false)
     private GuestExtension guestDetails;
+
+    @ManyToOne
+    @JoinColumn(name = "special_offer_id")
+    private SpecialOffer specialOffer;
 } 

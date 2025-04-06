@@ -2,65 +2,51 @@ package com.kdu.hufflepuff.ibe.service.impl;
 
 import com.kdu.hufflepuff.ibe.exception.PaymentException;
 import com.kdu.hufflepuff.ibe.model.dto.in.PaymentDTO;
+import com.kdu.hufflepuff.ibe.model.entity.Transaction;
+import com.kdu.hufflepuff.ibe.repository.jpa.TransactionRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.PaymentService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private static final long MAX_AMOUNT = 1_000_000_00; // $1,000,000.00 in cents
-    private final Map<String, PaymentRecord> transactions = new HashMap<>();
+    private final TransactionRepository transactionRepository;
 
     @Override
-    public String processPayment(PaymentDTO payment, long amount) {
+    @Transactional
+    public Transaction processPayment(PaymentDTO payment, Double amount) {
         validatePayment(payment, amount);
 
         String transactionId = UUID.randomUUID().toString();
 
-        transactions.put(transactionId, new PaymentRecord(amount, System.currentTimeMillis()));
+        Transaction transaction = Transaction.builder()
+            .transactionId(transactionId)
+            .amount(amount)
+            .cardHolderName(payment.getCardName())
+            .status("COMPLETED")
+            .timestamp(LocalDateTime.now())
+            .build();
 
-        log.info("Processing payment of ${}.{} with card ending in {}",
-            amount / 100, String.format("%02d", amount % 100),
-            payment.getCardName());
-
-        return transactionId;
+        return transactionRepository.save(transaction);
     }
 
-    @Override
-    public boolean refundPayment(String transactionId) {
-        PaymentRecord record = transactions.get(transactionId);
-        if (record == null) {
-            log.warn("Attempted to refund non-existent transaction: {}", transactionId);
-            return false;
-        }
-
-        long thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000;
-        if (System.currentTimeMillis() - record.timestamp > thirtyDaysInMillis) {
-            log.warn("Attempted to refund transaction older than 30 days: {}", transactionId);
-            return false;
-        }
-
-        transactions.remove(transactionId);
-        log.info("Refunded ${}.{} for transaction {}",
-            record.amount / 100, String.format("%02d", record.amount % 100),
-            transactionId);
-
-        return true;
-    }
-
-    private void validatePayment(PaymentDTO payment, long amount) {
+    private void validatePayment(PaymentDTO payment, Double amount) {
         if (amount <= 0) {
-            throw new PaymentException("Payment amount must be positive");
+            throw PaymentException.invalidPaymentInfo("Payment amount must be positive");
         }
+
         if (amount > MAX_AMOUNT) {
-            throw new PaymentException("Payment amount exceeds maximum allowed");
+            throw PaymentException.invalidPaymentInfo("Payment amount exceeds maximum allowed");
         }
 
         YearMonth cardExpiry = YearMonth.of(2000 + Integer.parseInt(payment.getExpYear()),
@@ -68,15 +54,12 @@ public class PaymentServiceImpl implements PaymentService {
         YearMonth now = YearMonth.from(LocalDate.now());
 
         if (cardExpiry.isBefore(now)) {
-            throw new PaymentException("Card has expired");
+            throw PaymentException.invalidPaymentInfo("Card has expired");
         }
 
         // Simulate random payment failures (1% chance)
         if (Math.random() < 0.01) {
-            throw new PaymentException("Payment declined by issuer");
+            throw PaymentException.paymentFailed("Payment declined by issuer");
         }
-    }
-
-    private record PaymentRecord(long amount, long timestamp) {
     }
 } 

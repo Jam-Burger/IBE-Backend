@@ -56,7 +56,7 @@ public final class GraphQLQueries {
         """;
 
     // Room Availability Queries
-    public static final String GET_AVAILABLE_ROOMS = """
+    public static final String GET_AVAILABLE_ROOMS_BY_PROPERTY_ID = """
             query getAvailableRooms($propertyId: Int!, $startDate: AWSDateTime!, $endDate: AWSDateTime!) {
                 listRoomAvailabilities(
                     where: {
@@ -65,7 +65,7 @@ public final class GraphQLQueries {
                         },
                         date: {
                             gte: $startDate,
-                            lte: $endDate
+                            lt: $endDate
                         },
                         booking: {
                             booking_status: {
@@ -79,10 +79,49 @@ public final class GraphQLQueries {
                 date
                 room {
                    room_id
+                   room_number
                    room_type_id
                    room_type {
                      room_type_id
                    }
+                }
+            }
+        }
+        """;
+
+    public static final String GET_AVAILABLE_ROOMS_BY_ROOM_TYPE_ID = """
+            query getAvailableRooms($roomTypeId: Int!, $startDate: AWSDateTime!, $endDate: AWSDateTime!) {
+                listRoomAvailabilities(
+                    where: {
+                        date: {
+                            gte: $startDate,
+                            lt: $endDate
+                        },
+                        booking: {
+                            booking_status: {
+                                status: {not: {equals: "BOOKED"}}
+                            }
+                        },
+                        room: {
+                            room_type_id: {
+                                equals: $roomTypeId
+                            }
+                        }
+                    }
+                    take: 1000
+                ) {
+                availability_id
+                date
+                room {
+                   room_id
+                   room_number
+                   room_type_id
+                   room_type {
+                     room_type_id
+                   }
+                }
+                property {
+                    property_id
                 }
             }
         }
@@ -121,58 +160,54 @@ public final class GraphQLQueries {
             }
         """;
 
-    public static final String CREATE_BOOKING = """
-        mutation CreateBooking(
-            $checkInDate: Date!,
-            $checkOutDate: Date!,
-            $adultCount: Int!,
-            $childCount: Int!,
-            $totalCost: Int!,
-            $amountDueAtResort: Int!,
-            $propertyId: Int!,
-            $promotionId: Int,
-            $roomIds: [Int!]!
-        ) {
-            createBooking(
-                data: {
-                    check_in_date: $checkInDate,
-                    check_out_date: $checkOutDate,
-                    adult_count: $adultCount,
-                    child_count: $childCount,
-                    total_cost: $totalCost,
-                    amount_due_at_resort: $amountDueAtResort,
-                    property_booked: { connect: { property_id: $propertyId } },
-                    promotion_applied: { connect: { promotion_id: $promotionId } },
-                    room_booked: {
-                        create: $roomIds
+    public static final String GET_BOOKING_DATA = """
+           query GetBooking($bookingId: Int!){
+                getBooking(where: {booking_id: $bookingId}) {
+                    adult_count
+                    amount_due_at_resort
+                    booking_id
+                    booking_status {
+                        status
+                    }
+                    check_in_date
+                    check_out_date
+                    child_count
+                    guest {
+                        guest_name
+                        guest_id
+                    }
+                    promotion_applied {
+                        is_deactivated
+                        minimum_days_of_stay
+                        price_factor
+                        promotion_description
+                        promotion_id
+                        promotion_title
+                    }
+                    property_booked {
+                        property_name
+                        property_id
+                        property_address
+                        contact_number
+                    }
+                    total_cost
+                    room_booked {
+                        date
+                        room {
+                            room_number
+                            room_id
+                        }
                     }
                 }
-            ) {
-                booking_id
-                check_in_date
-                check_out_date
-                adult_count
-                child_count
-                total_cost
-                amount_due_at_resort
-                guest {
-                    guest_id
-                    guest_name
-                }
-                promotion_applied {
-                    promotion_id
-                    price_factor
-                    promotion_title
-                    promotion_description
-                    minimum_days_of_stay
-                    is_deactivated
-                }
-                room_booked {
-                    room_id
-                    date
-                    booking_id
-                }
             }
-        }
-    """;
+        """;
+
+    public static final String GET_GUEST = """
+            query GetGuest($guestId: Int!) {
+               getGuest(where: {guest_id: $guestId}) {
+                 guest_id
+                 guest_name
+               }
+             }
+        """;
 }

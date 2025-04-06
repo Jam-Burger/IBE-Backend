@@ -3,7 +3,6 @@ package com.kdu.hufflepuff.ibe.model.graphql;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,8 +24,6 @@ class BookingTest {
         Long statusId = 1L;
         Long guestId = 1L;
         Long promotionId = 1L;
-        LocalDateTime checkInDateTime = LocalDateTime.now();
-        LocalDateTime checkOutDateTime = checkInDateTime.plusDays(3);
         Property propertyBooked = Property.builder().propertyId(propertyId).build();
         BookingStatus bookingStatus = BookingStatus.builder().statusId(statusId).build();
         Guest guest = Guest.builder().guestId(guestId).build();
@@ -44,12 +41,7 @@ class BookingTest {
             .childCount(childCount)
             .totalCost(totalCost)
             .amountDueAtResort(amountDueAtResort)
-            .propertyId(propertyId)
-            .statusId(statusId)
-            .guestId(guestId)
             .promotionId(promotionId)
-            .checkInDateTime(checkInDateTime)
-            .checkOutDateTime(checkOutDateTime)
             .propertyBooked(propertyBooked)
             .bookingStatus(bookingStatus)
             .guest(guest)
@@ -68,12 +60,7 @@ class BookingTest {
                 assertThat(b.getChildCount()).isEqualTo(childCount);
                 assertThat(b.getTotalCost()).isEqualTo(totalCost);
                 assertThat(b.getAmountDueAtResort()).isEqualTo(amountDueAtResort);
-                assertThat(b.getPropertyId()).isEqualTo(propertyId);
-                assertThat(b.getStatusId()).isEqualTo(statusId);
-                assertThat(b.getGuestId()).isEqualTo(guestId);
                 assertThat(b.getPromotionId()).isEqualTo(promotionId);
-                assertThat(b.getCheckInDateTime()).isEqualTo(checkInDateTime);
-                assertThat(b.getCheckOutDateTime()).isEqualTo(checkOutDateTime);
                 assertThat(b.getPropertyBooked()).isEqualTo(propertyBooked);
                 assertThat(b.getBookingStatus()).isEqualTo(bookingStatus);
                 assertThat(b.getGuest()).isEqualTo(guest);
@@ -101,12 +88,7 @@ class BookingTest {
                 assertThat(b.getChildCount()).isNull();
                 assertThat(b.getTotalCost()).isNull();
                 assertThat(b.getAmountDueAtResort()).isNull();
-                assertThat(b.getPropertyId()).isNull();
-                assertThat(b.getStatusId()).isNull();
-                assertThat(b.getGuestId()).isNull();
                 assertThat(b.getPromotionId()).isNull();
-                assertThat(b.getCheckInDateTime()).isNull();
-                assertThat(b.getCheckOutDateTime()).isNull();
                 assertThat(b.getPropertyBooked()).isNull();
                 assertThat(b.getBookingStatus()).isNull();
                 assertThat(b.getGuest()).isNull();
@@ -126,7 +108,6 @@ class BookingTest {
             .checkInDate(checkInDate)
             .checkOutDate(checkOutDate)
             .adultCount(2)
-            .propertyId(1L)
             .build();
 
         Booking booking2 = Booking.builder()
@@ -134,7 +115,6 @@ class BookingTest {
             .checkInDate(checkInDate)
             .checkOutDate(checkOutDate)
             .adultCount(2)
-            .propertyId(1L)
             .build();
 
         Booking booking3 = Booking.builder()
@@ -142,7 +122,6 @@ class BookingTest {
             .checkInDate(checkInDate.plusDays(1))
             .checkOutDate(checkOutDate.plusDays(1))
             .adultCount(3)
-            .propertyId(2L)
             .build();
 
         // Then
@@ -168,7 +147,6 @@ class BookingTest {
             .checkInDate(checkInDate)
             .checkOutDate(checkOutDate)
             .adultCount(2)
-            .propertyId(1L)
             .build();
 
         // Then
@@ -198,8 +176,6 @@ class BookingTest {
         Long statusId = 1L;
         Long guestId = 1L;
         Long promotionId = 1L;
-        LocalDateTime checkInDateTime = LocalDateTime.now();
-        LocalDateTime checkOutDateTime = checkInDateTime.plusDays(3);
         Property propertyBooked = Property.builder().propertyId(propertyId).build();
         BookingStatus bookingStatus = BookingStatus.builder().statusId(statusId).build();
         Guest guest = Guest.builder().guestId(guestId).build();
@@ -216,12 +192,7 @@ class BookingTest {
         booking.setChildCount(childCount);
         booking.setTotalCost(totalCost);
         booking.setAmountDueAtResort(amountDueAtResort);
-        booking.setPropertyId(propertyId);
-        booking.setStatusId(statusId);
-        booking.setGuestId(guestId);
         booking.setPromotionId(promotionId);
-        booking.setCheckInDateTime(checkInDateTime);
-        booking.setCheckOutDateTime(checkOutDateTime);
         booking.setPropertyBooked(propertyBooked);
         booking.setBookingStatus(bookingStatus);
         booking.setGuest(guest);
@@ -238,12 +209,7 @@ class BookingTest {
                 assertThat(b.getChildCount()).isEqualTo(childCount);
                 assertThat(b.getTotalCost()).isEqualTo(totalCost);
                 assertThat(b.getAmountDueAtResort()).isEqualTo(amountDueAtResort);
-                assertThat(b.getPropertyId()).isEqualTo(propertyId);
-                assertThat(b.getStatusId()).isEqualTo(statusId);
-                assertThat(b.getGuestId()).isEqualTo(guestId);
                 assertThat(b.getPromotionId()).isEqualTo(promotionId);
-                assertThat(b.getCheckInDateTime()).isEqualTo(checkInDateTime);
-                assertThat(b.getCheckOutDateTime()).isEqualTo(checkOutDateTime);
                 assertThat(b.getPropertyBooked()).isEqualTo(propertyBooked);
                 assertThat(b.getBookingStatus()).isEqualTo(bookingStatus);
                 assertThat(b.getGuest()).isEqualTo(guest);

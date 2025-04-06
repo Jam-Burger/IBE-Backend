@@ -84,6 +84,13 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
         return convertToDTO(specialOffer);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public SpecialOffer getSpecialOfferById(Long id) {
+        return specialOfferRepository.findById(id)
+            .orElse(null);
+    }
+
     private SpecialOfferResponseDTO convertToDTO(SpecialOffer specialOffer) {
         return modelMapper.map(specialOffer, SpecialOfferResponseDTO.class);
     }

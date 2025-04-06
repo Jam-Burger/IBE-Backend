@@ -6,10 +6,10 @@ import com.kdu.hufflepuff.ibe.model.dto.out.SpecialOfferResponseDTO;
 import com.kdu.hufflepuff.ibe.model.graphql.Room;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomAvailability;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomRateRoomTypeMapping;
-import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomAvailabilityService;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomRateService;
 import com.kdu.hufflepuff.ibe.service.interfaces.SpecialOfferService;
+import com.kdu.hufflepuff.ibe.util.DateFormatUtils;
 import com.kdu.hufflepuff.ibe.util.DateRangeUtils;
 import com.kdu.hufflepuff.ibe.util.GraphQLQueries;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +31,6 @@ import static com.kdu.hufflepuff.ibe.util.DateRangeUtils.splitDateRange;
 @Service
 @RequiredArgsConstructor
 public class RoomRateServiceImpl implements RoomRateService {
-    private static final DateTimeFormatter ISO_DATE_FORMATTER = DateTimeFormatter.ISO_INSTANT;
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4);
 
     private final GraphQlClient graphQlClient;
@@ -43,10 +40,10 @@ public class RoomRateServiceImpl implements RoomRateService {
     @Override
     @Transactional(readOnly = true)
     public List<DailyRoomRateDTO> getMinimumDailyRates(Long tenantId, Long propertyId, LocalDate startDate, LocalDate endDate) {
-        log.info("DATES: {}, {}", startDate.atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER), endDate.atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER));
+        log.info("DATES: {}, {}", DateFormatUtils.toGraphQLDateString(startDate), DateFormatUtils.toGraphQLDateString(endDate));
 
         CompletableFuture<List<RoomAvailability>> availabilitiesFuture = CompletableFuture.supplyAsync(
-            () -> roomAvailabilityService.fetchAvailableRooms(propertyId, startDate, endDate), EXECUTOR);
+            () -> roomAvailabilityService.fetchAvailableRoomsByPropertyId(propertyId, startDate, endDate), EXECUTOR);
 
         CompletableFuture<List<SpecialOfferResponseDTO>> discountsFuture = CompletableFuture.supplyAsync(
             () -> specialOfferService.getCalenderOffers(tenantId, propertyId, startDate, endDate), EXECUTOR);
@@ -110,7 +107,7 @@ public class RoomRateServiceImpl implements RoomRateService {
 
     @Override
     public List<RoomRateDetailsDTO> getAllRoomRates(Long propertyId, LocalDate startDate, LocalDate endDate) {
-        List<RoomAvailability> availabilities = roomAvailabilityService.fetchAvailableRooms(propertyId, startDate, endDate);
+        List<RoomAvailability> availabilities = roomAvailabilityService.fetchAvailableRoomsByPropertyId(propertyId, startDate, endDate);
         if (availabilities == null || availabilities.isEmpty()) {
             return List.of();
         }
@@ -185,8 +182,8 @@ public class RoomRateServiceImpl implements RoomRateService {
             .map(dateRange -> CompletableFuture.supplyAsync(() ->
                     graphQlClient.document(GraphQLQueries.GET_ROOM_RATE_MAPPINGS_BY_ROOM_TYPES)
                         .variable("roomTypeIds", roomTypeIds)
-                        .variable("startDate", dateRange.getStart().atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
-                        .variable("endDate", dateRange.getEnd().atStartOfDay().atOffset(ZoneOffset.UTC).format(ISO_DATE_FORMATTER))
+                        .variable("startDate", DateFormatUtils.toGraphQLDateString(dateRange.getStart()))
+                        .variable("endDate", DateFormatUtils.toGraphQLDateString(dateRange.getEnd()))
                         .retrieve("listRoomRateRoomTypeMappings")
                         .toEntityList(RoomRateRoomTypeMapping.class)
                         .block(),

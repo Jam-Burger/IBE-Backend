@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 public class RoomLockServiceImpl implements RoomLockService {
     private static final int LOCK_EXPIRATION_MINUTES = 15;
-    
+
     private final RoomDateLockRepository roomDateLockRepository;
 
     @Override
@@ -36,12 +36,11 @@ public class RoomLockServiceImpl implements RoomLockService {
                 .createdAt(createdAt)
                 .build())
             .toList();
-        
+
         roomDateLockRepository.saveAll(locks);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public boolean areRoomsLocked(List<Long> roomIds, LocalDate startDate, LocalDate endDate) {
         LocalDateTime expirationThreshold = LocalDateTime.now().minusMinutes(LOCK_EXPIRATION_MINUTES);
         return roomDateLockRepository.existsAnyValidLock(roomIds, startDate, endDate, expirationThreshold);
@@ -52,20 +51,7 @@ public class RoomLockServiceImpl implements RoomLockService {
     public void releaseLocks(List<Long> roomIds, LocalDate startDate, LocalDate endDate) {
         roomIds.forEach(roomId -> {
             RoomDateLockId lockId = new RoomDateLockId(roomId, startDate, endDate);
-            roomDateLockRepository.findById(lockId).ifPresent(lock -> {
-                roomDateLockRepository.delete(lock);
-            });
+            roomDateLockRepository.findById(lockId).ifPresent(roomDateLockRepository::delete);
         });
-    }
-
-    @Override
-    @Scheduled(fixedRate = 60000) // Run every minute
-    @Transactional
-    public void cleanupExpiredLocks() {
-        LocalDateTime expirationThreshold = LocalDateTime.now().minusMinutes(LOCK_EXPIRATION_MINUTES);
-        int deletedCount = roomDateLockRepository.deleteExpiredLocks(expirationThreshold);
-        if (deletedCount > 0) {
-            log.info("Cleaned up {} expired room date locks", deletedCount);
-        }
     }
 } 

@@ -9,16 +9,6 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GuestCountConverter {
 
-    public static class GuestCounts {
-        public final int adults;
-        public final int children;
-
-        private GuestCounts(int adults, int children) {
-            this.adults = adults;
-            this.children = children;
-        }
-    }
-
     public static GuestCounts extractGuestCounts(Map<String, Integer> guests) {
         int adults = guests.getOrDefault("Adults", 0);
         int seniorCitizens = guests.getOrDefault("Senior Citizens", 0);
@@ -27,8 +17,8 @@ public final class GuestCountConverter {
         int infants = guests.getOrDefault("Infants", 0);
 
         return new GuestCounts(
-                adults + seniorCitizens, // Adults in Booking includes both Adults and Senior Citizens
-                children + teens + infants // Store Teens count in extension
+            adults + seniorCitizens, // Adults in Booking includes both Adults and Senior Citizens
+            children + teens + infants // Store Teens count in extension
         );
     }
 
@@ -39,5 +29,15 @@ public final class GuestCountConverter {
 
     public static int getTotalGuestCount(GuestCounts guestCounts) {
         return guestCounts.adults + guestCounts.children;
+    }
+
+    public static class GuestCounts {
+        public final int adults;
+        public final int children;
+
+        private GuestCounts(int adults, int children) {
+            this.adults = adults;
+            this.children = children;
+        }
     }
 }

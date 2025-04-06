@@ -1,7 +1,7 @@
 package com.kdu.hufflepuff.ibe.controller;
 
 import com.kdu.hufflepuff.ibe.model.dto.in.BookingRequestDTO;
-import com.kdu.hufflepuff.ibe.model.graphql.Booking;
+import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
 import jakarta.validation.Valid;
@@ -17,8 +17,8 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Booking>> createBooking(@Valid @RequestBody BookingRequestDTO request) {
-        return ApiResponse.<Booking>builder()
+    public ResponseEntity<ApiResponse<BookingDetailsDTO>> createBooking(@Valid @RequestBody BookingRequestDTO request) {
+        return ApiResponse.<BookingDetailsDTO>builder()
             .message("Booking created successfully")
             .data(bookingService.createBooking(request))
             .statusCode(HttpStatus.CREATED)
@@ -27,18 +27,18 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public ResponseEntity<ApiResponse<Booking>> getBooking(@PathVariable Long bookingId) {
-        return ApiResponse.<Booking>builder()
+    public ResponseEntity<ApiResponse<BookingDetailsDTO>> getBooking(@PathVariable Long bookingId) {
+        return ApiResponse.<BookingDetailsDTO>builder()
             .message("Booking retrieved successfully")
-            .data(bookingService.getBooking(bookingId))
+            .data(bookingService.getBookingDetailsById(bookingId))
             .statusCode(HttpStatus.OK)
             .build()
             .send();
     }
 
-    @PostMapping("/{bookingId}/cancel")
-    public ResponseEntity<ApiResponse<Booking>> cancelBooking(@PathVariable Long bookingId) {
-        return ApiResponse.<Booking>builder()
+    @PutMapping("/{bookingId}/cancel")
+    public ResponseEntity<ApiResponse<BookingDetailsDTO>> cancelBooking(@PathVariable Long bookingId) {
+        return ApiResponse.<BookingDetailsDTO>builder()
             .message("Booking cancelled successfully")
             .data(bookingService.cancelBooking(bookingId))
             .statusCode(HttpStatus.ACCEPTED)

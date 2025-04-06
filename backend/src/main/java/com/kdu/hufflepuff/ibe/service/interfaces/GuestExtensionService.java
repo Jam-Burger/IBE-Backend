@@ -13,4 +13,6 @@ public interface GuestExtensionService {
      * @throws IllegalArgumentException if required fields are missing or invalid
      */
     GuestExtension createGuestExtension(Map<String, String> formData);
+
+    GuestExtension findByEmail(String email);
 } 

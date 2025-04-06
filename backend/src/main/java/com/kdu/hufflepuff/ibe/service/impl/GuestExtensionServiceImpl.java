@@ -23,4 +23,9 @@ public class GuestExtensionServiceImpl implements GuestExtensionService {
         GuestExtension guestExtension = GuestExtensionMapper.fromFormDataWithValidation(formData);
         return guestExtensionRepository.save(guestExtension);
     }
+
+    @Override
+    public GuestExtension findByEmail(String email) {
+        return guestExtensionRepository.findByTravelerEmail(email).orElse(null);
+    }
 } 

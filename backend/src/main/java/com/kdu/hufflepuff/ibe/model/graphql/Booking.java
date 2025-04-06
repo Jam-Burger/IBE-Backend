@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -36,23 +35,20 @@ public class Booking {
     @JsonProperty("amount_due_at_resort")
     private Integer amountDueAtResort;
 
-    @JsonProperty("property_id")
-    private Long propertyId;
-
-    @JsonProperty("status_id")
-    private Long statusId;
-
-    @JsonProperty("guest_id")
-    private Long guestId;
-
     @JsonProperty("promotion_id")
     private Long promotionId;
 
-    private LocalDateTime checkInDateTime;
-    private LocalDateTime checkOutDateTime;
+    @JsonProperty("property_booked")
     private Property propertyBooked;
+
+    @JsonProperty("booking_status")
     private BookingStatus bookingStatus;
+
     private Guest guest;
+
+    @JsonProperty("promotion_applied")
     private Promotion promotionApplied;
+
+    @JsonProperty("room_booked")
     private List<RoomAvailability> roomBooked;
 } 

@@ -1,24 +1,24 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
+import com.kdu.hufflepuff.ibe.exception.*;
+import com.kdu.hufflepuff.ibe.mapper.BookingMapper;
 import com.kdu.hufflepuff.ibe.model.dto.in.BookingRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.in.PaymentDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.entity.BookingExtension;
 import com.kdu.hufflepuff.ibe.model.entity.GuestExtension;
+import com.kdu.hufflepuff.ibe.model.entity.SpecialOffer;
+import com.kdu.hufflepuff.ibe.model.entity.Transaction;
 import com.kdu.hufflepuff.ibe.model.graphql.Booking;
+import com.kdu.hufflepuff.ibe.model.graphql.Guest;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomAvailability;
 import com.kdu.hufflepuff.ibe.repository.jpa.BookingExtensionRepository;
-import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
-import com.kdu.hufflepuff.ibe.service.interfaces.GuestExtensionService;
-import com.kdu.hufflepuff.ibe.service.interfaces.PaymentService;
-import com.kdu.hufflepuff.ibe.service.interfaces.RoomAvailabilityService;
-import com.kdu.hufflepuff.ibe.service.interfaces.RoomLockService;
-import com.kdu.hufflepuff.ibe.util.GraphQLQueries;
-import com.kdu.hufflepuff.ibe.util.GuestCountConverter;
-import com.kdu.hufflepuff.ibe.util.PaymentMapper;
+import com.kdu.hufflepuff.ibe.service.interfaces.*;
+import com.kdu.hufflepuff.ibe.util.*;
 import com.kdu.hufflepuff.ibe.util.GuestCountConverter.GuestCounts;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,91 +33,339 @@ import java.util.Random;
 public class BookingServiceImpl implements BookingService {
     private final BookingExtensionRepository bookingExtensionRepository;
     private final GuestExtensionService guestExtensionService;
+    private final GuestService guestService;
     private final GraphQlClient graphQlClient;
     private final PaymentService paymentService;
     private final RoomAvailabilityService roomAvailabilityService;
     private final RoomLockService roomLockService;
+    private final SpecialOfferService specialOfferService;
+    private final BookingMapper bookingMapper;
+    private final ModelMapper modelMapper;
     private final Random random = new Random();
 
     @Override
     @Transactional
-    public Booking createBooking(BookingRequestDTO request) {
-        // Step 1: Check room availability
-        List<RoomAvailability> roomAvailabilities = roomAvailabilityService.fetchAvailableRooms(
-            request.getPropertyId(), request.getDateRange().getFrom(), request.getDateRange().getTo());
+    public BookingDetailsDTO createBooking(BookingRequestDTO request) {
+        // Step 1: Check and select rooms
+        RoomSelectionResult roomSelection = selectRoomsForBooking(request);
+        List<Long> selectedRoomIds = roomSelection.roomIds();
+        List<Long> selectedAvailabilityIds = roomSelection.availabilityIds();
 
-        if (roomAvailabilities.size() < request.getRoomCount()) {
-            throw new IllegalArgumentException("Not enough rooms available");
+        // Step 2: Create temporary locks on selected rooms
+        applyRoomLocks(selectedRoomIds, request.getDateRange().getFrom(), request.getDateRange().getTo());
+
+        try {
+            // Step 3: Process payment
+            Transaction transaction = processPaymentForBooking(request);
+
+            // Step 4: Check for existing guest or create new one
+            String email = request.getFormData().get("travelerEmail");
+            GuestExtension guestExtension = guestExtensionService.findByEmail(email);
+            Guest guest;
+
+            if (guestExtension != null) {
+                guest = guestService.findGuestById(guestExtension.getId());
+                if (guest == null) {
+                    String fullName = guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName();
+                    guest = guestService.createGuestWithId(fullName, guestExtension.getId());
+                }
+            } else {
+                guestExtension = guestExtensionService.createGuestExtension(request.getFormData());
+                String fullName = guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName();
+                guest = guestService.createGuestWithId(fullName, guestExtension.getId());
+            }
+
+            // Step 5: Create the booking
+            GuestCounts guestCounts = GuestCountConverter.extractGuestCounts(request.getGuests());
+            Long propertyId = roomSelection.propertyId();
+            Booking booking = createBookingInGraphQL(request, guestCounts, propertyId, guest.getGuestId());
+
+            // Step 6: Update room availabilities to connect to the booking
+            updateRoomAvailabilitiesForBooking(selectedAvailabilityIds, booking.getBookingId());
+
+            // Step 7: Create booking extension and apply promotions
+            createBookingExtension(booking.getBookingId(), transaction, guestExtension, request.getPromotionId());
+
+            return getBookingDetailsById(booking.getBookingId());
+        } catch (BookingException e) {
+            releaseRoomLocks(selectedRoomIds, request.getDateRange().getFrom(), request.getDateRange().getTo());
+            throw e;
+        } catch (Exception e) {
+            releaseRoomLocks(selectedRoomIds, request.getDateRange().getFrom(), request.getDateRange().getTo());
+            throw BookingOperationException.bookingCreationFailed("Unexpected error during booking creation: " + e.getMessage(), e);
         }
-
-        // Step 2: Select random rooms from available ones
-        List<Long> selectedRoomIds = selectRandomRooms(roomAvailabilities, request.getRoomCount());
-
-        // Step 3: Create room date locks
-        roomLockService.createTemporaryLocks(selectedRoomIds, request.getDateRange().getFrom(), request.getDateRange().getTo());
-
-        // Step 4: Process payment
-        PaymentDTO payment = PaymentMapper.fromFormDataWithValidation(request.getFormData());
-        long amount = calculateTotalAmount(request);
-        String transactionId = paymentService.processPayment(payment, amount);
-        log.info("Payment processed successfully. Transaction ID: {}", transactionId);
-
-        // Step 5: Create guest extension
-        GuestExtension guestExtension = guestExtensionService.createGuestExtension(request.getFormData());
-
-        // Step 6: Extract guest counts
-        GuestCounts guestCounts = GuestCountConverter.extractGuestCounts(request.getGuests());
-
-        // Step 7: Create booking in GraphQL
-        Booking booking = createBookingInGraphQL(request, guestCounts, selectedRoomIds);
-
-        // Step 8: Create booking extension
-        BookingExtension bookingExtension = BookingExtension.builder()
-            .transactionId(transactionId)
-            .guestDetails(guestExtension)
-            .build();
-        bookingExtension.setId(booking.getBookingId());
-        bookingExtensionRepository.save(bookingExtension);
-
-        return booking;
     }
 
-    private List<Long> selectRandomRooms(List<RoomAvailability> availableRooms, int count) {
-        return random.ints(0, availableRooms.size())
-            .distinct()
-            .limit(count)
-            .mapToObj(availableRooms::get)
-            .map(room -> room.getRoom().getRoomId())
+    /**
+     * Checks room availability and selects rooms for booking.
+     */
+    private RoomSelectionResult selectRoomsForBooking(BookingRequestDTO request) {
+        List<RoomAvailability> roomAvailabilities = fetchAndValidateRoomAvailability(
+            request.getRoomTypeId(),
+            request.getDateRange().getFrom(),
+            request.getDateRange().getTo(),
+            request.getRoomCount()
+        );
+
+        List<Long> selectedRoomIds = selectRandomRoomIds(roomAvailabilities, request.getRoomCount());
+        if (selectedRoomIds.isEmpty()) {
+            throw RoomAvailabilityException.noRoomsAvailableForCount(request.getRoomCount());
+        }
+
+        List<Long> selectedAvailabilityIds = extractAvailabilityIds(roomAvailabilities, selectedRoomIds);
+        Long propertyId = roomAvailabilities.getFirst().getProperty().getPropertyId();
+        return new RoomSelectionResult(selectedRoomIds, selectedAvailabilityIds, propertyId);
+    }
+
+    /**
+     * Fetches available rooms and validates there are enough for the booking.
+     */
+    private List<RoomAvailability> fetchAndValidateRoomAvailability(
+        Long roomTypeId, LocalDate startDate, LocalDate endDate, int roomCount) {
+        List<RoomAvailability> roomAvailabilities = roomAvailabilityService
+            .fetchAvailableRoomsByRoomTypeId(roomTypeId, startDate, endDate);
+
+        if (roomAvailabilities.size() < roomCount) {
+            throw RoomAvailabilityException.notEnoughRooms(roomCount, roomAvailabilities.size());
+        }
+
+        return roomAvailabilities;
+    }
+
+    /**
+     * Extracts availability IDs based on selected room IDs.
+     */
+    private List<Long> extractAvailabilityIds(List<RoomAvailability> availabilities, List<Long> roomIds) {
+        return availabilities.stream()
+            .filter(ra -> roomIds.contains(ra.getRoom().getRoomId()))
+            .map(RoomAvailability::getAvailabilityId)
             .toList();
     }
 
-    private Booking createBookingInGraphQL(BookingRequestDTO request, GuestCounts guestCounts, List<Long> roomIds) {
-        return graphQlClient.document(GraphQLQueries.CREATE_BOOKING)
-            .variable("checkInDate", request.getDateRange().getFrom())
-            .variable("checkOutDate", request.getDateRange().getTo())
+    /**
+     * Applies temporary locks to the selected rooms.
+     */
+    private void applyRoomLocks(List<Long> roomIds, LocalDate startDate, LocalDate endDate) {
+        roomLockService.createTemporaryLocks(roomIds, startDate, endDate);
+    }
+
+    /**
+     * Releases locks on rooms in case of failure.
+     */
+    private void releaseRoomLocks(List<Long> roomIds, LocalDate startDate, LocalDate endDate) {
+        try {
+            roomLockService.releaseLocks(roomIds, startDate, endDate);
+        } catch (Exception e) {
+            log.error("Failed to release locks for rooms: {}", roomIds, e);
+        }
+    }
+
+    /**
+     * Processes payment for the booking.
+     */
+    private Transaction processPaymentForBooking(BookingRequestDTO request) {
+        PaymentDTO payment = PaymentMapper.fromFormDataWithValidation(request.getFormData());
+        Double amount = calculateTotalAmount(request);
+
+        try {
+            return paymentService.processPayment(payment, amount);
+        } catch (Exception e) {
+            throw PaymentException.paymentFailed(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Updates room availabilities to be associated with a booking.
+     */
+    private void updateRoomAvailabilitiesForBooking(List<Long> availabilityIds, Long bookingId) {
+        for (Long availabilityId : availabilityIds) {
+            try {
+                RoomAvailability updatedAvailability = roomAvailabilityService.updateRoomAvailability(availabilityId, bookingId);
+                log.info("Updated room availability: {}", updatedAvailability);
+            } catch (Exception e) {
+                throw BookingOperationException.updateAvailabilityFailed(availabilityId, bookingId);
+            }
+        }
+    }
+
+    /**
+     * Creates booking extension and applies promotions if provided.
+     */
+    private BookingExtension createBookingExtension(
+        Long bookingId, Transaction transaction, GuestExtension guestExtension, String promotionId) {
+        BookingExtension bookingExtension = BookingExtension.builder()
+            .transaction(transaction)
+            .bookingId(bookingId)
+            .guestDetails(guestExtension)
+            .build();
+
+        if (promotionId != null && promotionId.startsWith("R_")) {
+            applySpecialOffer(bookingExtension, promotionId);
+        }
+
+        return bookingExtensionRepository.save(bookingExtension);
+    }
+
+    /**
+     * Applies promotion to booking if valid.
+     */
+    private void applySpecialOffer(BookingExtension bookingExtension, String promotionId) {
+        try {
+            Long specialOfferId = Long.parseLong(promotionId.replace("R_", ""));
+            SpecialOffer specialOffer = specialOfferService.getSpecialOfferById(specialOfferId);
+
+            if (specialOffer != null) {
+                bookingExtension.setSpecialOffer(specialOffer);
+            } else {
+                throw PromotionException.specialOfferNotFound(specialOfferId);
+            }
+        } catch (NumberFormatException e) {
+            throw PromotionException.invalidPromotionFormat(promotionId);
+        }
+    }
+
+    private List<Long> selectRandomRoomIds(List<RoomAvailability> availableRooms, int count) {
+        List<Long> allRoomIds = availableRooms.stream()
+            .map(roomAvailability -> roomAvailability.getRoom().getRoomId())
+            .distinct()
+            .toList();
+
+        log.info("all rooms: {}", allRoomIds);
+        if (allRoomIds.size() < count) {
+            return List.of();
+        }
+
+        return random.ints(0, allRoomIds.size())
+            .distinct()
+            .limit(count)
+            .mapToObj(allRoomIds::get)
+            .toList();
+    }
+
+    private Booking createBookingInGraphQL(BookingRequestDTO request, GuestCounts guestCounts,
+                                           Long propertyId, Long guestId) {
+        try {
+            boolean hasGqlPromotion = request.getPromotionId() != null && request.getPromotionId().startsWith("G_");
+            GraphQlClient.RequestSpec requestSpec = buildBookingGraphQLRequest(
+                request, guestCounts, propertyId, guestId, hasGqlPromotion);
+
+            Booking booking = requestSpec
+                .retrieve("createBooking")
+                .toEntity(Booking.class)
+                .block();
+
+            log.info("Booking created: {}", booking);
+            return booking;
+        } catch (Exception e) {
+            throw BookingOperationException.bookingCreationFailed("Failed to create booking in GraphQL: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Builds the GraphQL request for booking creation.
+     */
+    private GraphQlClient.RequestSpec buildBookingGraphQLRequest(
+        BookingRequestDTO request, GuestCounts guestCounts,
+        Long propertyId, Long guestId, boolean hasGqlPromotion) {
+
+        GraphQlClient.RequestSpec requestSpec = graphQlClient.document(GraphQLMutations.getCreateBookingQuery(hasGqlPromotion))
+            .variable("checkInDate", DateFormatUtils.toGraphQLDateString(request.getDateRange().getFrom()))
+            .variable("checkOutDate", DateFormatUtils.toGraphQLDateString(request.getDateRange().getTo()))
             .variable("adultCount", guestCounts.adults)
             .variable("childCount", guestCounts.children)
-            .variable("totalCost", 0)
+            .variable("totalCost", calculateTotalAmount(request))
             .variable("amountDueAtResort", 0)
-            .variable("propertyId", request.getPropertyId())
-            .variable("promotionId", request.getPromotionId())
-            .variable("roomIds", roomIds)
-            .retrieve("createBooking")
-            .toEntity(Booking.class)
-            .block();
+            .variable("propertyId", propertyId)
+            .variable("guestId", guestId);
+
+        if (hasGqlPromotion) {
+            Long realPromotionId = Long.parseLong(request.getPromotionId().replace("G_", ""));
+            requestSpec = requestSpec.variable("promotionId", realPromotionId);
+        }
+
+        return requestSpec;
     }
 
     @Override
-    public Booking getBooking(Long bookingId) {
-        return null;
+    @Transactional
+    public BookingDetailsDTO cancelBooking(Long bookingId) {
+        try {
+            Booking booking = validateBookingForCancellation(bookingId);
+            updateBookingStatusToCancelled(bookingId);
+
+            List<Long> roomIds = booking.getRoomBooked().stream()
+                .map(ra -> ra.getRoom().getRoomId())
+                .toList();
+            releaseRoomLocks(roomIds, booking.getCheckInDate(), booking.getCheckOutDate());
+
+            return getBookingDetailsById(bookingId);
+        } catch (Exception e) {
+            throw BookingOperationException.bookingCancellationFailed(bookingId);
+        }
+    }
+
+    /**
+     * Validates if a booking can be cancelled.
+     */
+    private Booking validateBookingForCancellation(Long bookingId) {
+        Booking currentBooking = fetchBookingFromGraphQL(bookingId);
+        if (currentBooking.getBookingStatus() == null || currentBooking.getBookingStatus().getStatus().equals("CANCELLED")) {
+            throw BookingOperationException.bookingAlreadyCancelled(bookingId);
+        }
+        return currentBooking;
+    }
+
+    /**
+     * Updates booking status to cancelled in GraphQL.
+     */
+    private Booking updateBookingStatusToCancelled(Long bookingId) {
+        try {
+            return graphQlClient.document(GraphQLMutations.UPDATE_BOOKING_STATUS)
+                .variable("bookingId", bookingId)
+                .variable("statusId", 2)
+                .retrieve("updateBooking")
+                .toEntity(Booking.class)
+                .block();
+        } catch (Exception e) {
+            throw BookingOperationException.bookingCancellationFailed(bookingId);
+        }
     }
 
     @Override
-    public Booking cancelBooking(Long bookingId) {
-        return null;
+    public BookingDetailsDTO getBookingDetailsById(Long bookingId) {
+        Booking booking = fetchBookingFromGraphQL(bookingId);
+        BookingExtension bookingExtension = bookingExtensionRepository.findByBookingId(bookingId);
+        log.info("Booking: {}", booking);
+        log.info("Booking extension: {}", bookingExtension);
+        return bookingMapper.toBookingDetailsDTO(booking, bookingExtension);
     }
 
-    private long calculateTotalAmount(BookingRequestDTO request) {
-        return 0;
+    /**
+     * Fetches booking data from GraphQL.
+     */
+    private Booking fetchBookingFromGraphQL(Long bookingId) {
+        try {
+            Booking booking = graphQlClient.document(GraphQLQueries.GET_BOOKING_DATA)
+                .variable("bookingId", bookingId)
+                .retrieve("getBooking")
+                .toEntity(Booking.class)
+                .block();
+
+            if (booking == null) {
+                throw BookingOperationException.bookingNotFound(bookingId);
+            }
+
+            log.info("Retrieved booking: {}", booking.getBookingId());
+            return booking;
+        } catch (Exception e) {
+            throw BookingOperationException.bookingNotFound(bookingId);
+        }
+    }
+
+    private Double calculateTotalAmount(BookingRequestDTO request) {
+        return 1000d;
+    }
+
+    private record RoomSelectionResult(List<Long> roomIds, List<Long> availabilityIds, Long propertyId) {
     }
 }

@@ -1,93 +1,122 @@
 package com.kdu.hufflepuff.ibe.exception;
 
-import com.kdu.hufflepuff.ibe.model.response.ErrorResponse;
+import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
+@RestControllerAdvice
 @Slf4j
-@ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
-        return ErrorResponse.builder()
-            .statusCode(HttpStatus.NOT_FOUND)
-            .message(ex.getMessage())
+
+    @ExceptionHandler(BookingException.class)
+    public ResponseEntity<ApiResponse<String>> handleBookingException(BookingException ex) {
+        log.error("Booking exception occurred: {}", ex.getMessage(), ex);
+
+        return ApiResponse.<String>builder()
+            .statusCode(determineHttpStatus(ex))
+            .message("Booking operation failed")
+            .data(ex.getMessage())
             .build()
             .send();
     }
 
-    @ExceptionHandler(InvalidRequestException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidRequest(InvalidRequestException ex) {
-        return ErrorResponse.builder()
+    @ExceptionHandler(RoomAvailabilityException.class)
+    public ResponseEntity<ApiResponse<String>> handleRoomAvailabilityException(RoomAvailabilityException ex) {
+        log.error("Room availability exception occurred: {}", ex.getMessage(), ex);
+
+        return ApiResponse.<String>builder()
             .statusCode(HttpStatus.BAD_REQUEST)
-            .message(ex.getMessage())
+            .message("Room availability issue")
+            .data(ex.getMessage())
             .build()
             .send();
     }
 
-    @ExceptionHandler(InvalidPromoCodeException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidPromoCode(InvalidPromoCodeException ex) {
-        return ErrorResponse.builder()
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<ApiResponse<String>> handlePaymentException(PaymentException ex) {
+        log.error("Payment exception occurred: {}", ex.getMessage(), ex);
+
+        return ApiResponse.<String>builder()
             .statusCode(HttpStatus.BAD_REQUEST)
-            .message(ex.getMessage())
+            .message("Payment processing failed")
+            .data(ex.getMessage())
             .build()
             .send();
     }
 
-    @ExceptionHandler(InvalidImageTypeException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidImageType(InvalidImageTypeException ex) {
-        return ErrorResponse.builder()
+    @ExceptionHandler(BookingOperationException.class)
+    public ResponseEntity<ApiResponse<String>> handleBookingOperationException(BookingOperationException ex) {
+        log.error("Booking operation exception occurred: {}", ex.getMessage(), ex);
+
+        HttpStatus status = ex.getMessage().contains("not found") ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
+
+        return ApiResponse.<String>builder()
+            .statusCode(status)
+            .message("Booking operation failed")
+            .data(ex.getMessage())
+            .build()
+            .send();
+    }
+
+    @ExceptionHandler(PromotionException.class)
+    public ResponseEntity<ApiResponse<String>> handlePromotionException(PromotionException ex) {
+        log.error("Promotion exception occurred: {}", ex.getMessage(), ex);
+
+        return ApiResponse.<String>builder()
             .statusCode(HttpStatus.BAD_REQUEST)
-            .message(ex.getMessage())
-            .build()
-            .send();
-    }
-
-    @ExceptionHandler(ImageUploadException.class)
-    public ResponseEntity<ErrorResponse> handleImageUpload(ImageUploadException ex) {
-        return ErrorResponse.builder()
-            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-            .message("Failed to upload image: " + ex.getMessage())
-            .build()
-            .send();
-    }
-
-    @ExceptionHandler(ConfigUpdateException.class)
-    public ResponseEntity<ErrorResponse> handleConfigUpdate(ConfigUpdateException ex) {
-        return ErrorResponse.builder()
-            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-            .message("Failed to update configuration: " + ex.getMessage())
+            .message("Promotion issue")
+            .data(ex.getMessage())
             .build()
             .send();
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
-        List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
-        StringBuilder errorMessage = new StringBuilder();
-        fieldErrors.forEach(fieldError -> errorMessage.append(fieldError.getDefaultMessage()).append(". "));
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        log.error("Validation exception occurred: {}", ex.getMessage(), ex);
 
-        return ErrorResponse.builder()
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+
+        return ApiResponse.<Map<String, String>>builder()
             .statusCode(HttpStatus.BAD_REQUEST)
-            .message(errorMessage.toString())
+            .message("Validation failed")
+            .data(errors)
             .build()
             .send();
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        return ErrorResponse.builder()
+    public ResponseEntity<ApiResponse<String>> handleGenericException(Exception ex) {
+        log.error("Unexpected exception occurred: {}", ex.getMessage(), ex);
+
+        return ApiResponse.<String>builder()
             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-            .message("An unexpected error occurred: " + ex.getMessage())
+            .message("An unexpected error occurred")
+            .data(ex.getMessage())
             .build()
             .send();
+    }
+
+    private HttpStatus determineHttpStatus(BookingException ex) {
+        if (ex instanceof RoomAvailabilityException || ex instanceof PaymentException || ex instanceof PromotionException) {
+            return HttpStatus.BAD_REQUEST;
+        } else if (ex instanceof BookingOperationException && ex.getMessage().contains("not found")) {
+            return HttpStatus.NOT_FOUND;
+        } else {
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
     }
 }
 

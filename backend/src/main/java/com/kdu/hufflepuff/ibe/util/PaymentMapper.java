@@ -34,7 +34,7 @@ public final class PaymentMapper {
     private static void validateCardDetails(Map<String, String> formData) {
         // Validate CVV
         String cvv = formData.get("cvv");
-        if (cvv != null && !cvv.matches("^[0-9]{3,4}$")) {
+        if (cvv != null && !cvv.matches("^\\d{3,4}$")) {
             throw new IllegalArgumentException("CVV must be 3 or 4 digits");
         }
 
@@ -46,7 +46,7 @@ public final class PaymentMapper {
 
         // Validate expiration year
         String expYear = formData.get("expYear");
-        if (expYear != null && !expYear.matches("^[0-9]{2}$")) {
+        if (expYear != null && !expYear.matches("^\\d{2}$")) {
             throw new IllegalArgumentException("Expiration year must be 2 digits");
         }
     }
