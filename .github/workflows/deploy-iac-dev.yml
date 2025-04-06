@@ -45,7 +45,6 @@ jobs:
             ALLOWED_ORIGINS = "$(echo ${{ vars.ALLOWED_ORIGINS }} | tr -d '[]"')"
             GRAPHQL_API_URL = "${{ vars.GRAPHQL_API_URL }}"
             GRAPHQL_API_KEY = "${{ secrets.GRAPHQL_API_KEY }}"
-            TRANSLATION_API_URL = "${{ vars.TRANSLATION_API_URL }}"
           }
           EOF
 

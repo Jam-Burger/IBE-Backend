@@ -44,6 +44,24 @@ resource "aws_api_gateway_integration" "alb" {
   }
 }
 
+# Method Settings for Throttling
+resource "aws_api_gateway_method_settings" "throttling_settings" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name  = var.stage_name
+  method_path = "*/*" # Apply to all methods
+
+  settings {
+    # Throttling settings
+    throttling_rate_limit  = 1000 # Request per second limit
+    throttling_burst_limit = 2000 # Maximum burst size
+
+    # Enable CloudWatch metrics and logs
+    metrics_enabled    = true
+    data_trace_enabled = false
+    logging_level      = "ERROR" # ERROR, INFO, OFF
+  }
+}
+
 # CORS Configuration
 resource "aws_api_gateway_method" "cors" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
@@ -100,7 +118,11 @@ resource "aws_api_gateway_integration_response" "cors" {
 # API Gateway Deployment
 resource "aws_api_gateway_deployment" "api" {
   rest_api_id = aws_api_gateway_rest_api.api.id
-  depends_on  = [aws_api_gateway_integration.alb, aws_api_gateway_integration.cors]
+  depends_on = [
+    aws_api_gateway_integration.alb,
+    aws_api_gateway_integration.cors,
+    aws_api_gateway_method_settings.throttling_settings
+  ]
 
   lifecycle {
     create_before_destroy = true
@@ -113,6 +135,7 @@ resource "aws_api_gateway_deployment" "api" {
       aws_api_gateway_integration.alb.id,
       aws_api_gateway_method.cors.id,
       aws_api_gateway_integration.cors.id,
+      aws_api_gateway_method_settings.throttling_settings.id
     ]))
   }
 }

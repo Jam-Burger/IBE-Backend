@@ -22,14 +22,30 @@ import java.util.List;
 public class SpecialOfferController {
     private final SpecialOfferService specialOfferService;
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<SpecialOfferResponseDTO>>> getSpecialDiscounts(
+    @GetMapping("/calender-offers")
+    public ResponseEntity<ApiResponse<List<SpecialOfferResponseDTO>>> getCalenderOffers(
         @PathVariable Long tenantId,
         @PathVariable Long propertyId,
         @Valid @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @Valid @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        List<SpecialOfferResponseDTO> specialOffers = specialOfferService.getSpecialDiscounts(tenantId, propertyId, startDate, endDate);
+        List<SpecialOfferResponseDTO> specialOffers = specialOfferService.getCalenderOffers(tenantId, propertyId, startDate, endDate);
+        return ApiResponse.<List<SpecialOfferResponseDTO>>builder()
+            .data(specialOffers)
+            .message("Special discounts retrieved successfully")
+            .statusCode(HttpStatus.OK)
+            .build()
+            .send();
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SpecialOfferResponseDTO>>> getSpecialOffers(
+        @PathVariable Long tenantId,
+        @PathVariable Long propertyId,
+        @Valid @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @Valid @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        List<SpecialOfferResponseDTO> specialOffers = specialOfferService.getSpecialOffers(tenantId, propertyId, startDate, endDate);
         return ApiResponse.<List<SpecialOfferResponseDTO>>builder()
             .data(specialOffers)
             .message("Special discounts retrieved successfully")

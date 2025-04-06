@@ -14,14 +14,23 @@ public interface SpecialOfferRepository extends JpaRepository<SpecialOffer, Long
     @Query(nativeQuery = true, value = """
         SELECT * FROM special_offer
         WHERE property_id = :propertyId
-        AND start_date <= :endDate
-        AND end_date >= :startDate
+        AND start_date <= :startDate
+        AND end_date >= :endDate
         """)
     List<SpecialOffer> findAllByPropertyIdAndDateRange(
         @Param("propertyId") Long propertyId,
         @Param("startDate") LocalDate startDate,
         @Param("endDate") LocalDate endDate
     );
+
+    @Query(nativeQuery = true, value = """
+        SELECT * FROM special_offer
+        WHERE property_id = :propertyId
+        AND start_date >= :startDate
+        AND end_date < :endDate
+        AND promo_code IS NULL
+        """)
+    List<SpecialOffer> findAllByPropertyIdAndDateRangeWithNoPromoCode(Long propertyId, LocalDate startDate, LocalDate endDate);
 
     SpecialOffer findByPropertyIdAndPromoCode(Long propertyId, String promoCode);
 }

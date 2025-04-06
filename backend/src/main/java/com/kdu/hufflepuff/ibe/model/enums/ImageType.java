@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ImageType {
     LOGO("logos"),
-    BANNER("banners"),
+    LANDING_BANNER("landing_banners"),
+    ROOMS_PAGE_BANNER("rooms_page_banners"),
     ROOM("rooms");
 
     private final String path;

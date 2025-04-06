@@ -1,6 +1,7 @@
 package com.kdu.hufflepuff.ibe.util;
 
 import com.kdu.hufflepuff.ibe.model.dto.in.RoomTypeFilterDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.RoomRateDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.RoomTypeDetailsDTO;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -85,11 +86,13 @@ public final class RoomTypeFilterUtil {
                     Comparator.nullsLast(Comparator.reverseOrder())));
                 break;
             case PRICE_LOW_TO_HIGH:
-                sortedRoomTypes.sort(Comparator.comparing(RoomTypeDetailsDTO::getAveragePrice,
+                sortedRoomTypes.sort(Comparator.comparing(
+                    roomType -> getAveragePrice(roomType.getRoomRates()),
                     Comparator.nullsLast(Comparator.naturalOrder())));
                 break;
             case PRICE_HIGH_TO_LOW:
-                sortedRoomTypes.sort(Comparator.comparing(RoomTypeDetailsDTO::getAveragePrice,
+                sortedRoomTypes.sort(Comparator.comparing(
+                    roomType -> getAveragePrice(roomType.getRoomRates()),
                     Comparator.nullsLast(Comparator.reverseOrder())));
                 break;
             default:
@@ -97,5 +100,15 @@ public final class RoomTypeFilterUtil {
         }
 
         return sortedRoomTypes;
+    }
+
+    private static Double getAveragePrice(List<RoomRateDetailsDTO> roomRates) {
+        if (roomRates == null || roomRates.isEmpty()) {
+            return null;
+        }
+        return roomRates.stream()
+            .mapToDouble(RoomRateDetailsDTO::getPrice)
+            .average()
+            .orElse(0.0);
     }
 }

@@ -25,14 +25,14 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SpecialOfferResponseDTO> getSpecialDiscounts(Long tenantId, Long propertyId, LocalDate startDate,
-                                                             LocalDate endDate) {
+    public List<SpecialOfferResponseDTO> getSpecialOffers(Long tenantId, Long propertyId, LocalDate startDate,
+                                                          LocalDate endDate) {
         List<SpecialOffer> specialOffers = specialOfferRepository.findAllByPropertyIdAndDateRange(propertyId, startDate,
             endDate);
 
         List<Promotion> promotions = getGraphQLPromotions();
 
-        if(promotions == null) {
+        if (promotions == null) {
             return List.of();
         }
 
@@ -53,9 +53,19 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<SpecialOfferResponseDTO> getCalenderOffers(Long tenantId, Long propertyId, LocalDate startDate,
+                                                           LocalDate endDate) {
+        List<SpecialOffer> specialOffers = specialOfferRepository.findAllByPropertyIdAndDateRangeWithNoPromoCode(propertyId, startDate,
+            endDate);
+        return specialOffers.stream()
+            .map(this::convertToDTO)
+            .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public SpecialOfferResponseDTO getPromoOffer(Long tenantId, Long propertyId, String promoCode, LocalDate startDate,
                                                  LocalDate endDate) {
-
         SpecialOffer specialOffer = specialOfferRepository.findByPropertyIdAndPromoCode(propertyId, promoCode);
         if (specialOffer == null) {
             throw InvalidPromoCodeException.notFound(promoCode);

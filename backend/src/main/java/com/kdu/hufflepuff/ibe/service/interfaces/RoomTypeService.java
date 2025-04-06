@@ -7,8 +7,6 @@ import com.kdu.hufflepuff.ibe.model.dto.out.RoomTypeDetailsDTO;
 import java.util.List;
 
 public interface RoomTypeService {
-    List<RoomTypeDetailsDTO> getRoomTypesByPropertyId(Long tenantId, Long propertyId);
-
     /**
      * Get all unique amenities available across all room types for a property
      *

@@ -20,30 +20,6 @@ public final class GraphQLQueries {
             }
         """;
 
-    // Room Queries
-    public static final String GET_ROOMS_BY_IDS = """
-            query getRooms($availableRoomIds: [Int!]!) {
-                listRooms(where: {
-                    room_id: {in: $availableRoomIds}
-                }) {
-                    room_id
-                    room_number
-                    room_type {
-                        room_type_id
-                        room_type_name
-                        max_capacity
-                        room_rates {
-                            room_rate {
-                                room_rate_id
-                                basic_nightly_rate
-                                date
-                            }
-                        }
-                    }
-                }
-            }
-        """;
-
     public static final String GET_ROOM_RATE_MAPPINGS_BY_ROOM_TYPES = """
             query getRoomRateMappings($roomTypeIds: [Int!]!, $startDate: AWSDateTime!, $endDate: AWSDateTime!) {
                 listRoomRateRoomTypeMappings(
@@ -86,8 +62,11 @@ public final class GraphQLQueries {
                 availability_id
                 date
                 room {
-                    room_id
-                    room_type_id
+                   room_id
+                   room_type_id
+                   room_type {
+                     room_type_id
+                   }
                 }
             }
         }

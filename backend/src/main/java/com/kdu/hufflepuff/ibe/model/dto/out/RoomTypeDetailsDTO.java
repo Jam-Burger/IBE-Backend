@@ -22,7 +22,7 @@ public class RoomTypeDetailsDTO {
     private Long propertyId;
     private Double rating;
     private Long numberOfReviews;
-    private Double averagePrice;
+    private List<RoomRateDetailsDTO> roomRates;
     private String landmark;
     private String description;
     @Builder.Default
