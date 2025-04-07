@@ -3,6 +3,7 @@ package com.kdu.hufflepuff.ibe.controller;
 import com.kdu.hufflepuff.ibe.model.dto.in.BookingRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
+import com.kdu.hufflepuff.ibe.service.interfaces.BookingPdfService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class BookingController {
     private final BookingService bookingService;
+    private final BookingPdfService bookingPdfService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<BookingDetailsDTO>> createBooking(@Valid @RequestBody BookingRequestDTO request) {
@@ -45,4 +47,12 @@ public class BookingController {
             .build()
             .send();
     }
+
+    @PostMapping("/{bookingId}/send-pdf")
+    public ResponseEntity<String> sendBookingPdf(
+            @PathVariable Long bookingId) {
+        bookingPdfService.generateAndSendBookingPdf(bookingId);
+        return ResponseEntity.ok("Booking PDF has been sent successfully.");
+    }
+
 } 
