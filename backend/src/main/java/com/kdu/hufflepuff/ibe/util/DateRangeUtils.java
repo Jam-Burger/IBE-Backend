@@ -15,13 +15,13 @@ public class DateRangeUtils {
         List<DateRange> ranges = new ArrayList<>();
         LocalDate currentStart = startDate;
 
-        while (currentStart.isBefore(endDate) || currentStart.isEqual(endDate)) {
+        while (currentStart.isBefore(endDate)) {
             LocalDate currentEnd = currentStart.plusDays(maxDays);
             if (currentEnd.isAfter(endDate)) {
                 currentEnd = endDate;
             }
             ranges.add(new DateRange(currentStart, currentEnd));
-            currentStart = currentEnd.plusDays(1);
+            currentStart = currentEnd;
         }
 
         return ranges;
