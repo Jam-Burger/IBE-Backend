@@ -1,12 +1,16 @@
 package com.kdu.hufflepuff.ibe.service.interfaces;
 
+import jakarta.mail.MessagingException;
+
 public interface OTPService {
+
     /**
-     * Sends an OTP email to the provided email address.
+     * Sends an OTP email using a Thymeleaf template to the provided email address.
      * @param toEmail recipient email
      * @param otp the OTP string
+     * @throws MessagingException if email sending fails
      */
-    void sendOtpMail(String toEmail, String otp);
+    void sendOtpMail(String toEmail, String otp) throws MessagingException;
 
     /**
      * Generates a new OTP or returns an existing valid one.

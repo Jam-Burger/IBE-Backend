@@ -1,12 +1,14 @@
 package com.kdu.hufflepuff.ibe.controller;
 
 import com.kdu.hufflepuff.ibe.service.interfaces.OTPService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("ap1/v1/otp")
+@RequestMapping("/api/v1/otp")
+@Slf4j
 public class OTPController {
     private OTPService otpService;
 
@@ -18,6 +20,7 @@ public class OTPController {
 
     @PostMapping("/send")
     public ResponseEntity<String> sendOtp(@RequestParam String email) {
+        log.info("----------------Sending OTP to email: {}----------------", email);
         otpService.generateOtp(email);
         return ResponseEntity.ok("OTP sent to email");
     }

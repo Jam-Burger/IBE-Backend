@@ -3,46 +3,58 @@ package com.kdu.hufflepuff.ibe.service.impl;
 import com.kdu.hufflepuff.ibe.model.entity.OTPEntity;
 import com.kdu.hufflepuff.ibe.repository.jpa.OTPRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.OTPService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
 
 @Service
+@RequiredArgsConstructor
 public class OTPServiceImpl implements OTPService {
 
     private static final int OTP_EXPIRY_MINUTES = 5;
     private static final int MAX_ATTEMPTS = 3;
 
     private final OTPRepository otpRepository;
-
     private final JavaMailSender mailSender;
-
-    @Autowired
-    public OTPServiceImpl(OTPRepository otpRepository, JavaMailSender mailSender) {
-        this.otpRepository = otpRepository;
-        this.mailSender = mailSender;
-    }
+    private final TemplateEngine templateEngine;
 
     public void sendOtpMail(String toEmail, String otp) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
-        message.setSubject("Your OTP Code");
-        message.setText("Your OTP is: " + otp + "\nIt will expire in " + OTP_EXPIRY_MINUTES + " minutes.");
+        Context context = new Context();
+        context.setVariable("otp", otp);
+        context.setVariable("expiry", OTP_EXPIRY_MINUTES);
 
-        mailSender.send(message);
+        String htmlContent = templateEngine.process("otp-email.html", context);
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Your OTP Code");
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send OTP email");
+        }
     }
 
+    @Override
     public String generateOtp(String email) {
         Optional<OTPEntity> existingOtpOpt = otpRepository.findByEmail(email);
 
         if (existingOtpOpt.isPresent()) {
             OTPEntity existingOtp = existingOtpOpt.get();
-
             if (existingOtp.getExpirationTime().isAfter(LocalDateTime.now())) {
                 sendOtpMail(email, existingOtp.getOtpNumber());
                 return existingOtp.getOtpNumber();
@@ -65,6 +77,7 @@ public class OTPServiceImpl implements OTPService {
         return newOtp;
     }
 
+    @Override
     public boolean verifyOtp(String email, String otp) {
         Optional<OTPEntity> otpEntityOpt = otpRepository.findByEmail(email);
 
@@ -72,19 +85,15 @@ public class OTPServiceImpl implements OTPService {
 
         OTPEntity otpEntity = otpEntityOpt.get();
 
-        // Check if the OTP is expired
         if (otpEntity.getExpirationTime().isBefore(LocalDateTime.now())) {
             otpRepository.delete(otpEntity);
             return false;
         }
 
-        // Check if OTP matches
         if (!otpEntity.getOtpNumber().equals(otp)) {
-            // Reduce attempts
             int remainingAttempts = otpEntity.getAttemptRemaining() - 1;
             otpEntity.setAttemptRemaining(remainingAttempts);
 
-            // If attempts are exhausted, delete OTP
             if (remainingAttempts <= 0) {
                 otpRepository.delete(otpEntity);
             } else {
@@ -94,7 +103,6 @@ public class OTPServiceImpl implements OTPService {
             return false;
         }
 
-        // OTP is valid; delete it after verification
         otpRepository.delete(otpEntity);
         return true;
     }
