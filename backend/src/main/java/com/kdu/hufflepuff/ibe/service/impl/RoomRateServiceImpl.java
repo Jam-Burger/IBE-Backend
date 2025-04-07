@@ -139,30 +139,6 @@ public class RoomRateServiceImpl implements RoomRateService {
 
     @Override
     @Transactional(readOnly = true)
-    public Map<Long, Double> getAveragePricesByRoomType(Long propertyId, LocalDate startDate, LocalDate endDate) {
-        List<RoomRateDetailsDTO> allRates = getAllRoomRates(propertyId, startDate, endDate);
-        Map<Long, List<Double>> ratesByRoomType = new HashMap<>();
-        allRates.forEach(rate ->
-            ratesByRoomType.computeIfAbsent(rate.getRoomTypeId(), k -> new ArrayList<>())
-                .add(rate.getPrice())
-        );
-
-        Map<Long, Double> result = new HashMap<>();
-        ratesByRoomType.forEach((roomTypeId, rates) -> {
-            if (!rates.isEmpty()) {
-                double average = rates.stream()
-                    .mapToDouble(Double::doubleValue)
-                    .average()
-                    .orElse(0.0);
-                result.put(roomTypeId, average);
-            }
-        });
-
-        return result;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Map<Long, List<RoomRateDetailsDTO>> getRoomRatesByRoomType(Long propertyId, LocalDate startDate, LocalDate endDate) {
         List<RoomRateDetailsDTO> allRates = getAllRoomRates(propertyId, startDate, endDate);
 
@@ -176,7 +152,7 @@ public class RoomRateServiceImpl implements RoomRateService {
     }
 
     private List<RoomRateRoomTypeMapping> fetchRoomRatesByRoomTypes(List<Long> roomTypeIds, LocalDate startDate, LocalDate endDate) {
-        List<DateRangeUtils.DateRange> dateRanges = splitDateRange(startDate, endDate, 15);
+        List<DateRangeUtils.DateRange> dateRanges = splitDateRange(startDate, endDate, 7);
 
         List<CompletableFuture<List<RoomRateRoomTypeMapping>>> futures = dateRanges.stream()
             .map(dateRange -> CompletableFuture.supplyAsync(() ->

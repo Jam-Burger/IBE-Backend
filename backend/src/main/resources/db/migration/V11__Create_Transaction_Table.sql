@@ -3,7 +3,6 @@ CREATE TABLE transaction
     id               BIGSERIAL PRIMARY KEY,
     transaction_id   VARCHAR(100)                                          NOT NULL UNIQUE,
     amount           DOUBLE PRECISION                                      NOT NULL,
-    card_holder_name VARCHAR(255),
     status           VARCHAR(20)                                           NOT NULL,
     timestamp        TIMESTAMP                                             NOT NULL,
     created_at       TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,

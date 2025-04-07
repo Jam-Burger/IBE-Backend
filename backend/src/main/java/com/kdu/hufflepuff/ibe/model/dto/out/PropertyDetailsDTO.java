@@ -20,4 +20,4 @@ public class PropertyDetailsDTO {
     private Double surcharge;
     private Double fees;
     private String termsAndConditions;
-} 
+}

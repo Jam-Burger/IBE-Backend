@@ -35,8 +35,8 @@ public class BookingMapper {
             .roomNumbers(booking.getRoomBooked() != null ?
                 booking.getRoomBooked().stream()
                     .map(ra -> ra.getRoom().getRoomNumber())
-                    .toList() :
-                null)
+                    .distinct()
+                    .toList() : null)
             .build();
 
         if (booking.getPromotionApplied() != null) {

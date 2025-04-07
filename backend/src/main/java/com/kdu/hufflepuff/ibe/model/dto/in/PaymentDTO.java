@@ -12,8 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentDTO {
-    @NotBlank(message = "Card name is required")
-    private String cardName;
+    @NotBlank(message = "Card number is required")
+    @Pattern(regexp = "^\\d{16}$", message = "Card number must be exactly 16 digits")
+    private String cardNumber;
 
     @NotBlank(message = "CVV is required")
     @Pattern(regexp = "^\\d{3,4}$", message = "CVV must be 3 or 4 digits")

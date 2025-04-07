@@ -1,9 +1,10 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
+import com.kdu.hufflepuff.ibe.mapper.GuestExtensionMapper;
 import com.kdu.hufflepuff.ibe.model.entity.GuestExtension;
 import com.kdu.hufflepuff.ibe.repository.jpa.GuestExtensionRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.GuestExtensionService;
-import com.kdu.hufflepuff.ibe.util.GuestExtensionMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

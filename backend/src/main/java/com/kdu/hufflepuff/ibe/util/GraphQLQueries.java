@@ -24,7 +24,7 @@ public final class GraphQLQueries {
     public static final String GET_PROPERTY_BY_ID = """
             query getProperty($propertyId: Int!, $tenantId: Int!) {
                 getProperty(where: {
-                    property_id: {equals: $propertyId},
+                    property_id: $propertyId,
                     tenant: {tenant_id: {equals: $tenantId}}
                 }) {
                     property_id
@@ -41,7 +41,7 @@ public final class GraphQLQueries {
                 listRoomRateRoomTypeMappings(
                     where: {
                         room_type_id: {in: $roomTypeIds},
-                        room_rate: {date: {gte: $startDate, lte: $endDate}}
+                        room_rate: {date: {gte: $startDate, lt: $endDate}}
                     }
                 ) {
                     room_rate {

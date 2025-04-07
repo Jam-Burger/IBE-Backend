@@ -44,7 +44,7 @@ public class RoomAvailabilityServiceImpl implements RoomAvailabilityService {
     }
 
     private List<RoomAvailability> fetchAvailableRooms(String idName, Long id, LocalDate startDate, LocalDate endDate, String query) {
-        List<DateRangeUtils.DateRange> dateRanges = splitDateRange(startDate, endDate, 15);
+        List<DateRangeUtils.DateRange> dateRanges = splitDateRange(startDate, endDate, 7);
 
         List<CompletableFuture<List<RoomAvailability>>> futures = dateRanges.stream()
             .map(range -> CompletableFuture.supplyAsync(() ->

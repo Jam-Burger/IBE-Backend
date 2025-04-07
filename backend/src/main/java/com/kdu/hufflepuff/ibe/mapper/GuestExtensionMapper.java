@@ -1,4 +1,4 @@
-package com.kdu.hufflepuff.ibe.util;
+package com.kdu.hufflepuff.ibe.mapper;
 
 import com.kdu.hufflepuff.ibe.model.entity.GuestExtension;
 import lombok.AccessLevel;
