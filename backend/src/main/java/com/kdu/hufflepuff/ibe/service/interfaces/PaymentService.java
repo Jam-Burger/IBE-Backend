@@ -12,4 +12,6 @@ public interface PaymentService {
      * @return the payment transaction ID
      */
     Transaction processPayment(PaymentDTO payment, Double amount);
-} 
+
+    Double calculateDueNowAmount(Double totalAmount);
+}

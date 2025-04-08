@@ -20,6 +20,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private static final long MAX_AMOUNT = 1_000_000_00; // $1,000,000.00 in cents
+    private static final double DUE_NOW_PERCENTAGE = 5;
+
     private final TransactionRepository transactionRepository;
 
     @Override
@@ -38,6 +40,11 @@ public class PaymentServiceImpl implements PaymentService {
             .build();
 
         return transactionRepository.save(transaction);
+    }
+
+    @Override
+    public Double calculateDueNowAmount(Double totalAmount) {
+        return totalAmount * DUE_NOW_PERCENTAGE / 100;
     }
 
     private void validatePayment(PaymentDTO payment, Double amount) {

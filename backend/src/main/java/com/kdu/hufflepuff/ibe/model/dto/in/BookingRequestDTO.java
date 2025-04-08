@@ -35,6 +35,9 @@ public class BookingRequestDTO {
 
     private String promotionId;
 
+    @NotNull
+    private Double totalAmount;
+
     @Data
     @Builder
     @NoArgsConstructor

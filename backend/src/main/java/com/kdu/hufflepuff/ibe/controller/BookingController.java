@@ -49,11 +49,10 @@ public class BookingController {
             .send();
     }
 
-    @PostMapping("/{bookingId}/send-pdf")
+    @PostMapping("/{bookingId}/send-mail")
     public ResponseEntity<String> sendBookingPdf(
             @PathVariable Long bookingId) {
         bookingPdfService.generateAndSendBookingPdf(bookingId);
         return ResponseEntity.ok("Booking PDF has been sent successfully.");
     }
-
 } 

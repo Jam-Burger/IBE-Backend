@@ -43,6 +43,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingDetailsDTO createBooking(BookingRequestDTO request) {
+        // Step 1: Check room availability and select rooms
         RoomSelectionResult roomSelection = selectRoomsForBooking(request);
         List<Long> selectedRoomIds = roomSelection.roomIds();
         List<Long> selectedAvailabilityIds = roomSelection.availabilityIds();
@@ -60,23 +61,17 @@ public class BookingServiceImpl implements BookingService {
             Guest guest;
 
             if (guestExtension != null) {
-                // Existing guest - update details if needed
                 guest = guestService.findGuestById(guestExtension.getId());
                 if (guest == null) {
-                    // Guest exists in RDS but not in GraphQL - create with same ID
                     String fullName = guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName();
                     guest = guestService.createGuestWithId(fullName, guestExtension.getId());
                 }
             } else {
-                // New guest - create in GraphQL first, then in postgres with GraphQL ID
                 String firstName = request.getFormData().get("travelerFirstName");
                 String lastName = request.getFormData().get("travelerLastName");
                 String fullName = firstName + " " + lastName;
 
-                // First create in GraphQL to get the ID
                 guest = guestService.createGuest(fullName);
-
-                // Then create in postgres with the GraphQL ID
                 guestExtension = guestService.createGuestExtensionWithId(request.getFormData(), guest.getGuestId());
             }
 
@@ -170,7 +165,7 @@ public class BookingServiceImpl implements BookingService {
      */
     private Transaction processPaymentForBooking(BookingRequestDTO request) {
         PaymentDTO payment = PaymentMapper.fromFormDataWithValidation(request.getFormData());
-        Double amount = calculateTotalAmount(request);
+        Double amount = paymentService.calculateDueNowAmount(request.getTotalAmount());
 
         try {
             return paymentService.processPayment(payment, amount);
@@ -277,8 +272,8 @@ public class BookingServiceImpl implements BookingService {
             .variable("checkOutDate", DateFormatUtils.toGraphQLDateString(request.getDateRange().getTo()))
             .variable("adultCount", guestCounts.adults)
             .variable("childCount", guestCounts.children)
-            .variable("totalCost", calculateTotalAmount(request))
-            .variable("amountDueAtResort", 0)
+            .variable("totalCost", Math.round(request.getTotalAmount()))
+            .variable("amountDueAtResort", Math.round(request.getTotalAmount() - paymentService.calculateDueNowAmount(request.getTotalAmount())))
             .variable("propertyId", propertyId)
             .variable("guestId", guestId);
 
@@ -364,11 +359,6 @@ public class BookingServiceImpl implements BookingService {
         } catch (Exception e) {
             throw BookingOperationException.bookingNotFound(bookingId);
         }
-    }
-
-    // Todo
-    private Double calculateTotalAmount(BookingRequestDTO request) {
-        return 1000d;
     }
 
     private record RoomSelectionResult(List<Long> roomIds, List<Long> availabilityIds, Long propertyId) {
