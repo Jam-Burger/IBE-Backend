@@ -31,6 +31,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         Transaction transaction = Transaction.builder()
             .transactionId(transactionId)
+            .cardNumber(payment.getCardNumber())
             .amount(amount)
             .status("COMPLETED")
             .timestamp(LocalDateTime.now())

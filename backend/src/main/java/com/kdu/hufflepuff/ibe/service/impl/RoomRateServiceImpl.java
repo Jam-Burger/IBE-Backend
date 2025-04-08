@@ -3,7 +3,6 @@ package com.kdu.hufflepuff.ibe.service.impl;
 import com.kdu.hufflepuff.ibe.model.dto.out.DailyRoomRateDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.RoomRateDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.SpecialOfferResponseDTO;
-import com.kdu.hufflepuff.ibe.model.graphql.Room;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomAvailability;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomRateRoomTypeMapping;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomAvailabilityService;
@@ -113,8 +112,7 @@ public class RoomRateServiceImpl implements RoomRateService {
         }
 
         List<Long> roomTypeIds = availabilities.stream()
-            .map(RoomAvailability::getRoom)
-            .map(Room::getRoomTypeId)
+            .map(ra -> ra.getRoom().getRoomTypeId())
             .distinct()
             .toList();
 
@@ -127,6 +125,7 @@ public class RoomRateServiceImpl implements RoomRateService {
         if (rateMappings == null || rateMappings.isEmpty()) {
             return List.of();
         }
+
         return rateMappings.stream()
             .filter(mapping -> mapping.getRoomType() != null && mapping.getRoomRate() != null)
             .map(mapping -> RoomRateDetailsDTO.builder()
@@ -137,7 +136,6 @@ public class RoomRateServiceImpl implements RoomRateService {
             .toList();
     }
 
-    @Override
     @Transactional(readOnly = true)
     public Map<Long, List<RoomRateDetailsDTO>> getRoomRatesByRoomType(Long propertyId, LocalDate startDate, LocalDate endDate) {
         List<RoomRateDetailsDTO> allRates = getAllRoomRates(propertyId, startDate, endDate);

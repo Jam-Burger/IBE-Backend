@@ -18,7 +18,6 @@ import com.kdu.hufflepuff.ibe.util.*;
 import com.kdu.hufflepuff.ibe.util.GuestCountConverter.GuestCounts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +39,8 @@ public class BookingServiceImpl implements BookingService {
     private final RoomLockService roomLockService;
     private final SpecialOfferService specialOfferService;
     private final BookingMapper bookingMapper;
-    private final ModelMapper modelMapper;
+    private final RoomRateService roomRateService;
+    private final RoomTypeService roomTypeService;
     private final Random random = new Random();
 
     @Override
@@ -230,7 +230,6 @@ public class BookingServiceImpl implements BookingService {
             .distinct()
             .toList();
 
-        log.info("all rooms: {}", allRoomIds);
         if (allRoomIds.size() < count) {
             return List.of();
         }
@@ -362,6 +361,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    // Todo
     private Double calculateTotalAmount(BookingRequestDTO request) {
         return 1000d;
     }

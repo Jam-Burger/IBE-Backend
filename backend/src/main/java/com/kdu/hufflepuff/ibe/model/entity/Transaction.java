@@ -21,6 +21,9 @@ public class Transaction extends BaseEntity {
     @Column(name = "amount", nullable = false)
     private Double amount;
 
+    @Column(name = "card_number")
+    private String cardNumber;
+
     @Column(name = "status", length = 20, nullable = false)
     private String status;
 

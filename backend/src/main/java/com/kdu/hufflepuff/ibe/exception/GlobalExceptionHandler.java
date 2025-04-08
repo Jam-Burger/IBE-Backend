@@ -12,53 +12,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
 @Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BookingException.class)
     public ResponseEntity<ErrorResponse> handleBookingException(BookingException ex) {
         return ErrorResponse.builder()
             .statusCode(determineHttpStatus(ex))
-            .message(ex.getMessage())
-            .build()
-            .send();
-    }
-
-    @ExceptionHandler(RoomAvailabilityException.class)
-    public ResponseEntity<ErrorResponse> handleRoomAvailabilityException(RoomAvailabilityException ex) {
-        return ErrorResponse.builder()
-            .statusCode(HttpStatus.BAD_REQUEST)
-            .message(ex.getMessage())
-            .build()
-            .send();
-    }
-
-    @ExceptionHandler(PaymentException.class)
-    public ResponseEntity<ErrorResponse> handlePaymentException(PaymentException ex) {
-        return ErrorResponse.builder()
-            .statusCode(HttpStatus.BAD_REQUEST)
-            .message(ex.getMessage())
-            .build()
-            .send();
-    }
-
-    @ExceptionHandler(BookingOperationException.class)
-    public ResponseEntity<ErrorResponse> handleBookingOperationException(BookingOperationException ex) {
-        HttpStatus status = ex.getMessage().contains("not found") ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
-
-        return ErrorResponse.builder()
-            .statusCode(status)
-            .message(ex.getMessage())
-            .build()
-            .send();
-    }
-
-    @ExceptionHandler(PromotionException.class)
-    public ResponseEntity<ErrorResponse> handlePromotionException(PromotionException ex) {
-        return ErrorResponse.builder()
-            .statusCode(HttpStatus.BAD_REQUEST)
-            .message(ex.getMessage())
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }
@@ -67,7 +29,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidRequestException(InvalidRequestException ex) {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.BAD_REQUEST)
-            .message(ex.getMessage())
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }
@@ -76,7 +38,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidImageTypeException(InvalidImageTypeException ex) {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.BAD_REQUEST)
-            .message(ex.getMessage())
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }
@@ -85,7 +47,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidConfigException(InvalidConfigException ex) {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-            .message(ex.getMessage())
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }
@@ -94,7 +56,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleConfigNotFoundException(ConfigNotFoundException ex) {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.NOT_FOUND)
-            .message(ex.getMessage())
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }
@@ -103,7 +65,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleImageUploadException(ImageUploadException ex) {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-            .message(ex.getMessage())
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }
@@ -112,7 +74,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleConfigUpdateException(ConfigUpdateException ex) {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-            .message(ex.getMessage())
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }
@@ -121,7 +83,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidPromoCodeException(InvalidPromoCodeException ex) {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.BAD_REQUEST)
-            .message(ex.getMessage())
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }
@@ -130,7 +92,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.NOT_FOUND)
-            .message(ex.getMessage())
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }
@@ -146,7 +108,7 @@ public class GlobalExceptionHandler {
 
         return ErrorResponse.builder()
             .statusCode(HttpStatus.BAD_REQUEST)
-            .message("Validation failed: " + errors)
+            .message(errors.values().iterator().next()) // Return only the first validation error
             .build()
             .send();
     }
@@ -155,7 +117,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-            .message("An unexpected error occurred: " + ex.getMessage())
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }
@@ -168,6 +130,14 @@ public class GlobalExceptionHandler {
         } else {
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
+    }
+
+    private String getRootCauseMessage(Throwable throwable) {
+        Throwable rootCause = throwable;
+        while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+            rootCause = rootCause.getCause();
+        }
+        return rootCause.getMessage();
     }
 }
 

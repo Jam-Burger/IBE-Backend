@@ -32,6 +32,7 @@ public final class PaymentMapper {
         validatePaymentDTO(paymentDTO);
         return paymentDTO;
     }
+
     private static void validatePaymentDTO(PaymentDTO paymentDTO) {
         Set<ConstraintViolation<PaymentDTO>> violations = validator.validate(paymentDTO);
         if (!violations.isEmpty()) {

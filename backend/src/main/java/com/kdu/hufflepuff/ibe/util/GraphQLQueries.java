@@ -196,6 +196,7 @@ public final class GraphQLQueries {
                         room {
                             room_number
                             room_id
+                            room_type_id
                         }
                     }
                 }

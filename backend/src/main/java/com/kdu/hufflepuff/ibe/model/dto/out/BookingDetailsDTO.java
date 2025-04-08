@@ -1,7 +1,6 @@
 package com.kdu.hufflepuff.ibe.model.dto.out;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kdu.hufflepuff.ibe.model.entity.GuestExtension;
 import com.kdu.hufflepuff.ibe.model.entity.Transaction;
@@ -21,7 +20,6 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookingDetailsDTO {
     @JsonProperty("booking_id")
     private Long bookingId;
@@ -63,4 +61,7 @@ public class BookingDetailsDTO {
 
     @JsonProperty("guest_details")
     private GuestExtension guestDetails;
+
+    @JsonProperty("room_type_id")
+    private Long roomTypeId;
 } 

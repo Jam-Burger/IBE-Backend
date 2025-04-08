@@ -32,11 +32,13 @@ public class BookingMapper {
             .amountDueAtResort(booking.getAmountDueAtResort())
             .bookingStatus(booking.getBookingStatus() != null ? booking.getBookingStatus().getStatus() : null)
             .propertyId(booking.getPropertyBooked() != null ? booking.getPropertyBooked().getPropertyId() : null)
-            .roomNumbers(booking.getRoomBooked() != null ?
-                booking.getRoomBooked().stream()
-                    .map(ra -> ra.getRoom().getRoomNumber())
-                    .distinct()
-                    .toList() : null)
+            .roomNumbers(booking.getRoomBooked() != null ? booking.getRoomBooked().stream()
+                .map(ra -> ra.getRoom().getRoomNumber())
+                .distinct()
+                .toList() : null)
+            .roomTypeId(
+                booking.getRoomBooked() != null ? booking.getRoomBooked().getFirst().getRoom().getRoomTypeId()
+                    : null)
             .build();
 
         if (booking.getPromotionApplied() != null) {
@@ -59,4 +61,4 @@ public class BookingMapper {
         }
         return dto;
     }
-} 
+}

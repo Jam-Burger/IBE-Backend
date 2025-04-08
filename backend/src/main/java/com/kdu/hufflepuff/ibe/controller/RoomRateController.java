@@ -24,9 +24,9 @@ public class RoomRateController {
         @PathVariable Long tenantId,
         @PathVariable Long propertyId,
         @Valid @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @Valid @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
-    ) {
-        List<DailyRoomRateDTO> minimumDailyRates = roomRateService.getMinimumDailyRates(tenantId, propertyId, startDate, endDate);
+        @Valid @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<DailyRoomRateDTO> minimumDailyRates = roomRateService.getMinimumDailyRates(tenantId, propertyId, startDate,
+            endDate);
         return ApiResponse.<List<DailyRoomRateDTO>>builder()
             .data(minimumDailyRates)
             .message("Minimum daily room rates")
@@ -34,4 +34,4 @@ public class RoomRateController {
             .build()
             .send();
     }
-} 
+}

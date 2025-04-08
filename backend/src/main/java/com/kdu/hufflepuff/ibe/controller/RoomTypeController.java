@@ -25,6 +25,34 @@ import java.util.List;
 public class RoomTypeController {
     private final RoomTypeService roomTypeService;
 
+    @GetMapping("/room-types/{roomTypeId}")
+    public ResponseEntity<ApiResponse<RoomTypeDetailsDTO>> getRoomType(
+        @PathVariable Long tenantId,
+        @PathVariable Long propertyId,
+        @PathVariable Long roomTypeId,
+        @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+        @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo
+    ) {
+        RoomTypeFilterDTO filter = RoomTypeFilterDTO.builder()
+            .dateFrom(dateFrom)
+            .dateTo(dateTo)
+            .pageSize(10)
+            .build();
+
+        PaginatedResponseDTO<RoomTypeDetailsDTO> roomTypeDetails = roomTypeService.filterRoomTypes(tenantId, propertyId, filter);
+
+        RoomTypeDetailsDTO filteredRoomType = roomTypeDetails.getItems().stream().filter(
+            rt -> rt.getRoomTypeId().equals(roomTypeId)
+        ).toList().getFirst();
+
+        return ApiResponse.<RoomTypeDetailsDTO>builder()
+            .data(filteredRoomType)
+            .message("Room type details retrieved successfully")
+            .statusCode(HttpStatus.OK)
+            .build()
+            .send();
+    }
+
     @GetMapping("/room-types/filter")
     public ResponseEntity<ApiResponse<PaginatedResponseDTO<RoomTypeDetailsDTO>>> filterRoomTypes(
         @PathVariable Long tenantId,

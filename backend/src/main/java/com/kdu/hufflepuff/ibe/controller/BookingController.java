@@ -18,9 +18,10 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<BookingDetailsDTO>> createBooking(@Valid @RequestBody BookingRequestDTO request) {
+        BookingDetailsDTO response = bookingService.createBooking(request);
         return ApiResponse.<BookingDetailsDTO>builder()
             .message("Booking created successfully")
-            .data(bookingService.createBooking(request))
+            .data(response)
             .statusCode(HttpStatus.CREATED)
             .build()
             .send();
