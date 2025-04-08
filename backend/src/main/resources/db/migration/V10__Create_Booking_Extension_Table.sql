@@ -11,7 +11,7 @@ CREATE TABLE booking_extension
 
     CONSTRAINT fk_booking_extension_guest
         FOREIGN KEY (guest_id)
-            REFERENCES guest_extension (id),
+            REFERENCES guest_extension (guest_id),
 
     CONSTRAINT fk_booking_extension_special_offer
         FOREIGN KEY (special_offer_id)

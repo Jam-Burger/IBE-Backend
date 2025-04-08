@@ -8,11 +8,15 @@ import lombok.*;
 @Entity
 @Table(name = "guest_extension")
 @Getter
+@Setter
 @Builder
-@ToString
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class GuestExtension extends BaseEntity {
+    @Column(name = "guest_id", unique = true, nullable = false)
+    private Long guestId;
+
     @Column(name = "billing_first_name", nullable = false)
     private String billingFirstName;
 

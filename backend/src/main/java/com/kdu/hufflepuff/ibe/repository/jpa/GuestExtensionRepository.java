@@ -8,5 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface GuestExtensionRepository extends JpaRepository<GuestExtension, Long> {
-    Optional<GuestExtension> findByTravelerEmail(String travelerEmail);
-} 
+    Optional<GuestExtension> findByTravelerEmail(String email);
+
+    Optional<GuestExtension> findByGuestId(Long guestId);
+}

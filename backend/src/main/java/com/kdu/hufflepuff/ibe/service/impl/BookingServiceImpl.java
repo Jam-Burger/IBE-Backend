@@ -31,7 +31,6 @@ import java.util.Random;
 @Slf4j
 public class BookingServiceImpl implements BookingService {
     private final BookingExtensionRepository bookingExtensionRepository;
-    private final GuestExtensionService guestExtensionService;
     private final GuestService guestService;
     private final GraphQlClient graphQlClient;
     private final PaymentService paymentService;
@@ -39,14 +38,11 @@ public class BookingServiceImpl implements BookingService {
     private final RoomLockService roomLockService;
     private final SpecialOfferService specialOfferService;
     private final BookingMapper bookingMapper;
-    private final RoomRateService roomRateService;
-    private final RoomTypeService roomTypeService;
     private final Random random = new Random();
 
     @Override
     @Transactional
     public BookingDetailsDTO createBooking(BookingRequestDTO request) {
-        // Step 1: Check and select rooms
         RoomSelectionResult roomSelection = selectRoomsForBooking(request);
         List<Long> selectedRoomIds = roomSelection.roomIds();
         List<Long> selectedAvailabilityIds = roomSelection.availabilityIds();
@@ -60,19 +56,28 @@ public class BookingServiceImpl implements BookingService {
 
             // Step 4: Check for existing guest or create new one
             String email = request.getFormData().get("travelerEmail");
-            GuestExtension guestExtension = guestExtensionService.findByEmail(email);
+            GuestExtension guestExtension = guestService.findByEmail(email);
             Guest guest;
 
             if (guestExtension != null) {
+                // Existing guest - update details if needed
                 guest = guestService.findGuestById(guestExtension.getId());
                 if (guest == null) {
+                    // Guest exists in RDS but not in GraphQL - create with same ID
                     String fullName = guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName();
                     guest = guestService.createGuestWithId(fullName, guestExtension.getId());
                 }
             } else {
-                guestExtension = guestExtensionService.createGuestExtension(request.getFormData());
-                String fullName = guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName();
-                guest = guestService.createGuestWithId(fullName, guestExtension.getId());
+                // New guest - create in GraphQL first, then in postgres with GraphQL ID
+                String firstName = request.getFormData().get("travelerFirstName");
+                String lastName = request.getFormData().get("travelerLastName");
+                String fullName = firstName + " " + lastName;
+
+                // First create in GraphQL to get the ID
+                guest = guestService.createGuest(fullName);
+
+                // Then create in postgres with the GraphQL ID
+                guestExtension = guestService.createGuestExtensionWithId(request.getFormData(), guest.getGuestId());
             }
 
             // Step 5: Create the booking

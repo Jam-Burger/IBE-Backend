@@ -19,10 +19,10 @@ public class BookingExtension extends BaseEntity {
     private Transaction transaction;
 
     @ManyToOne
-    @JoinColumn(name = "guest_id", nullable = false)
+    @JoinColumn(name = "guest_id", nullable = false, referencedColumnName = "guest_id")
     private GuestExtension guestDetails;
 
     @ManyToOne
     @JoinColumn(name = "special_offer_id")
     private SpecialOffer specialOffer;
-} 
+}

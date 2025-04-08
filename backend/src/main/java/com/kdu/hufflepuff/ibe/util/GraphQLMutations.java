@@ -26,7 +26,21 @@ public class GraphQLMutations {
                 }
             }
         """;
+
     public static final String CREATE_GUEST = """
+            mutation CreateGuest($guestName: String!) {
+                createGuest(
+                    data: {
+                        guest_name: $guestName,
+                    }
+                ) {
+                    guest_id
+                    guest_name
+                }
+            }
+        """;
+
+    public static final String CREATE_GUEST_WITH_ID = """
             mutation CreateGuest($guestId: Int!, $guestName: String!) {
                 createGuest(
                     data: {
