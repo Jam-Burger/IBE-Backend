@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Confirmation</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f7fa;">
+<div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.1);">
+    <div style="background-color: #2c3e50; padding: 20px 30px; color: #ffffff;">
+        <h1 style="margin: 0; font-size: 24px;">Booking Confirmation</h1>
+    </div>
+
+    <div style="padding: 30px;">
+        <p style="font-size: 16px; color: #333333;">
+            Dear <strong th:text="${booking.guestDetails.travelerFirstName}">Guest</strong>,
+        </p>
+
+        <p style="font-size: 15px; color: #555555;">
+            Thank you for choosing us! We're excited to confirm your booking. Please find the attached PDF for complete details.
+        </p>
+
+        <table style="width: 100%; margin-top: 20px; font-size: 14px; color: #333;">
+            <tr>
+                <td><strong>Booking ID:</strong></td>
+                <td th:text="${booking.bookingId}"></td>
+            </tr>
+            <tr>
+                <td><strong>Check-in:</strong></td>
+                <td th:text="${booking.checkInDate}"></td>
+            </tr>
+            <tr>
+                <td><strong>Check-out:</strong></td>
+                <td th:text="${booking.checkOutDate}"></td>
+            </tr>
+            <tr>
+                <td><strong>Total Cost:</strong></td>
+                <td th:text="'₹' + ${booking.totalCost}"></td>
+            </tr>
+            <tr>
+                <td><strong>Status:</strong></td>
+                <td th:text="${booking.bookingStatus}"></td>
+            </tr>
+        </table>
+
+        <p style="margin-top: 30px; font-size: 15px;">
+            If you have any questions or need assistance, feel free to contact our support team.
+        </p>
+
+        <p style="font-size: 15px; color: #555;">
+            Warm regards,<br><strong>The Hufflepuff IBE Team</strong>
+        </p>
+    </div>
+
+    <div style="background-color: #ecf0f1; padding: 15px 30px; text-align: center; font-size: 13px; color: #888;">
+        © 2025 Hufflepuff IBE. All rights reserved.
+    </div>
+</div>
+</body>
+</html>
