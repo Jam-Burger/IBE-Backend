@@ -8,17 +8,19 @@ public interface BookingService {
      * Creates a new booking and locks the room dates
      *
      * @param bookingRequest the booking request details
+     * @param otp            the OTP for verification
      * @return the created booking with detailed information
      */
-    BookingDetailsDTO createBooking(BookingRequestDTO bookingRequest);
+    BookingDetailsDTO createBooking(BookingRequestDTO bookingRequest, String otp);
 
     /**
      * Cancels a booking and releases the room date locks
      *
      * @param bookingId the ID of the booking to cancel
+     * @param otp       the OTP for verification
      * @return the updated booking with detailed information
      */
-    BookingDetailsDTO cancelBooking(Long bookingId);
+    BookingDetailsDTO cancelBooking(Long bookingId, String otp);
 
     /**
      * Fetches booking details with combined data from GraphQL and database

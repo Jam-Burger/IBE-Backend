@@ -37,12 +37,23 @@ public class BookingServiceImpl implements BookingService {
     private final RoomAvailabilityService roomAvailabilityService;
     private final RoomLockService roomLockService;
     private final SpecialOfferService specialOfferService;
+    private final OTPService otpService;
     private final BookingMapper bookingMapper;
     private final Random random = new Random();
 
     @Override
     @Transactional
-    public BookingDetailsDTO createBooking(BookingRequestDTO request) {
+    public BookingDetailsDTO createBooking(BookingRequestDTO request, String otp) {
+        String travelerEmail = request.getFormData().get("travelerEmail");
+        if (travelerEmail == null || travelerEmail.isEmpty()) {
+            throw BookingOperationException.guestCreationFailed("Traveler email is required");
+        }
+
+        // Step 0: Validate OTP
+        if (!otpService.isOTPVerified(travelerEmail, otp)) {
+            throw OTPException.invalidOtp("Invalid OTP provided");
+        }
+
         // Step 1: Check room availability and select rooms
         RoomSelectionResult roomSelection = selectRoomsForBooking(request);
         List<Long> selectedRoomIds = roomSelection.roomIds();
@@ -56,8 +67,7 @@ public class BookingServiceImpl implements BookingService {
             Transaction transaction = processPaymentForBooking(request);
 
             // Step 4: Check for existing guest or create new one
-            String email = request.getFormData().get("travelerEmail");
-            GuestExtension guestExtension = guestService.findByEmail(email);
+            GuestExtension guestExtension = guestService.findByEmail(travelerEmail);
             Guest guest;
 
             if (guestExtension != null) {
@@ -86,15 +96,47 @@ public class BookingServiceImpl implements BookingService {
             // Step 7: Create booking extension and apply promotions
             createBookingExtension(booking.getBookingId(), transaction, guestExtension, request.getPromotionId());
 
+            // Step 8: delete OTP
+            otpService.deleteOtp(otp);
+
+            // Step 9: return booking details
             return getBookingDetailsById(booking.getBookingId());
-        } catch (BookingException e) {
-            releaseRoomLocks(selectedRoomIds, request.getDateRange().getFrom(), request.getDateRange().getTo());
-            throw e;
         } catch (Exception e) {
-            releaseRoomLocks(selectedRoomIds, request.getDateRange().getFrom(), request.getDateRange().getTo());
             throw BookingOperationException.bookingCreationFailed("Unexpected error during booking creation: " + e.getMessage(), e);
+        } finally {
+            releaseRoomLocks(selectedRoomIds, request.getDateRange().getFrom(), request.getDateRange().getTo());
         }
     }
+
+    @Override
+    @Transactional
+    public BookingDetailsDTO cancelBooking(Long bookingId, String otp) {
+        try {
+            Booking booking = validateBookingForCancellation(bookingId);
+            BookingExtension bookingExtension = bookingExtensionRepository.findByBookingId(bookingId);
+
+            if (bookingExtension == null) {
+                throw BookingOperationException.bookingNotFound(bookingId);
+            }
+
+            String travelerEmail = bookingExtension.getGuestDetails().getTravelerEmail();
+            if (travelerEmail == null || travelerEmail.isEmpty()) {
+                throw BookingOperationException.guestCreationFailed("Traveler email is required");
+            }
+
+            if (!otpService.isOTPVerified(travelerEmail, otp)) {
+                throw OTPException.invalidOtp("Invalid OTP provided");
+            }
+
+            updateBookingStatusToCancelled(bookingId);
+
+            otpService.deleteOtp(otp);
+            return bookingMapper.toBookingDetailsDTO(booking, bookingExtension);
+        } catch (Exception e) {
+            throw BookingOperationException.bookingCancellationFailed(bookingId);
+        }
+    }
+
 
     /**
      * Checks room availability and selects rooms for booking.
@@ -285,24 +327,6 @@ public class BookingServiceImpl implements BookingService {
         return requestSpec;
     }
 
-    @Override
-    @Transactional
-    public BookingDetailsDTO cancelBooking(Long bookingId) {
-        try {
-            Booking booking = validateBookingForCancellation(bookingId);
-            updateBookingStatusToCancelled(bookingId);
-
-            List<Long> roomIds = booking.getRoomBooked().stream()
-                .map(ra -> ra.getRoom().getRoomId())
-                .toList();
-            releaseRoomLocks(roomIds, booking.getCheckInDate(), booking.getCheckOutDate());
-
-            return getBookingDetailsById(bookingId);
-        } catch (Exception e) {
-            throw BookingOperationException.bookingCancellationFailed(bookingId);
-        }
-    }
-
     /**
      * Validates if a booking can be cancelled.
      */
@@ -317,9 +341,9 @@ public class BookingServiceImpl implements BookingService {
     /**
      * Updates booking status to cancelled in GraphQL.
      */
-    private Booking updateBookingStatusToCancelled(Long bookingId) {
+    private void updateBookingStatusToCancelled(Long bookingId) {
         try {
-            return graphQlClient.document(GraphQLMutations.UPDATE_BOOKING_STATUS)
+            graphQlClient.document(GraphQLMutations.UPDATE_BOOKING_STATUS)
                 .variable("bookingId", bookingId)
                 .variable("statusId", 2)
                 .retrieve("updateBooking")

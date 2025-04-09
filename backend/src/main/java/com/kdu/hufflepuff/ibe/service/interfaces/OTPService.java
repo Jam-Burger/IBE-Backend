@@ -29,4 +29,20 @@ public interface OTPService {
      * @return true if valid, false otherwise
      */
     boolean verifyOtp(String email, String otp);
+
+    /**
+     * Checks if the OTP for the given email is verified.
+     *
+     * @param email the email associated with the OTP
+     * @param otp  the OTP to check
+     * @return true if verified, false otherwise
+     */
+    boolean isOTPVerified(String email, String otp);
+
+    /**
+     * Deletes the OTP entry for the given email.
+     *
+     * @param otp the OTP to delete
+     */
+    void deleteOtp(String otp);
 }

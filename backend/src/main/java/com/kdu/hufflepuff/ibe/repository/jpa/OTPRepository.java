@@ -9,4 +9,8 @@ import java.util.Optional;
 @Repository
 public interface OTPRepository extends JpaRepository<OTPEntity, Long> {
     Optional<OTPEntity> findByEmail(String email);
+
+    OTPEntity getOTPEntityByEmailAndOtpNumber(String email, String otpNumber);
+
+    void deleteByOtpNumber(String otpNumber);
 }

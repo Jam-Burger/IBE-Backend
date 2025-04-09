@@ -1,9 +1,9 @@
 package com.kdu.hufflepuff.ibe.model.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -11,13 +11,10 @@ import java.time.LocalDateTime;
 @Table(name = "otp")
 @Getter
 @Setter
-@Data
-public class OTPEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "otp_id")
-    private Long id;
-
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class OTPEntity extends BaseEntity {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
@@ -28,5 +25,8 @@ public class OTPEntity {
     private LocalDateTime expirationTime;
 
     @Column(name = "attempt_remaining")
-    private int attemptRemaining;
+    private Integer attemptRemaining;
+
+    @Column(name = "verified", nullable = false)
+    private boolean verified;
 }

@@ -19,8 +19,11 @@ public class BookingController {
     private final BookingPdfService bookingPdfService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<BookingDetailsDTO>> createBooking(@Valid @RequestBody BookingRequestDTO request) {
-        BookingDetailsDTO response = bookingService.createBooking(request);
+    public ResponseEntity<ApiResponse<BookingDetailsDTO>> createBooking(
+        @Valid @RequestParam String otp,
+        @Valid @RequestBody BookingRequestDTO request
+    ) {
+        BookingDetailsDTO response = bookingService.createBooking(request, otp);
         return ApiResponse.<BookingDetailsDTO>builder()
             .message("Booking created successfully")
             .data(response)
@@ -40,10 +43,13 @@ public class BookingController {
     }
 
     @PutMapping("/{bookingId}/cancel")
-    public ResponseEntity<ApiResponse<BookingDetailsDTO>> cancelBooking(@PathVariable Long bookingId) {
+    public ResponseEntity<ApiResponse<BookingDetailsDTO>> cancelBooking(
+        @Valid @RequestParam String otp,
+        @PathVariable Long bookingId
+    ) {
         return ApiResponse.<BookingDetailsDTO>builder()
             .message("Booking cancelled successfully")
-            .data(bookingService.cancelBooking(bookingId))
+            .data(bookingService.cancelBooking(bookingId, otp))
             .statusCode(HttpStatus.ACCEPTED)
             .build()
             .send();

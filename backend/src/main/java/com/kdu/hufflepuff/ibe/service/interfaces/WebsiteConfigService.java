@@ -18,7 +18,7 @@ public interface WebsiteConfigService {
      * @param configType The type of configuration to retrieve
      * @return The website configuration
      * @throws ConfigNotFoundException if the configuration is not found
-     * @throws InvalidConfigException  if the tenant ID or config type is invalid
+     * @throws InvalidConfigException  if the tenant ID or config type is invalidEmail
      */
     WebsiteConfigModel getConfig(Long tenantId, ConfigType configType);
 
@@ -30,7 +30,7 @@ public interface WebsiteConfigService {
      * @param configRequest The configuration data transfer object containing the configuration
      * @param <T>           The type parameter for the configuration class
      * @return The saved website configuration
-     * @throws InvalidConfigException if any of the parameters are invalid or if the config type is unsupported
+     * @throws InvalidConfigException if any of the parameters are invalidEmail or if the config type is unsupported
      */
     <T> WebsiteConfigModel saveConfig(Long tenantId, ConfigType configType, ConfigRequestDTO<T> configRequest);
 
@@ -41,7 +41,7 @@ public interface WebsiteConfigService {
      * @param configType The type of configuration to delete
      * @return The deleted website configuration
      * @throws ConfigNotFoundException if the configuration is not found
-     * @throws InvalidConfigException  if the tenant ID or config type is invalid
+     * @throws InvalidConfigException  if the tenant ID or config type is invalidEmail
      */
     WebsiteConfigModel deleteConfig(Long tenantId, ConfigType configType);
 } 

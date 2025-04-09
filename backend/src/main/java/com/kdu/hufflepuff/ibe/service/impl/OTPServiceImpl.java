@@ -1,5 +1,6 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
+import com.kdu.hufflepuff.ibe.exception.OTPException;
 import com.kdu.hufflepuff.ibe.model.entity.OTPEntity;
 import com.kdu.hufflepuff.ibe.repository.jpa.OTPRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.OTPService;
@@ -19,7 +20,6 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class OTPServiceImpl implements OTPService {
-
     private static final int OTP_EXPIRY_MINUTES = 5;
     private static final int MAX_ATTEMPTS = 3;
 
@@ -44,7 +44,6 @@ public class OTPServiceImpl implements OTPService {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            e.printStackTrace();
             throw new RuntimeException("Failed to send OTP email");
         }
     }
@@ -79,31 +78,45 @@ public class OTPServiceImpl implements OTPService {
 
     @Override
     public boolean verifyOtp(String email, String otp) {
-        Optional<OTPEntity> otpEntityOpt = otpRepository.findByEmail(email);
+        OTPEntity otpEntity = otpRepository.findByEmail(email).orElseThrow(() -> OTPException.invalidEmail(email));
 
-        if (otpEntityOpt.isEmpty()) return false;
-
-        OTPEntity otpEntity = otpEntityOpt.get();
+        if (otpEntity.getAttemptRemaining() < 0) {
+            otpRepository.delete(otpEntity);
+            throw OTPException.maxAttemptsReached(email);
+        }
 
         if (otpEntity.getExpirationTime().isBefore(LocalDateTime.now())) {
             otpRepository.delete(otpEntity);
-            return false;
+            throw OTPException.otpExpired(email);
         }
 
         if (!otpEntity.getOtpNumber().equals(otp)) {
-            int remainingAttempts = otpEntity.getAttemptRemaining() - 1;
-            otpEntity.setAttemptRemaining(remainingAttempts);
-
-            if (remainingAttempts <= 0) {
-                otpRepository.delete(otpEntity);
-            } else {
-                otpRepository.save(otpEntity);
-            }
-
-            return false;
+            otpEntity.setAttemptRemaining(otpEntity.getAttemptRemaining() - 1);
+            otpRepository.save(otpEntity);
+            throw OTPException.invalidOtp(otp);
         }
 
-        otpRepository.delete(otpEntity);
+        if (otpEntity.isVerified()) {
+            throw OTPException.otpAlreadyVerified(email);
+        }
+
+        otpEntity.setVerified(true);
+        otpRepository.save(otpEntity);
         return true;
+    }
+
+    @Override
+    public boolean isOTPVerified(String email, String otp) {
+        OTPEntity otpEntity = otpRepository.getOTPEntityByEmailAndOtpNumber(email, otp);
+        if (otpEntity == null) {
+            return false;
+        } else {
+            return otpEntity.isVerified();
+        }
+    }
+
+    @Override
+    public void deleteOtp(String otp) {
+        otpRepository.deleteByOtpNumber(otp);
     }
 }
