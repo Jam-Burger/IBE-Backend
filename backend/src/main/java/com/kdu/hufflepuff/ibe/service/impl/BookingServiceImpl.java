@@ -30,6 +30,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 @Slf4j
 public class BookingServiceImpl implements BookingService {
+    private final EmailService emailService;
     private final BookingExtensionRepository bookingExtensionRepository;
     private final GuestService guestService;
     private final GraphQlClient graphQlClient;
@@ -39,11 +40,12 @@ public class BookingServiceImpl implements BookingService {
     private final SpecialOfferService specialOfferService;
     private final OTPService otpService;
     private final BookingMapper bookingMapper;
+    private final DelayedEmailSchedulerService delayedEmailSchedulerService;
     private final Random random = new Random();
 
     @Override
     @Transactional
-    public BookingDetailsDTO createBooking(BookingRequestDTO request, String otp) {
+    public BookingDetailsDTO createBooking(Long tenantId, BookingRequestDTO request, String otp) {
         String travelerEmail = request.getFormData().get("travelerEmail");
         if (travelerEmail == null || travelerEmail.isEmpty()) {
             throw BookingOperationException.guestCreationFailed("Traveler email is required");
@@ -99,7 +101,16 @@ public class BookingServiceImpl implements BookingService {
             // Step 8: delete OTP
             otpService.deleteOtp(otp);
 
-            // Step 9: return booking details
+            // Step 9: add email to queue
+            delayedEmailSchedulerService.scheduleBookingConfirmationEmail(
+                travelerEmail,
+                guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName(),
+                booking.getBookingId(),
+                propertyId,
+                tenantId
+            );
+
+            // Step 10: return booking details
             return getBookingDetailsById(booking.getBookingId());
         } catch (Exception e) {
             throw BookingOperationException.bookingCreationFailed("Unexpected error during booking creation: " + e.getMessage(), e);
@@ -136,7 +147,6 @@ public class BookingServiceImpl implements BookingService {
             throw BookingOperationException.bookingCancellationFailed(bookingId);
         }
     }
-
 
     /**
      * Checks room availability and selects rooms for booking.

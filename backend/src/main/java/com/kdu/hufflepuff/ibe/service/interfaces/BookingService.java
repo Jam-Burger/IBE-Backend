@@ -7,11 +7,12 @@ public interface BookingService {
     /**
      * Creates a new booking and locks the room dates
      *
+     * @param tenantId tenant ID
      * @param bookingRequest the booking request details
      * @param otp            the OTP for verification
      * @return the created booking with detailed information
      */
-    BookingDetailsDTO createBooking(BookingRequestDTO bookingRequest, String otp);
+    BookingDetailsDTO createBooking(Long tenantId, BookingRequestDTO bookingRequest, String otp);
 
     /**
      * Cancels a booking and releases the room date locks

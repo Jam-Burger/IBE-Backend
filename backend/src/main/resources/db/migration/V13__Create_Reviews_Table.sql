@@ -1,0 +1,10 @@
+CREATE TABLE reviews (
+    id BIGSERIAL PRIMARY KEY,
+    booking_id BIGINT NOT NULL UNIQUE REFERENCES booking_extension (booking_id),
+    rating INTEGER NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
+
+);
