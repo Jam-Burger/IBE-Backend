@@ -18,6 +18,7 @@ import com.kdu.hufflepuff.ibe.util.*;
 import com.kdu.hufflepuff.ibe.util.GuestCountConverter.GuestCounts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,9 @@ import java.util.Random;
 @RequiredArgsConstructor
 @Slf4j
 public class BookingServiceImpl implements BookingService {
+
+    private final EmailService emailService;
+
     private final BookingExtensionRepository bookingExtensionRepository;
     private final GuestService guestService;
     private final GraphQlClient graphQlClient;
@@ -38,11 +42,14 @@ public class BookingServiceImpl implements BookingService {
     private final RoomLockService roomLockService;
     private final SpecialOfferService specialOfferService;
     private final BookingMapper bookingMapper;
+    private final DelayedEmailSchedulerService delayedEmailSchedulerService;
     private final Random random = new Random();
+    @Value("${application.cors.allowed-origins}")
+    private String[] frontendAllowedOrigins;
 
     @Override
     @Transactional
-    public BookingDetailsDTO createBooking(BookingRequestDTO request) {
+    public BookingDetailsDTO createBooking(Long tenantId, BookingRequestDTO request) {
         RoomSelectionResult roomSelection = selectRoomsForBooking(request);
         List<Long> selectedRoomIds = roomSelection.roomIds();
         List<Long> selectedAvailabilityIds = roomSelection.availabilityIds();
@@ -90,6 +97,31 @@ public class BookingServiceImpl implements BookingService {
 
             // Step 7: Create booking extension and apply promotions
             createBookingExtension(booking.getBookingId(), transaction, guestExtension, request.getPromotionId());
+
+            String travelerEmail = request.getFormData().get("travelerEmail");
+
+
+//            Context emailContext = new Context();
+//            emailContext.setVariable("guestName", guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName());
+//            emailContext.setVariable("bookingId", booking.getBookingId());
+//            emailContext.setVariable("propertyId", propertyId);
+//            emailContext.setVariable("reviewUrl", String.format("%s/%s/review/%s", frontendAllowedOrigins[0], tenantId, booking.getBookingId()));
+//            emailService.sendHtmlEmailWithAttachment(
+//                    travelerEmail,
+//                    "Your Booking Confirmation",
+//                    "review-template", // Template name (no .html)
+//                    emailContext,
+//                    null, // No attachment for now
+//                    null
+//            );
+
+            delayedEmailSchedulerService.scheduleBookingConfirmationEmail(
+                    travelerEmail,
+                    guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName(),
+                    booking.getBookingId(),
+                    propertyId,
+                    tenantId
+            );
 
             return getBookingDetailsById(booking.getBookingId());
         } catch (BookingException e) {
@@ -366,7 +398,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    // Todo
+
     private Double calculateTotalAmount(BookingRequestDTO request) {
         return 1000d;
     }

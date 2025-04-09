@@ -1,0 +1,56 @@
+<!-- src/main/resources/templates/email-template.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>We value your feedback!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 30px;
+            color: #333;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        h2 {
+            color: #222;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Hello <span th:text="${guestName}">Guest</span>,</h2>
+    <p>Thank you for booking with us! We hope you had a fantastic experience at our property.</p>
+    <p>We'd really appreciate it if you could share your feedback with us.</p>
+
+    <a class="button" style="text-decoration: none;" th:href="@{${reviewUrl}}">
+        Leave a Review
+    </a>
+
+    <p style="margin-top: 30px;">Your Booking ID: <strong th:text="${bookingId}"></strong><br/>
+        Property ID: <strong th:text="${propertyId}"></strong>
+    </p>
+
+    <p style="margin-top: 30px;">Thank you,<br/>The Hufflepuff Hotel Team 🏨</p>
+</div>
+</body>
+</html>

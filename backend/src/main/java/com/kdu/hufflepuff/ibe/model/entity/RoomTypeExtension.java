@@ -38,4 +38,5 @@ public class RoomTypeExtension extends BaseEntity {
     @Column(name = "image")
     @CollectionTable(name = "room_type_images", joinColumns = @JoinColumn(name = "room_type_id"))
     private List<String> images = new ArrayList<>();
+
 }

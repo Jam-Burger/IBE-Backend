@@ -10,7 +10,7 @@ public interface BookingService {
      * @param bookingRequest the booking request details
      * @return the created booking with detailed information
      */
-    BookingDetailsDTO createBooking(BookingRequestDTO bookingRequest);
+    BookingDetailsDTO createBooking(Long tenantId, BookingRequestDTO bookingRequest);
 
     /**
      * Cancels a booking and releases the room date locks
