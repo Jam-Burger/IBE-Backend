@@ -34,7 +34,7 @@ public interface OTPService {
      * Checks if the OTP for the given email is verified.
      *
      * @param email the email associated with the OTP
-     * @param otp  the OTP to check
+     * @param otp   the OTP to check
      * @return true if verified, false otherwise
      */
     boolean isOTPVerified(String email, String otp);

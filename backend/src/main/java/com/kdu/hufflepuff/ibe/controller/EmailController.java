@@ -42,29 +42,29 @@ public class EmailController {
      */
     @PostMapping("/send")
     @Operation(
-            summary = "Send HTML email with attachment",
-            description = "Sends an HTML formatted email with a predefined attachment to the specified recipient"
+        summary = "Send HTML email with attachment",
+        description = "Sends an HTML formatted email with a predefined attachment to the specified recipient"
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Email sent successfully",
-                    content = @Content(schema = @Schema(implementation = String.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid request data",
-                    content = @Content(schema = @Schema(implementation = String.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Failed to send email",
-                    content = @Content(schema = @Schema(implementation = String.class))
-            )
+        @ApiResponse(
+            responseCode = "200",
+            description = "Email sent successfully",
+            content = @Content(schema = @Schema(implementation = String.class))
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid request data",
+            content = @Content(schema = @Schema(implementation = String.class))
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Failed to send email",
+            content = @Content(schema = @Schema(implementation = String.class))
+        )
     })
     public ResponseEntity<String> sendEmail(
-            @Parameter(description = "Email request information", required = true)
-            @Valid @RequestBody EmailRequestDTO request) {
+        @Parameter(description = "Email request information", required = true)
+        @Valid @RequestBody EmailRequestDTO request) {
         try {
             Context context = new Context();
             context.setVariable("title", request.getTitle());
@@ -73,18 +73,18 @@ public class EmailController {
             String attachmentPath = new ClassPathResource("attachments/sample.txt").getFile().getAbsolutePath();
 
             emailService.sendHtmlEmailWithAttachment(
-                    request.getTo(),
-                    request.getSubject(),
-                    "email-template",
-                    context,
-                    attachmentPath,
-                    DEFAULT_ATTACHMENT_NAME
+                request.getTo(),
+                request.getSubject(),
+                "email-template",
+                context,
+                attachmentPath,
+                DEFAULT_ATTACHMENT_NAME
             );
 
             return ResponseEntity.ok("Email sent successfully");
         } catch (MessagingException | IOException e) {
             return ResponseEntity.internalServerError()
-                    .body("Failed to send email: " + e.getMessage());
+                .body("Failed to send email: " + e.getMessage());
         }
     }
 }

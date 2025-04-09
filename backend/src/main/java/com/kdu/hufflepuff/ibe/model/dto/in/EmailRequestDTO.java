@@ -23,6 +23,6 @@ public class EmailRequestDTO {
 
     @NotBlank(message = "Message is required")
     @Schema(description = "Main message content of the email",
-            example = "Thank you for joining our platform. We're excited to have you!")
+        example = "Thank you for joining our platform. We're excited to have you!")
     private String message;
 }

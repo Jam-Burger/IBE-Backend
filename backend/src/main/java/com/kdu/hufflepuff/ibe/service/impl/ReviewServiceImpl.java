@@ -12,7 +12,6 @@ import com.kdu.hufflepuff.ibe.service.interfaces.ReviewService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -26,16 +25,15 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void addReviewFromDTO(Long bookingId, ReviewRequestDTO dto) {
         Review review = Review.builder()
-                .bookingId(bookingId)
-                .rating(dto.getRating())
-                .comment(dto.getComment())
-                .build();
+            .bookingId(bookingId)
+            .rating(dto.getRating())
+            .comment(dto.getComment())
+            .build();
 
         addReview(review);
     }
 
     @Override
-    @Transactional
     public void addReview(Review review) {
         reviewRepository.save(review);
 
@@ -47,7 +45,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         RoomTypeExtension roomType = roomTypeExtensionRepository.findById(roomTypeId)
-                .orElseThrow(() -> new EntityNotFoundException("RoomTypeExtension not found for ID: " + roomTypeId));
+            .orElseThrow(() -> new EntityNotFoundException("RoomTypeExtension not found for ID: " + roomTypeId));
 
         long currentReviewCount = roomType.getNoOfReviews() != null ? roomType.getNoOfReviews() : 0L;
         double currentRating = roomType.getRating() != null ? roomType.getRating() : 0.0;

@@ -26,41 +26,41 @@ public class RoomRateController {
     private final RoomRateService roomRateService;
 
     @Operation(
-            summary = "Get minimum daily room rates",
-            description = "Retrieves the minimum daily room rates for a given property within a date range"
+        summary = "Get minimum daily room rates",
+        description = "Retrieves the minimum daily room rates for a given property within a date range"
     )
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved minimum daily room rates",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = com.kdu.hufflepuff.ibe.model.response.ApiResponse.class))
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid date range or parameters provided"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Property or tenant not found"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved minimum daily room rates",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = com.kdu.hufflepuff.ibe.model.response.ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid date range or parameters provided"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Property or tenant not found"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/daily-minimum")
     public ResponseEntity<com.kdu.hufflepuff.ibe.model.response.ApiResponse<List<DailyRoomRateDTO>>> getMinimumDailyRates(
-            @Parameter(description = "Tenant ID", required = true)
-            @PathVariable Long tenantId,
+        @Parameter(description = "Tenant ID", required = true)
+        @PathVariable Long tenantId,
 
-            @Parameter(description = "Property ID", required = true)
-            @PathVariable Long propertyId,
+        @Parameter(description = "Property ID", required = true)
+        @PathVariable Long propertyId,
 
-            @Parameter(description = "Start date in ISO format (yyyy-MM-dd)", required = true, example = "2025-01-01")
-            @Valid @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @Parameter(description = "Start date in ISO format (yyyy-MM-dd)", required = true, example = "2025-01-01")
+        @Valid @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
 
-            @Parameter(description = "End date in ISO format (yyyy-MM-dd)", required = true, example = "2025-01-10")
-            @Valid @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        @Parameter(description = "End date in ISO format (yyyy-MM-dd)", required = true, example = "2025-01-10")
+        @Valid @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         List<DailyRoomRateDTO> minimumDailyRates = roomRateService.getMinimumDailyRates(tenantId, propertyId, startDate,
-                endDate);
+            endDate);
         return com.kdu.hufflepuff.ibe.model.response.ApiResponse.<List<DailyRoomRateDTO>>builder()
-                .data(minimumDailyRates)
-                .message("Minimum daily room rates")
-                .statusCode(HttpStatus.OK)
-                .build()
-                .send();
+            .data(minimumDailyRates)
+            .message("Minimum daily room rates")
+            .statusCode(HttpStatus.OK)
+            .build()
+            .send();
     }
 }

@@ -15,9 +15,9 @@ public class ReviewController {
 
     @PostMapping("/{bookingId}")
     public ResponseEntity<String> submitReview(
-            @PathVariable Long bookingId,
-            @PathVariable Long tenantId,
-            @RequestBody ReviewRequestDTO reviewRequest) {
+        @PathVariable Long bookingId,
+        @PathVariable Long tenantId,
+        @RequestBody ReviewRequestDTO reviewRequest) {
 
 
         reviewService.addReviewFromDTO(bookingId, reviewRequest);

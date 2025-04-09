@@ -17,11 +17,11 @@ public class DelayedEmailSchedulerServiceImpl implements DelayedEmailSchedulerSe
 
     @Override
     public void scheduleBookingConfirmationEmail(
-            String toEmail,
-            String guestName,
-            Long bookingId,
-            Long propertyId,
-            Long tenantId
+        String toEmail,
+        String guestName,
+        Long bookingId,
+        Long propertyId,
+        Long tenantId
     ) {
         PendingEmail email = new PendingEmail();
         email.setToEmail(toEmail);

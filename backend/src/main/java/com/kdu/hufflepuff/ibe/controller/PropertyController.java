@@ -28,55 +28,55 @@ public class PropertyController {
     private final PropertyService propertyService;
 
     @Operation(
-            summary = "Get all properties",
-            description = "Retrieves a list of all properties for a tenant"
+        summary = "Get all properties",
+        description = "Retrieves a list of all properties for a tenant"
     )
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "Properties retrieved successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ApiResponse.class))),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "404",
-                    description = "No properties found",
-                    content = @Content)
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Properties retrieved successfully",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "No properties found",
+            content = @Content)
     })
     @GetMapping
     public ResponseEntity<ApiResponse<List<PropertyDTO>>> getProperties(
-            @Parameter(description = "ID of the tenant") @PathVariable Long tenantId) {
+        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId) {
         return ApiResponse.<List<PropertyDTO>>builder()
-                .data(propertyService.getProperties(tenantId))
-                .message("Properties retrieved successfully")
-                .statusCode(HttpStatus.OK)
-                .build()
-                .send();
+            .data(propertyService.getProperties(tenantId))
+            .message("Properties retrieved successfully")
+            .statusCode(HttpStatus.OK)
+            .build()
+            .send();
     }
 
     @Operation(
-            summary = "Get property details",
-            description = "Retrieves detailed information about a specific property"
+        summary = "Get property details",
+        description = "Retrieves detailed information about a specific property"
     )
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "Property details retrieved successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ApiResponse.class))),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "404",
-                    description = "Property not found",
-                    content = @Content)
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Property details retrieved successfully",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Property not found",
+            content = @Content)
     })
     @GetMapping("/{propertyId}")
     public ResponseEntity<ApiResponse<PropertyDetailsDTO>> getPropertyDetails(
-            @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
-            @Parameter(description = "ID of the property to retrieve") @PathVariable Long propertyId) {
+        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the property to retrieve") @PathVariable Long propertyId) {
         return ApiResponse.<PropertyDetailsDTO>builder()
-                .data(propertyService.getPropertyDetails(tenantId, propertyId))
-                .message("Property details retrieved successfully")
-                .statusCode(HttpStatus.OK)
-                .build()
-                .send();
+            .data(propertyService.getPropertyDetails(tenantId, propertyId))
+            .message("Property details retrieved successfully")
+            .statusCode(HttpStatus.OK)
+            .build()
+            .send();
     }
 }
