@@ -34,6 +34,8 @@ public class PaymentServiceImpl implements PaymentService {
         Transaction transaction = Transaction.builder()
             .transactionId(transactionId)
             .cardNumber(payment.getCardNumber())
+            .expMonth(payment.getExpMonth())
+            .expYear(payment.getExpYear())
             .amount(amount)
             .status("COMPLETED")
             .timestamp(LocalDateTime.now())
@@ -56,8 +58,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw PaymentException.invalidPaymentInfo("Payment amount exceeds maximum allowed");
         }
 
-        YearMonth cardExpiry = YearMonth.of(2000 + Integer.parseInt(payment.getExpYear()),
-            Integer.parseInt(payment.getExpMonth()));
+        YearMonth cardExpiry = YearMonth.of(payment.getExpYear(), payment.getExpMonth());
         YearMonth now = YearMonth.from(LocalDate.now());
 
         if (cardExpiry.isBefore(now)) {

@@ -51,7 +51,7 @@ public class BookingController {
 
     @PostMapping("/{bookingId}/send-mail")
     public ResponseEntity<String> sendBookingPdf(
-            @PathVariable Long bookingId) {
+        @PathVariable Long bookingId) {
         bookingPdfService.generateAndSendBookingPdf(bookingId);
         return ResponseEntity.ok("Booking PDF has been sent successfully.");
     }

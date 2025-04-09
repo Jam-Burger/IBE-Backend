@@ -19,11 +19,14 @@ public final class PaymentMapper {
     private static final Validator validator = factory.getValidator();
 
     public static PaymentDTO fromFormData(Map<String, String> formData) {
+        Integer expMonth = Integer.parseInt(formData.get("expMonth"));
+        Integer expYear = Integer.parseInt(formData.get("expYear")) + 2000;
+
         return PaymentDTO.builder()
             .cardNumber(formData.get("cardNumber"))
             .cvv(formData.get("cvv"))
-            .expMonth(formData.get("expMonth"))
-            .expYear(formData.get("expYear"))
+            .expMonth(expMonth)
+            .expYear(expYear)
             .build();
     }
 

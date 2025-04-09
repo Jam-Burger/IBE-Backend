@@ -15,7 +15,6 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(BookingException.class)
     public ResponseEntity<ErrorResponse> handleBookingException(BookingException ex) {
         return ErrorResponse.builder()
@@ -109,6 +108,15 @@ public class GlobalExceptionHandler {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.BAD_REQUEST)
             .message(errors.values().iterator().next()) // Return only the first validation error
+            .build()
+            .send();
+    }
+
+    @ExceptionHandler(MiscellaneousException.class)
+    public ResponseEntity<ErrorResponse> handleMiscellaneousException(MiscellaneousException ex) {
+        return ErrorResponse.builder()
+            .statusCode(HttpStatus.BAD_REQUEST)
+            .message(getRootCauseMessage(ex))
             .build()
             .send();
     }

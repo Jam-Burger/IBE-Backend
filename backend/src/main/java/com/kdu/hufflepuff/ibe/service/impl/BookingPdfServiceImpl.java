@@ -1,8 +1,11 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
+import com.kdu.hufflepuff.ibe.exception.BookingOperationException;
+import com.kdu.hufflepuff.ibe.exception.MiscellaneousException;
 import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingPdfService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +15,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -34,7 +36,7 @@ public class BookingPdfServiceImpl implements BookingPdfService {
 
     public void generateAndSendBookingPdf(Long bookingId) {
         BookingDetailsDTO booking = bookingService.getBookingDetailsById(bookingId);
-        if (booking == null) throw new RuntimeException("Booking not found");
+        if (booking == null) throw BookingOperationException.bookingNotFound(bookingId);
 
         // Fill HTML for PDF
         Context context = new Context();
@@ -58,7 +60,7 @@ public class BookingPdfServiceImpl implements BookingPdfService {
             return outputStream.toByteArray();
         } catch (Exception e) {
             log.error("Error while generating PDF: ", e);
-            throw new RuntimeException("Failed to generate PDF");
+            throw new MiscellaneousException("Failed to generate PDF");
         }
     }
 
@@ -76,7 +78,7 @@ public class BookingPdfServiceImpl implements BookingPdfService {
             mailSender.send(message);
         } catch (Exception e) {
             log.error("Error while sending email: ", e);
-            throw new RuntimeException("Failed to send email");
+            throw new MiscellaneousException("Failed to send email");
         }
     }
 }

@@ -15,27 +15,27 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookingRequestDTO {
-    @NotNull
+    @NotNull(message = "Tenant ID is required")
     private Map<String, String> formData;
 
-    @NotNull
+    @NotNull(message = "Date range is required")
     private DateRange dateRange;
 
-    @NotNull
+    @NotNull(message = "Room count is required")
     private Integer roomCount;
 
-    @NotNull
+    @NotNull(message = "Guest details are required")
     private Map<String, Integer> guests;
 
-    @NotNull
+    @NotNull(message = "Bed count is required")
     private Integer bedCount;
 
-    @NotNull
+    @NotNull(message = "Room type id is required")
     private Long roomTypeId;
 
     private String promotionId;
 
-    @NotNull
+    @NotNull(message = "Total amount is required")
     private Double totalAmount;
 
     @Data
