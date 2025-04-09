@@ -12,10 +12,9 @@ import org.thymeleaf.context.Context;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Component
+@Component(value = "worker")
 @RequiredArgsConstructor
 public class TaskScheduler {
-
     private final PendingEmailRepository pendingEmailRepository;
     private final EmailService emailService;
     @Value("${application.cors.allowed-origins}")
@@ -33,18 +32,18 @@ public class TaskScheduler {
                 context.setVariable("bookingId", email.getBookingId());
                 context.setVariable("propertyId", email.getPropertyId());
                 context.setVariable("reviewUrl", String.format("%s/%s/review/%s",
-                        frontendAllowedOrigins[0],
-                        email.getTenantId(),
-                        email.getBookingId()
+                    frontendAllowedOrigins[0],
+                    email.getTenantId(),
+                    email.getBookingId()
                 ));
 
                 emailService.sendHtmlEmailWithAttachment(
-                        email.getToEmail(),
-                        "Your Booking Confirmation",
-                        email.getTemplateName(),
-                        context,
-                        null,
-                        null
+                    email.getToEmail(),
+                    "Your Booking Confirmation",
+                    email.getTemplateName(),
+                    context,
+                    null,
+                    null
                 );
 
                 email.setSent(true);

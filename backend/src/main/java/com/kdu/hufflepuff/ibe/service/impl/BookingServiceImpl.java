@@ -30,7 +30,6 @@ import java.util.Random;
 @RequiredArgsConstructor
 @Slf4j
 public class BookingServiceImpl implements BookingService {
-    private final EmailService emailService;
     private final BookingExtensionRepository bookingExtensionRepository;
     private final GuestService guestService;
     private final GraphQlClient graphQlClient;
