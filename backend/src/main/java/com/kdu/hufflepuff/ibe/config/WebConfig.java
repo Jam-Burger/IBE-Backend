@@ -7,6 +7,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
@@ -24,8 +27,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        List<String> origins = new ArrayList<>(List.of(allowedOrigins));
+        origins.add("https://petstore.swagger.io");
+
         registry.addMapping("/**")
-            .allowedOrigins(allowedOrigins)
+            .allowedOrigins(origins.toArray(String[]::new))
             .allowedMethods(allowedMethods)
             .allowedHeaders(allowedHeaders)
             .maxAge(maxAge);

@@ -45,13 +45,13 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingDetailsDTO createBooking(Long tenantId, BookingRequestDTO request, String otp) {
-        String travelerEmail = request.getFormData().get("travelerEmail");
-        if (travelerEmail == null || travelerEmail.isEmpty()) {
-            throw BookingOperationException.guestCreationFailed("Traveler email is required");
+        String billingEmail = request.getFormData().get("billingEmail");
+        if (billingEmail == null || billingEmail.isEmpty()) {
+            throw BookingOperationException.guestCreationFailed("Billing email is required");
         }
 
         // Step 0: Validate OTP
-        if (!otpService.isOTPVerified(travelerEmail, otp)) {
+        if (!otpService.isOTPVerified(billingEmail, otp)) {
             throw OTPException.invalidOtp("Invalid OTP provided");
         }
 
@@ -68,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
             Transaction transaction = processPaymentForBooking(request);
 
             // Step 4: Check for existing guest or create new one
-            GuestExtension guestExtension = guestService.findByEmail(travelerEmail);
+            GuestExtension guestExtension = guestService.findByEmail(billingEmail);
             Guest guest;
 
             if (guestExtension != null) {
@@ -102,7 +102,7 @@ public class BookingServiceImpl implements BookingService {
 
             // Step 9: add email to queue
             delayedEmailSchedulerService.scheduleBookingConfirmationEmail(
-                travelerEmail,
+                billingEmail,
                 guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName(),
                 booking.getBookingId(),
                 propertyId,

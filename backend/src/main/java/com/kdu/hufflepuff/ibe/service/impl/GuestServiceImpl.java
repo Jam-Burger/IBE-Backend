@@ -51,7 +51,7 @@ public class GuestServiceImpl implements GuestService {
             return guest;
         } catch (Exception e) {
             log.error("Failed to create guest in GraphQL", e);
-            throw new RuntimeException("Failed to create guest in GraphQL", e);
+            throw BookingOperationException.guestCreationFailed("Failed to create guest in GraphQL");
         }
     }
 
@@ -88,6 +88,6 @@ public class GuestServiceImpl implements GuestService {
 
     @Override
     public GuestExtension findByEmail(String email) {
-        return guestExtensionRepository.findByTravelerEmail(email).orElse(null);
+        return guestExtensionRepository.findByBillingEmail(email).orElse(null);
     }
 }
