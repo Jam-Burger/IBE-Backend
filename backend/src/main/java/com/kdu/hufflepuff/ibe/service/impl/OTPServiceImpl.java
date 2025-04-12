@@ -1,5 +1,6 @@
 package com.kdu.hufflepuff.ibe.service.impl;
 
+import com.kdu.hufflepuff.ibe.exception.MiscellaneousException;
 import com.kdu.hufflepuff.ibe.exception.OTPException;
 import com.kdu.hufflepuff.ibe.model.entity.OTPEntity;
 import com.kdu.hufflepuff.ibe.repository.jpa.OTPRepository;
@@ -14,7 +15,6 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -22,6 +22,7 @@ import java.util.Random;
 public class OTPServiceImpl implements OTPService {
     private static final int OTP_EXPIRY_MINUTES = 5;
     private static final int MAX_ATTEMPTS = 3;
+    private static final Random random = new Random();
 
     private final OTPRepository otpRepository;
     private final JavaMailSender mailSender;
@@ -44,25 +45,13 @@ public class OTPServiceImpl implements OTPService {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send OTP email");
+            throw new MiscellaneousException("Failed to send OTP email");
         }
     }
 
     @Override
     public String generateOtp(String email) {
-        Optional<OTPEntity> existingOtpOpt = otpRepository.findByEmail(email);
-
-        if (existingOtpOpt.isPresent()) {
-            OTPEntity existingOtp = existingOtpOpt.get();
-            if (existingOtp.getExpirationTime().isAfter(LocalDateTime.now())) {
-                sendOtpMail(email, existingOtp.getOtpNumber());
-                return existingOtp.getOtpNumber();
-            } else {
-                otpRepository.delete(existingOtp);
-            }
-        }
-
-        String newOtp = String.format("%06d", new Random().nextInt(999999));
+        String newOtp = String.format("%06d", random.nextInt(999999));
 
         OTPEntity otpEntity = new OTPEntity();
         otpEntity.setOtpNumber(newOtp);
