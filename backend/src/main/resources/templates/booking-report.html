@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Booking Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+        }
+
+        th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Booking Report</h1>
+
+<!-- Booking Info -->
+<div class="section">
+    <h2>Booking Details</h2>
+    <table>
+        <tr>
+            <th>Booking ID</th>
+            <td th:text="${booking.bookingId}">12345</td>
+        </tr>
+        <tr>
+            <th>Check-In Date</th>
+            <td th:text="${booking.checkInDate}">2025-06-01</td>
+        </tr>
+        <tr>
+            <th>Check-Out Date</th>
+            <td th:text="${booking.checkOutDate}">2025-06-07</td>
+        </tr>
+        <tr>
+            <th>Adults</th>
+            <td th:text="${booking.adultCount}">2</td>
+        </tr>
+        <tr>
+            <th>Children</th>
+            <td th:text="${booking.childCount}">1</td>
+        </tr>
+        <tr>
+            <th>Total Cost</th>
+            <td th:text="${booking.totalCost}">25000</td>
+        </tr>
+        <tr>
+            <th>Amount Due at Resort</th>
+            <td th:text="${booking.amountDueAtResort}">5000</td>
+        </tr>
+        <tr>
+            <th>Booking Status</th>
+            <td th:text="${booking.bookingStatus}">Confirmed</td>
+        </tr>
+        <tr>
+            <th>Property ID</th>
+            <td th:text="${booking.propertyId}">101</td>
+        </tr>
+        <tr>
+            <th>Room Numbers</th>
+            <td>
+                <span th:each="room, iterStat : ${booking.roomNumbers}">
+                    <span th:text="${room}"></span><span th:if="${!iterStat.last}">, </span>
+                </span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- Guest Info -->
+<div class="section">
+    <h2>Guest Information</h2>
+    <table>
+        <tr>
+            <th>Billing Name</th>
+            <td th:text="${booking.guestDetails.billingFirstName + ' ' + booking.guestDetails.billingLastName}"></td>
+        </tr>
+        <tr>
+            <th>Billing Email</th>
+            <td th:text="${booking.guestDetails.billingEmail}"></td>
+        </tr>
+        <tr>
+            <th>Billing Phone</th>
+            <td th:text="${booking.guestDetails.billingPhone}"></td>
+        </tr>
+        <tr>
+            <th>Billing Address</th>
+            <td>
+                <span th:text="${booking.guestDetails.billingAddress1}"></span><br/>
+                <span th:if="${booking.guestDetails.billingAddress2 != null}"
+                      th:text="${booking.guestDetails.billingAddress2}"></span><br/>
+                <span th:text="${booking.guestDetails.billingCity + ', ' + booking.guestDetails.billingState + ', ' + booking.guestDetails.billingCountry + ' - ' + booking.guestDetails.billingZip}"></span>
+            </td>
+        </tr>
+        <tr>
+            <th>Traveler Name</th>
+            <td th:text="${booking.guestDetails.travelerFirstName + ' ' + booking.guestDetails.travelerLastName}"></td>
+        </tr>
+        <tr>
+            <th>Traveler Email</th>
+            <td th:text="${booking.guestDetails.travelerEmail}"></td>
+        </tr>
+        <tr>
+            <th>Traveler Phone</th>
+            <td th:text="${booking.guestDetails.travelerPhone}"></td>
+        </tr>
+        <tr>
+            <th>Receives Special Offers</th>
+            <td th:text="${booking.guestDetails.receiveOffers ? 'Yes' : 'No'}"></td>
+        </tr>
+        <tr>
+            <th>Agreed to Terms</th>
+            <td th:text="${booking.guestDetails.agreedToTerms ? 'Yes' : 'No'}"></td>
+        </tr>
+    </table>
+</div>
+
+<!-- Transaction -->
+<div class="section" th:if="${booking.transaction != null}">
+    <h2>Transaction Details</h2>
+    <table>
+        <tr>
+            <th>Transaction ID</th>
+            <td th:text="${booking.transaction.transactionId}"></td>
+        </tr>
+        <tr>
+            <th>Amount</th>
+            <td th:text="${booking.transaction.amount}"></td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td th:text="${booking.transaction.status}"></td>
+        </tr>
+        <tr>
+            <th>Timestamp</th>
+            <td th:text="${#temporals.format(booking.transaction.timestamp, 'yyyy-MM-dd HH:mm:ss')}"></td>
+        </tr>
+    </table>
+</div>
+
+<!-- Special Offer -->
+<div class="section" th:if="${booking.specialOffer != null}">
+    <h2>Special Offer</h2>
+    <table>
+        <tr>
+            <th>Title</th>
+            <td th:text="${booking.specialOffer.title}"></td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td th:text="${booking.specialOffer.description}"></td>
+        </tr>
+        <tr>
+            <th>Discount</th>
+            <td th:text="${booking.specialOffer.discountPercentage + '%'}"></td>
+        </tr>
+        <tr>
+            <th>Valid From</th>
+            <td th:text="${booking.specialOffer.startDate}"></td>
+        </tr>
+        <tr>
+            <th>Valid Till</th>
+            <td th:text="${booking.specialOffer.endDate}"></td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

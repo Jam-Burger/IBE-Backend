@@ -1,0 +1,71 @@
+name: Deploy Infrastructure as Code - QA
+
+on:
+  workflow_call: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: QA
+    defaults:
+      run:
+        working-directory: ./iac
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Create tfvars file
+        run: |
+          cat > qa.tfvars <<EOF
+          project_name = "${{ vars.PROJECT_NAME }}"
+          team_name = "${{ vars.TEAM_NAME }}"
+          aws_region = "${{ vars.AWS_REGION }}"
+          vpc_id = "${{ vars.VPC_ID }}"
+          vpc_cidr = "${{ vars.VPC_CIDR }}"
+          public_subnet_ids = ${{ vars.PUBLIC_SUBNET_IDS }}
+          private_subnet_ids = ${{ vars.PRIVATE_SUBNET_IDS }}
+          allowed_origins = ${{ vars.ALLOWED_ORIGINS }}
+          container_environment = {
+            ENV = "qa"
+            DB_URL = "${{ vars.DB_URL }}"
+            DB_USERNAME = "${{ secrets.DB_USERNAME }}"
+            DB_PASSWORD = "${{ secrets.DB_PASSWORD }}"
+            ALLOWED_ORIGINS = "$(echo ${{ vars.ALLOWED_ORIGINS }} | tr -d '[]"')"
+            GRAPHQL_API_URL = "${{ vars.GRAPHQL_API_URL }}"
+            GRAPHQL_API_KEY = "${{ secrets.GRAPHQL_API_KEY }}"
+            MAIL_USERNAME   = "${{ vars.MAIL_USERNAME }}"
+            MAIL_PASSWORD   = "${{ secrets.MAIL_PASSWORD }}"
+          }
+          EOF
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+
+      - name: Select Terraform Workspace
+        id: workspace
+        run: terraform workspace select qa || terraform workspace new qa
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -var-file=qa.tfvars -out=tfplan
+
+      - name: Terraform Apply
+        id: apply
+        run: terraform apply -auto-approve tfplan
