@@ -3,10 +3,7 @@ package com.kdu.hufflepuff.ibe.service.impl;
 import com.kdu.hufflepuff.ibe.exception.ConfigNotFoundException;
 import com.kdu.hufflepuff.ibe.exception.InvalidConfigException;
 import com.kdu.hufflepuff.ibe.model.dto.in.ConfigRequestDTO;
-import com.kdu.hufflepuff.ibe.model.dynamodb.GlobalConfigModel;
-import com.kdu.hufflepuff.ibe.model.dynamodb.LandingPageConfigModel;
-import com.kdu.hufflepuff.ibe.model.dynamodb.RoomsListConfigModel;
-import com.kdu.hufflepuff.ibe.model.dynamodb.WebsiteConfigModel;
+import com.kdu.hufflepuff.ibe.model.dynamodb.*;
 import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.repository.dynamodb.WebsiteConfigRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.WebsiteConfigService;
@@ -56,6 +53,9 @@ public class WebsiteConfigServiceImpl implements WebsiteConfigService {
             case ROOMS_LIST:
                 config.setRoomsListConfigModel((RoomsListConfigModel) configData);
                 break;
+            case CHECKOUT:
+                config.setCheckoutConfigModel((CheckoutConfigModel) configData);
+                break;
             default:
                 throw InvalidConfigException.unsupportedConfigType(configType.getKey());
         }
@@ -95,7 +95,7 @@ public class WebsiteConfigServiceImpl implements WebsiteConfigService {
         }
     }
 
-    String getPk(Long tenantId) {
+    private String getPk(Long tenantId) {
         return "TENANT#" + tenantId;
     }
 } 

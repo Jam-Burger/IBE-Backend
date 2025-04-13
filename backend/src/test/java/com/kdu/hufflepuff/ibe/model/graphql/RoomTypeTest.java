@@ -18,7 +18,11 @@ class RoomTypeTest {
         Integer areaInSquareFeet = 400;
         Integer singleBed = 2;
         Integer doubleBed = 1;
-        Long propertyId = 1L;
+        Property property = Property.builder()
+            .propertyId(1L)
+            .propertyName("Test Hotel")
+            .propertyAddress("123 Test St")
+            .build();
         List<RoomRateRoomTypeMapping> roomRates = Collections.singletonList(
             RoomRateRoomTypeMapping.builder().roomRateRoomTypeMappingId(1L).build()
         );
@@ -34,7 +38,7 @@ class RoomTypeTest {
             .areaInSquareFeet(areaInSquareFeet)
             .singleBed(singleBed)
             .doubleBed(doubleBed)
-            .propertyId(propertyId)
+            .property(property)
             .roomRates(roomRates)
             .rooms(rooms)
             .build();
@@ -49,7 +53,9 @@ class RoomTypeTest {
                 assertThat(type.getAreaInSquareFeet()).isEqualTo(areaInSquareFeet);
                 assertThat(type.getSingleBed()).isEqualTo(singleBed);
                 assertThat(type.getDoubleBed()).isEqualTo(doubleBed);
-                assertThat(type.getPropertyId()).isEqualTo(propertyId);
+                assertThat(type.getProperty())
+                    .isNotNull()
+                    .isEqualTo(property);
                 assertThat(type.getRoomRates())
                     .isNotNull()
                     .hasSize(1)
@@ -76,7 +82,7 @@ class RoomTypeTest {
                 assertThat(type.getAreaInSquareFeet()).isNull();
                 assertThat(type.getSingleBed()).isNull();
                 assertThat(type.getDoubleBed()).isNull();
-                assertThat(type.getPropertyId()).isNull();
+                assertThat(type.getProperty()).isNull();
                 assertThat(type.getRoomRates()).isNull();
                 assertThat(type.getRooms()).isNull();
             });
@@ -85,22 +91,31 @@ class RoomTypeTest {
     @Test
     void testEqualsAndHashCode() {
         // Given
+        Property property = Property.builder()
+            .propertyId(1L)
+            .propertyName("Test Hotel")
+            .propertyAddress("123 Test St")
+            .build();
+
         RoomType roomType1 = RoomType.builder()
             .roomTypeId(1L)
             .roomTypeName("Deluxe Room")
             .maxCapacity(4)
+            .property(property)
             .build();
 
         RoomType roomType2 = RoomType.builder()
             .roomTypeId(1L)
             .roomTypeName("Deluxe Room")
             .maxCapacity(4)
+            .property(property)
             .build();
 
         RoomType roomType3 = RoomType.builder()
             .roomTypeId(2L)
             .roomTypeName("Suite")
             .maxCapacity(6)
+            .property(property)
             .build();
 
         // Then
@@ -118,10 +133,17 @@ class RoomTypeTest {
     @Test
     void testToString() {
         // Given
+        Property property = Property.builder()
+            .propertyId(1L)
+            .propertyName("Test Hotel")
+            .propertyAddress("123 Test St")
+            .build();
+
         RoomType roomType = RoomType.builder()
             .roomTypeId(1L)
             .roomTypeName("Deluxe Room")
             .maxCapacity(4)
+            .property(property)
             .build();
 
         // Then
@@ -130,7 +152,8 @@ class RoomTypeTest {
             .contains(
                 "roomTypeId=1",
                 "roomTypeName=Deluxe Room",
-                "maxCapacity=4"
+                "maxCapacity=4",
+                "property=" + property.toString()
             );
     }
 
@@ -144,7 +167,11 @@ class RoomTypeTest {
         Integer areaInSquareFeet = 400;
         Integer singleBed = 2;
         Integer doubleBed = 1;
-        Long propertyId = 1L;
+        Property property = Property.builder()
+            .propertyId(1L)
+            .propertyName("Test Hotel")
+            .propertyAddress("123 Test St")
+            .build();
         List<RoomRateRoomTypeMapping> roomRates = Collections.singletonList(
             RoomRateRoomTypeMapping.builder().roomRateRoomTypeMappingId(1L).build()
         );
@@ -159,7 +186,7 @@ class RoomTypeTest {
         roomType.setAreaInSquareFeet(areaInSquareFeet);
         roomType.setSingleBed(singleBed);
         roomType.setDoubleBed(doubleBed);
-        roomType.setPropertyId(propertyId);
+        roomType.setProperty(property);
         roomType.setRoomRates(roomRates);
         roomType.setRooms(rooms);
 
@@ -172,7 +199,7 @@ class RoomTypeTest {
                 assertThat(type.getAreaInSquareFeet()).isEqualTo(areaInSquareFeet);
                 assertThat(type.getSingleBed()).isEqualTo(singleBed);
                 assertThat(type.getDoubleBed()).isEqualTo(doubleBed);
-                assertThat(type.getPropertyId()).isEqualTo(propertyId);
+                assertThat(type.getProperty()).isEqualTo(property);
                 assertThat(type.getRoomRates()).isEqualTo(roomRates);
                 assertThat(type.getRooms()).isEqualTo(rooms);
             });

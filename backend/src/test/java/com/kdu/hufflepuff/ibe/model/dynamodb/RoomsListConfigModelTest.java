@@ -96,7 +96,7 @@ class RoomsListConfigModelTest {
         // Given
         RoomsListConfigModel.Steps steps = new RoomsListConfigModel.Steps();
         steps.setEnabled(true);
-        steps.setLabels(List.of()); // Empty list is invalid
+        steps.setLabels(List.of()); // Empty list is invalidEmail
 
         // When
         Set<ConstraintViolation<RoomsListConfigModel.Steps>> violations = validator.validate(steps);
@@ -188,7 +188,7 @@ class RoomsListConfigModelTest {
         RoomsListConfigModel.SortOptions sortOptions = new RoomsListConfigModel.SortOptions();
         sortOptions.setEnabled(true);
         sortOptions.setDefaultSort(SortOption.PRICE_LOW_TO_HIGH);
-        sortOptions.setOptions(List.of()); // Empty list is invalid
+        sortOptions.setOptions(List.of()); // Empty list is invalidEmail
 
         // When
         Set<ConstraintViolation<RoomsListConfigModel.SortOptions>> violations = validator.validate(sortOptions);
@@ -242,7 +242,7 @@ class RoomsListConfigModelTest {
         RoomsListConfigModel.RatingsFilter ratings = new RoomsListConfigModel.RatingsFilter();
         ratings.setEnabled(true);
         ratings.setLabel("Ratings");
-        ratings.setOptions(List.of()); // Empty list is invalid
+        ratings.setOptions(List.of()); // Empty list is invalidEmail
 
         // When
         Set<ConstraintViolation<RoomsListConfigModel.RatingsFilter>> violations = validator.validate(ratings);
@@ -278,7 +278,7 @@ class RoomsListConfigModelTest {
         bedCount.setLabel("Bed Count");
         bedCount.setMin(2);
         bedCount.setMax(1); // Invalid: max < min
-        bedCount.setDefaultValue(2); // Also invalid because default can't be between min and max when min > max
+        bedCount.setDefaultValue(2); // Also invalidEmail because default can't be between min and max when min > max
 
         // When
         Set<ConstraintViolation<RoomsListConfigModel.BedCountFilter>> violations = validator.validate(bedCount);

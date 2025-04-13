@@ -14,6 +14,7 @@ public class WebsiteConfigModel {
     private GlobalConfigModel globalConfigModel;
     private LandingPageConfigModel landingPageConfigModel;
     private RoomsListConfigModel roomsListConfigModel;
+    private CheckoutConfigModel checkoutConfigModel;
 
     @DynamoDbPartitionKey
     @DynamoDbAttribute("TenantId")
@@ -54,5 +55,11 @@ public class WebsiteConfigModel {
     @DynamoDbAttribute("RoomsListConfig")
     public RoomsListConfigModel getRoomsListConfigModel() {
         return roomsListConfigModel;
+    }
+
+    @DynamoDbFlatten
+    @DynamoDbAttribute("CheckoutConfig")
+    public CheckoutConfigModel getCheckoutConfigModel() {
+        return checkoutConfigModel;
     }
 } 

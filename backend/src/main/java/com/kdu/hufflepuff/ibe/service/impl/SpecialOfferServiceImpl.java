@@ -30,20 +30,21 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
         List<SpecialOffer> specialOffers = specialOfferRepository.findAllByPropertyIdAndDateRange(propertyId, startDate,
             endDate);
 
-        List<Promotion> promotions = getGraphQLPromotions();
+        List<Promotion> gqlPromotions = getGraphQLPromotions();
 
-        if (promotions == null) {
+        if (gqlPromotions == null) {
             return List.of();
         }
 
-        promotions.forEach(promotion -> {
-            SpecialOffer specialOffer = SpecialOffer.builder()
+        gqlPromotions.forEach(promotion -> {
+            SpecialOffer gqlSpecialOffer = SpecialOffer.builder()
                 .propertyId(propertyId)
                 .title(promotion.getPromotionTitle())
                 .discountPercentage((1 - promotion.getPriceFactor()) * 100)
                 .description(promotion.getPromotionDescription())
                 .build();
-            specialOffers.add(specialOffer);
+            gqlSpecialOffer.setId(promotion.getPromotionId());
+            specialOffers.add(gqlSpecialOffer);
         });
 
         return specialOffers.stream()
@@ -81,6 +82,13 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
         }
 
         return convertToDTO(specialOffer);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SpecialOffer getSpecialOfferById(Long id) {
+        return specialOfferRepository.findById(id)
+            .orElse(null);
     }
 
     private SpecialOfferResponseDTO convertToDTO(SpecialOffer specialOffer) {

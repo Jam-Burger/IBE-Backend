@@ -251,7 +251,7 @@ class LandingPageConfigModelTest {
         guestOptions.setEnabled(true);
         guestOptions.setMin(1);
         guestOptions.setMax(4);
-        guestOptions.setCategories(new ArrayList<>()); // Empty list is invalid
+        guestOptions.setCategories(new ArrayList<>()); // Empty list is invalidEmail
 
         // When
         Set<ConstraintViolation<LandingPageConfigModel.GuestOptions>> violations = validator.validate(guestOptions);
@@ -382,7 +382,7 @@ class LandingPageConfigModelTest {
         roomOptions.setEnabled(true);
         roomOptions.setMin(2);
         roomOptions.setMax(1); // Invalid: max < min
-        roomOptions.setDefaultValue(2); // Also invalid because default can't be between min and max when min > max
+        roomOptions.setDefaultValue(2); // Also invalidEmail because default can't be between min and max when min > max
 
         // When
         Set<ConstraintViolation<LandingPageConfigModel.RoomOptions>> violations = validator.validate(roomOptions);

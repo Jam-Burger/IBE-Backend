@@ -1,0 +1,140 @@
+package com.kdu.hufflepuff.ibe.controller;
+
+import com.kdu.hufflepuff.ibe.model.dto.in.BookingRequestDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
+import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
+import com.kdu.hufflepuff.ibe.service.interfaces.BookingPdfService;
+import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/{tenantId}/bookings")
+@RequiredArgsConstructor
+@Tag(name = "Bookings", description = "Booking management API")
+public class BookingController {
+    private final BookingService bookingService;
+    private final BookingPdfService bookingPdfService;
+
+    @Operation(
+        summary = "Create new booking",
+        description = "Creates a new booking and returns booking details"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "201",
+            description = "Booking created successfully",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid booking request",
+            content = @Content)
+    })
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<BookingDetailsDTO>> createBooking(
+        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "OTP for validation") @Valid @RequestParam String otp,
+        @Parameter(description = "Booking request details") @Valid @RequestBody BookingRequestDTO request
+    ) {
+        BookingDetailsDTO response = bookingService.createBooking(tenantId, request, otp);
+        return ApiResponse.<BookingDetailsDTO>builder()
+            .message("Booking created successfully")
+            .data(response)
+            .statusCode(HttpStatus.CREATED)
+            .build()
+            .send();
+    }
+
+    @Operation(
+        summary = "Get booking by ID",
+        description = "Returns a booking object by its ID"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Booking retrieved successfully",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Booking not found",
+            content = @Content)
+    })
+    @GetMapping("/{bookingId}")
+    public ResponseEntity<ApiResponse<BookingDetailsDTO>> getBooking(
+        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the booking to retrieve") @PathVariable Long bookingId) {
+        return ApiResponse.<BookingDetailsDTO>builder()
+            .message("Booking retrieved successfully")
+            .data(bookingService.getBookingDetailsById(bookingId))
+            .statusCode(HttpStatus.OK)
+            .build()
+            .send();
+    }
+
+    @Operation(
+        summary = "Cancel booking",
+        description = "Cancels an existing booking by its ID"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "202",
+            description = "Booking cancelled successfully",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Booking not found",
+            content = @Content)
+    })
+    @PutMapping("/{bookingId}/cancel")
+    public ResponseEntity<ApiResponse<BookingDetailsDTO>> cancelBooking(
+        @Parameter(description = "OTP for validation") @Valid @RequestParam String otp,
+        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the booking to cancel") @PathVariable Long bookingId) {
+        return ApiResponse.<BookingDetailsDTO>builder()
+            .message("Booking cancelled successfully")
+            .data(bookingService.cancelBooking(bookingId, otp))
+            .statusCode(HttpStatus.ACCEPTED)
+            .build()
+            .send();
+    }
+
+    @Operation(
+        summary = "Send booking PDF",
+        description = "Generates and sends a PDF of the booking details to the customer's email"
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Booking PDF sent successfully",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = String.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Booking not found",
+            content = @Content),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "500",
+            description = "Error sending PDF",
+            content = @Content)
+    })
+    @PostMapping("/{bookingId}/send-pdf")
+    public ResponseEntity<String> sendBookingPdf(
+        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the booking to generate PDF for") @PathVariable Long bookingId) {
+        bookingPdfService.generateAndSendBookingPdf(bookingId);
+        return ResponseEntity.ok("Booking PDF has been sent successfully.");
+    }
+}

@@ -29,14 +29,4 @@ public interface RoomRateService {
      * @return Map of room type IDs to their list of room rates
      */
     Map<Long, List<RoomRateDetailsDTO>> getRoomRatesByRoomType(Long propertyId, LocalDate startDate, LocalDate endDate);
-
-    /**
-     * Get the average price per night for each room type between the specified dates
-     *
-     * @param propertyId The property ID
-     * @param startDate  The start date
-     * @param endDate    The end date
-     * @return Map of room type IDs to their average nightly rate
-     */
-    Map<Long, Double> getAveragePricesByRoomType(Long propertyId, LocalDate startDate, LocalDate endDate);
-} 
+}
