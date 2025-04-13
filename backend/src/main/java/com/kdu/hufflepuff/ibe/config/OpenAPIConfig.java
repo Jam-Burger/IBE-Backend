@@ -5,12 +5,9 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 public class OpenAPIConfig {
@@ -26,12 +23,7 @@ public class OpenAPIConfig {
                 )
                 .license(new License()
                     .name("Apache 2.0")
-                    .url("https://www.apache.org/licenses/LICENSE-2.0")))
-            .servers(List.of(
-                new Server().url("http://localhost:8080").description("Local Server"),
-                new Server().url("https://ala2vbnbel.execute-api.ap-south-1.amazonaws.com/dev").description("Development Server"),
-                new Server().url("https://rjkq6f2393.execute-api.ap-south-1.amazonaws.com/qa").description("Production Server")
-            ));
+                    .url("https://www.apache.org/licenses/LICENSE-2.0")));
     }
 
     @Bean
