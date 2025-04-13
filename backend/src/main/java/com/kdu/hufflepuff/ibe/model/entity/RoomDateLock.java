@@ -15,8 +15,7 @@ import java.time.LocalDateTime;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class
-RoomDateLock {
+public class RoomDateLock {
     @EmbeddedId
     private RoomDateLockId id;
 

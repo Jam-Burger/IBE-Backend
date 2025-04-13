@@ -44,16 +44,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingDetailsDTO createBooking(Long tenantId, BookingRequestDTO request, String otp) {
+    public BookingDetailsDTO createBooking(Long tenantId, BookingRequestDTO request) {
         String billingEmail = request.getFormData().get("billingEmail");
-        if (billingEmail == null || billingEmail.isEmpty()) {
-            throw BookingOperationException.guestCreationFailed("Billing email is required");
-        }
-
-        // Step 0: Validate OTP
-        if (!otpService.isOTPVerified(billingEmail, otp)) {
-            throw OTPException.invalidOtp("Invalid OTP provided");
-        }
 
         // Step 1: Check room availability and select rooms
         RoomSelectionResult roomSelection = selectRoomsForBooking(request);
@@ -97,9 +89,6 @@ public class BookingServiceImpl implements BookingService {
             // Step 7: Create booking extension and apply promotions
             createBookingExtension(booking.getBookingId(), transaction, guestExtension, request.getPromotionId());
 
-            // Step 8: delete OTP
-            otpService.deleteOtp(otp);
-
             // Step 9: add email to queue
             delayedEmailSchedulerService.scheduleBookingConfirmationEmail(
                 billingEmail,
@@ -120,7 +109,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingDetailsDTO cancelBooking(Long bookingId, String otp) {
+    public BookingDetailsDTO cancelBooking(Long bookingId) {
         try {
             Booking booking = validateBookingForCancellation(bookingId);
             BookingExtension bookingExtension = bookingExtensionRepository.findByBookingId(bookingId);
@@ -129,18 +118,8 @@ public class BookingServiceImpl implements BookingService {
                 throw BookingOperationException.bookingNotFound(bookingId);
             }
 
-            String travelerEmail = bookingExtension.getGuestDetails().getTravelerEmail();
-            if (travelerEmail == null || travelerEmail.isEmpty()) {
-                throw BookingOperationException.guestCreationFailed("Traveler email is required");
-            }
-
-            if (!otpService.isOTPVerified(travelerEmail, otp)) {
-                throw OTPException.invalidOtp("Invalid OTP provided");
-            }
-
             updateBookingStatusToCancelled(bookingId);
 
-            otpService.deleteOtp(otp);
             return bookingMapper.toBookingDetailsDTO(booking, bookingExtension);
         } catch (Exception e) {
             throw BookingOperationException.bookingCancellationFailed(bookingId);

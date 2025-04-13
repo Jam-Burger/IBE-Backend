@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.*;
 
+import java.time.LocalTime;
+
 @Entity
 @Table(name = "property_extension")
 @Builder
@@ -34,4 +36,10 @@ public class PropertyExtension extends BaseEntity {
 
     @Column(name = "terms_and_conditions", nullable = false)
     private String termsAndConditions;
-} 
+
+    @Column(name = "check_in_time", nullable = false)
+    private LocalTime checkInTime;
+
+    @Column(name = "check_out_time", nullable = false)
+    private LocalTime checkOutTime;
+}

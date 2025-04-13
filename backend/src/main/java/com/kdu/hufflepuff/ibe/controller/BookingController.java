@@ -1,10 +1,15 @@
 package com.kdu.hufflepuff.ibe.controller;
 
+import com.kdu.hufflepuff.ibe.exception.AuthException;
+import com.kdu.hufflepuff.ibe.exception.BookingOperationException;
+import com.kdu.hufflepuff.ibe.exception.OTPException;
 import com.kdu.hufflepuff.ibe.model.dto.in.BookingRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
+import com.kdu.hufflepuff.ibe.service.interfaces.AuthService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingPdfService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
+import com.kdu.hufflepuff.ibe.service.interfaces.OTPService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,30 +29,31 @@ import org.springframework.web.bind.annotation.*;
 public class BookingController {
     private final BookingService bookingService;
     private final BookingPdfService bookingPdfService;
+    private final AuthService authService;
+    private final OTPService otpService;
 
-    @Operation(
-        summary = "Create new booking",
-        description = "Creates a new booking and returns booking details"
-    )
+    @Operation(summary = "Create new booking", description = "Creates a new booking and returns booking details")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "201",
-            description = "Booking created successfully",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "Invalid booking request",
-            content = @Content)
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Booking created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid booking request", content = @Content)
     })
 
     @PostMapping
     public ResponseEntity<ApiResponse<BookingDetailsDTO>> createBooking(
         @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
-        @Parameter(description = "OTP for validation") @Valid @RequestParam String otp,
-        @Parameter(description = "Booking request details") @Valid @RequestBody BookingRequestDTO request
-    ) {
-        BookingDetailsDTO response = bookingService.createBooking(tenantId, request, otp);
+        @Parameter(description = "Access token for logged in users") @RequestParam(required = false) String accessToken,
+        @Parameter(description = "OTP for validation") @RequestParam(required = false) String otp,
+        @Parameter(description = "Booking request details") @Valid @RequestBody BookingRequestDTO request) {
+
+        String billingEmail = request.getFormData().get("billingEmail");
+
+        authorize(billingEmail, otp, accessToken);
+
+        BookingDetailsDTO response = bookingService.createBooking(tenantId, request);
+
+        if (otp != null)
+            otpService.deleteOtp(otp);
+
         return ApiResponse.<BookingDetailsDTO>builder()
             .message("Booking created successfully")
             .data(response)
@@ -56,21 +62,12 @@ public class BookingController {
             .send();
     }
 
-    @Operation(
-        summary = "Get booking by ID",
-        description = "Returns a booking object by its ID"
-    )
+    @Operation(summary = "Get booking by ID", description = "Returns a booking object by its ID")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "Booking retrieved successfully",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Booking not found",
-            content = @Content)
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Booking retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Booking not found", content = @Content)
     })
+
     @GetMapping("/{bookingId}")
     public ResponseEntity<ApiResponse<BookingDetailsDTO>> getBooking(
         @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
@@ -83,52 +80,41 @@ public class BookingController {
             .send();
     }
 
-    @Operation(
-        summary = "Cancel booking",
-        description = "Cancels an existing booking by its ID"
-    )
+    @Operation(summary = "Cancel booking", description = "Cancels an existing booking by its ID")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "202",
-            description = "Booking cancelled successfully",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Booking not found",
-            content = @Content)
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "202", description = "Booking cancelled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Booking not found", content = @Content)
     })
     @PutMapping("/{bookingId}/cancel")
     public ResponseEntity<ApiResponse<BookingDetailsDTO>> cancelBooking(
-        @Parameter(description = "OTP for validation") @Valid @RequestParam String otp,
         @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "Access token for logged in users") @RequestParam(required = false) String accessToken,
+        @Parameter(description = "OTP for validation") @RequestParam(required = false) String otp,
         @Parameter(description = "ID of the booking to cancel") @PathVariable Long bookingId) {
+
+        BookingDetailsDTO bookingDetails = bookingService.getBookingDetailsById(bookingId);
+        String billingEmail = bookingDetails.getGuestDetails().getBillingEmail();
+
+        authorize(billingEmail, otp, accessToken);
+
+        BookingDetailsDTO result = bookingService.cancelBooking(bookingId);
+
+        if (otp != null)
+            otpService.deleteOtp(otp);
+
         return ApiResponse.<BookingDetailsDTO>builder()
             .message("Booking cancelled successfully")
-            .data(bookingService.cancelBooking(bookingId, otp))
+            .data(result)
             .statusCode(HttpStatus.ACCEPTED)
             .build()
             .send();
     }
 
-    @Operation(
-        summary = "Send booking PDF",
-        description = "Generates and sends a PDF of the booking details to the customer's email"
-    )
+    @Operation(summary = "Send booking PDF", description = "Generates and sends a PDF of the booking details to the customer's email")
     @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "Booking PDF sent successfully",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = String.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Booking not found",
-            content = @Content),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "500",
-            description = "Error sending PDF",
-            content = @Content)
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Booking PDF sent successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Booking not found", content = @Content),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Error sending PDF", content = @Content)
     })
     @PostMapping("/{bookingId}/send-pdf")
     public ResponseEntity<String> sendBookingPdf(
@@ -136,5 +122,23 @@ public class BookingController {
         @Parameter(description = "ID of the booking to generate PDF for") @PathVariable Long bookingId) {
         bookingPdfService.generateAndSendBookingPdf(bookingId);
         return ResponseEntity.ok("Booking PDF has been sent successfully.");
+    }
+
+    private void authorize(String email, String otp, String accessToken) {
+        if (email == null || email.isEmpty()) {
+            throw BookingOperationException.guestCreationFailed("Email is required");
+        }
+
+        if (accessToken == null && otp == null) {
+            throw new AuthException("Access token or OTP is required");
+        }
+
+        if (accessToken != null && !authService.verifyAccessToken(email, accessToken)) {
+            throw new AuthException("Invalid access token");
+        }
+
+        if (otp != null && !otpService.isOTPVerified(email, otp)) {
+            throw OTPException.invalidOtp("Invalid OTP provided");
+        }
     }
 }
