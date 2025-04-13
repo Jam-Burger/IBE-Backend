@@ -29,7 +29,7 @@ resource "aws_lb" "app" {
   name               = "${var.project_name}-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
+  security_groups = [aws_security_group.alb.id]
   subnets            = var.public_subnet_ids
   ip_address_type    = "ipv4"
 
@@ -47,15 +47,15 @@ resource "aws_lb_target_group" "app" {
   target_type = "ip"
 
   health_check {
-    enabled             = true
-    healthy_threshold   = 2
-    interval            = 30
-    timeout             = 5
-    path                = "/health"
-    port                = "traffic-port"
-    protocol            = "HTTP"
-    unhealthy_threshold = 3
-    matcher             = "200"
+    enabled               = true
+    healthy_threshold     = 2
+    unhealthy_threshold   = 3
+    interval              = 60
+    timeout               = 5
+    path                  = "/health"
+    port                  = "traffic-port"
+    protocol              = "HTTP"
+    matcher               = "200"
   }
 
   tags = var.tags
