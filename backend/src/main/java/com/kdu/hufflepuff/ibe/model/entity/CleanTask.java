@@ -14,9 +14,6 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CleanTask extends BaseEntity {
-    @Column(name = "property_id", nullable = false)
-    private Long propertyId;
-
     @ManyToOne
     @JoinColumn(name = "staff_id", nullable = false)
     private Staff staff;

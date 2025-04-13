@@ -23,10 +23,10 @@ public class Staff extends BaseEntity {
     @Column(name = "phone", length = 20)
     private String phone;
 
+    @Column(name = "is_permanent_staff", nullable = false)
+    private boolean isPermanentStaff;
+
     @ManyToOne
     @JoinColumn(name = "preferred_shift_id")
     private Shift preferredShift;
-
-    @Column(name = "property_id", nullable = false)
-    private Long propertyId;
 }
