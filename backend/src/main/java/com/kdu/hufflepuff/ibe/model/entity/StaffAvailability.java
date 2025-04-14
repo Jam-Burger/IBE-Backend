@@ -36,7 +36,7 @@ public class StaffAvailability {
 
     @Data
     @Embeddable
-    private static class StaffAvailabilityId {
+    public static class StaffAvailabilityId {
         @Column(name = "staff_id", nullable = false)
         private Long staffId;
 

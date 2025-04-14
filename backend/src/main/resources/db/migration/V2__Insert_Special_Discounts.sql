@@ -131,6 +131,7 @@ WITH additional_offers AS (SELECT p.property_id,
                                                         'MILITARY20')) AS o(start_date, end_date, discount, title, description, promo_code)
                            WHERE random() < 0.7 -- 70% chance for each property to have each offer
 )
+
 INSERT
 INTO special_offer (property_id, start_date, end_date, discount_percentage, title, description, promo_code)
 SELECT *
