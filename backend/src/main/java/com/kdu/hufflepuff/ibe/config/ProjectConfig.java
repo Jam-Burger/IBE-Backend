@@ -14,7 +14,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
     GraphQLClientConfig.class,
     LoggingConfig.class,
     AwsConfig.class,
-    OpenAPIConfig.class
+    OpenAPIConfig.class,
+        JwtAuthenticationFilter.class,
+        JwtUtil.class
 })
 @EntityScan(basePackages = "com.kdu.hufflepuff.ibe.model.entity")
 @EnableJpaRepositories(basePackages = "com.kdu.hufflepuff.ibe.repository.jpa")
@@ -23,7 +25,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
     "com.kdu.hufflepuff.ibe.mapper",
     "com.kdu.hufflepuff.ibe.exception",
     "com.kdu.hufflepuff.ibe.controller",
-    "com.kdu.hufflepuff.ibe.scheduler"
+    "com.kdu.hufflepuff.ibe.scheduler",
 })
 public class ProjectConfig {
 }
