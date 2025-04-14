@@ -1,5 +1,5 @@
 package com.kdu.hufflepuff.ibe.service.interfaces;
 
-public interface AuthService {
+public interface AccessTokenService {
     boolean verifyAccessToken(String email, String accessToken);
 }

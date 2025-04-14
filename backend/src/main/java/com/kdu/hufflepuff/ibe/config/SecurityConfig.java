@@ -1,89 +1,51 @@
 package com.kdu.hufflepuff.ibe.config;
 
-import org.springframework.context.annotation.Configuration;
+import com.kdu.hufflepuff.ibe.security.AuthUserService;
+import com.kdu.hufflepuff.ibe.security.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
-
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
+@Slf4j
 @Configuration
-@EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
+@RequiredArgsConstructor
+@ComponentScan(basePackages = "com.kdu.hufflepuff.ibe.security")
 public class SecurityConfig {
-
-    private final UserDetailsService userDetailsService;
+    private final AuthUserService authUserService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(UserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.userDetailsService = userDetailsService;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
-
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder())
-                .and()
-                .build();
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
-        MvcRequestMatcher.Builder mvcMatcherBuilder = new MvcRequestMatcher.Builder(introspector);
-
-        http
-                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection
-                .cors(AbstractHttpConfigurer::disable) // Disable CORS protection
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Don't create sessions
-                .formLogin(AbstractHttpConfigurer::disable) // Disable form login
-                .httpBasic(configurer -> {}) // Enable HTTP Basic for API endpoints
-                .authorizeHttpRequests(auth -> auth
-                        // Explicitly permit health check endpoints with highest priority
-                        .requestMatchers(
-                                mvcMatcherBuilder.pattern("/"),
-                                mvcMatcherBuilder.pattern("/ping"),
-                                mvcMatcherBuilder.pattern("/health"),
-                                mvcMatcherBuilder.pattern("/healthcheck"),
-                                mvcMatcherBuilder.pattern("/api/health"),
-                                mvcMatcherBuilder.pattern("/actuator/health"),
-                                mvcMatcherBuilder.pattern("/swagger-ui/**"),
-                                mvcMatcherBuilder.pattern("/v3/api-docs/**")
-                        ).permitAll()
-
-                        // Allow authentication endpoints
-                        .requestMatchers(mvcMatcherBuilder.pattern("/api/auth/**")).permitAll()
-
-                        // Staff availability endpoints require authentication (role-based security via @PreAuthorize)
-                        .requestMatchers(mvcMatcherBuilder.pattern("/api/staff-availability/**")).authenticated()
-
-                        // Housekeeping endpoints with role-based access
-
-//                                hasAnyRole("ADMIN", "STAFF")
-
-                        // Allow all other requests without authentication
-                        .requestMatchers(mvcMatcherBuilder.pattern("/**")).permitAll()
-                )
-                // Add JWT filter before UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.httpBasic(Customizer.withDefaults())
+            .csrf(AbstractHttpConfigurer::disable)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public DaoAuthenticationProvider daoAuthenticationProvider(PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(authUserService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
+    }
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

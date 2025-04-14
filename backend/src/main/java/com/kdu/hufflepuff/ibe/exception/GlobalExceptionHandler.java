@@ -4,6 +4,7 @@ import com.kdu.hufflepuff.ibe.model.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -121,10 +122,10 @@ public class GlobalExceptionHandler {
             .send();
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
         return ErrorResponse.builder()
-            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+            .statusCode(HttpStatus.FORBIDDEN)
             .message(getRootCauseMessage(ex))
             .build()
             .send();

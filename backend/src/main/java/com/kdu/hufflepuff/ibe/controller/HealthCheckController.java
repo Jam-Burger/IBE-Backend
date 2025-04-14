@@ -20,7 +20,6 @@ import java.util.Map;
 @RequestMapping("/health")
 @Tag(name = "Health", description = "API health check and monitoring endpoints")
 public class HealthCheckController {
-
     @Operation(
         summary = "Check API health status",
         description = "Returns the current health status of the API service"

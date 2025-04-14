@@ -33,11 +33,11 @@ $$
                     LOOP
                         -- Select a random shift for this property as preferred shift
                         random_offset := floor(random() * shift_count);
-                        SELECT id INTO shift_id
+                        SELECT id
+                        INTO shift_id
                         FROM public.shift
                         WHERE property_id = prop_id
-                        OFFSET random_offset
-                            LIMIT 1;
+                        OFFSET random_offset LIMIT 1;
 
                         INSERT INTO public.staff (staff_name,
                                                   staff_email,
@@ -47,7 +47,7 @@ $$
                                                   preferred_shift_id)
                         VALUES ('Permanent Staff ' || staff_counter,
                                 'perm' || staff_counter || '@example.com',
-                                'password' || staff_counter,
+                                '$2a$10$MJ7T37xl2LrZFahiKTTvwOf96AMwTn9u2ap8MyBFD5kmfllMn4oW.',
                                 '555-' || LPAD(staff_counter::TEXT, 4, '0'),
                                 TRUE,
                                 shift_id);
@@ -59,11 +59,11 @@ $$
                     LOOP
                         -- Select a random shift for this property as preferred shift
                         random_offset := floor(random() * shift_count);
-                        SELECT id INTO shift_id
+                        SELECT id
+                        INTO shift_id
                         FROM public.shift
                         WHERE property_id = prop_id
-                        OFFSET random_offset
-                            LIMIT 1;
+                        OFFSET random_offset LIMIT 1;
 
                         INSERT INTO public.staff (staff_name,
                                                   staff_email,
@@ -105,7 +105,8 @@ $$
                 -- For each staff member, generate availability for each day in the next month
                 loop_date := current_date;
 
-                WHILE loop_date < end_date LOOP
+                WHILE loop_date < end_date
+                    LOOP
                         -- Generate random availability (approximately 80% available, 20% unavailable)
                         is_available := ((not staff_record.is_permanent_staff) or random() < 0.8);
 

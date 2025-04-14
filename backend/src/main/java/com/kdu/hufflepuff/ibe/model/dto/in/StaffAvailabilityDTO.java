@@ -1,7 +1,6 @@
 package com.kdu.hufflepuff.ibe.model.dto.in;
 
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +12,7 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StaffAvailabilityDto {
+public class StaffAvailabilityDTO {
     private Long staffId;
     private LocalDate date;
     private Boolean isAvailable;

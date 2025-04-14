@@ -6,7 +6,7 @@ import com.kdu.hufflepuff.ibe.exception.OTPException;
 import com.kdu.hufflepuff.ibe.model.dto.in.BookingRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
-import com.kdu.hufflepuff.ibe.service.interfaces.AuthService;
+import com.kdu.hufflepuff.ibe.service.interfaces.AccessTokenService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingPdfService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
 import com.kdu.hufflepuff.ibe.service.interfaces.OTPService;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class BookingController {
     private final BookingService bookingService;
     private final BookingPdfService bookingPdfService;
-    private final AuthService authService;
+    private final AccessTokenService accessTokenService;
     private final OTPService otpService;
 
     @Operation(summary = "Create new booking", description = "Creates a new booking and returns booking details")
@@ -133,7 +133,7 @@ public class BookingController {
             throw new AuthException("Access token or OTP is required");
         }
 
-        if (accessToken != null && !authService.verifyAccessToken(email, accessToken)) {
+        if (accessToken != null && !accessTokenService.verifyAccessToken(email, accessToken)) {
             throw new AuthException("Invalid access token");
         }
 
