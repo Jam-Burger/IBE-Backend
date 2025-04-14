@@ -21,12 +21,13 @@ public class EmailServiceImpl implements EmailService {
     private final TemplateEngine templateEngine;
 
     @Override
-    public void sendHtmlEmailWithAttachment(String to,
-                                            String subject,
-                                            String templateName,
-                                            Context context,
-                                            String attachmentPath,
-                                            String attachmentName) throws MessagingException {
+    public void sendEmailWithAttachment(String to,
+                                        String subject,
+                                        String templateName,
+                                        Context context,
+                                        String attachmentPath,
+                                        String attachmentName
+    ) throws MessagingException {
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -44,5 +45,10 @@ public class EmailServiceImpl implements EmailService {
         }
 
         emailSender.send(message);
+    }
+
+    @Override
+    public void sendEmail(String to, String subject, String templateName, Context context) throws MessagingException {
+        sendEmailWithAttachment(to, subject, templateName, context, null, null);
     }
 } 

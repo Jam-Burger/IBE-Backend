@@ -22,4 +22,9 @@ public class AdminServiceImpl implements AdminService {
     public boolean existsByEmail(String email) {
         return adminRepository.existsByAdminEmail(email);
     }
+
+    @Override
+    public boolean isOfProperty(String email, Long propertyId) {
+        return adminRepository.existsByAdminEmailAndPropertyId(email, propertyId);
+    }
 }

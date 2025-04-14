@@ -211,4 +211,22 @@ public final class GraphQLQueries {
                }
              }
         """;
+
+    public static final String GET_ROOMS_FROM_ROOM_IDS = """
+            query GetRooms($roomIds: [Int!]!) {
+                listRooms(where: {room_id: {in: $roomIds}}) {
+                    room_id
+                    room_number
+                    room_type_id
+                    room_type {
+                        room_type_id
+                        room_type_name
+                        max_capacity
+                        area_in_square_feet
+                        single_bed
+                        double_bed
+                    }
+                }
+            }
+        """;
 }

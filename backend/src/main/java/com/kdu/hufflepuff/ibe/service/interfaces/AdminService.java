@@ -6,4 +6,6 @@ public interface AdminService {
     Admin findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    boolean isOfProperty(String email, Long propertyId);
 }

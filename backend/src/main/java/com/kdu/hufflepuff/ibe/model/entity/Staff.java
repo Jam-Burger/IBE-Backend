@@ -1,5 +1,6 @@
 package com.kdu.hufflepuff.ibe.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public class Staff extends BaseEntity {
     @Column(name = "staff_email", nullable = false, unique = true, length = 100)
     private String staffEmail;
 
+    @JsonIgnore
     @Column(name = "staff_password", nullable = false, length = 100)
     private String staffPassword;
 

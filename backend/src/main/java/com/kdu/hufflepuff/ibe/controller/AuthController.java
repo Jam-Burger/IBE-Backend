@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/{tenantId}/auth")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/{tenantId}/auth")
 public class AuthController {
     private final AuthUserService authUserService;
 

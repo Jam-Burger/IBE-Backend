@@ -3,7 +3,9 @@ package com.kdu.hufflepuff.ibe.scheduler;
 import com.kdu.hufflepuff.ibe.model.entity.PendingEmail;
 import com.kdu.hufflepuff.ibe.repository.jpa.PendingEmailRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.EmailService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -12,6 +14,7 @@ import org.thymeleaf.context.Context;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Component(value = "worker")
 @RequiredArgsConstructor
 public class TaskScheduler {
@@ -37,7 +40,7 @@ public class TaskScheduler {
                     email.getBookingId()
                 ));
 
-                emailService.sendHtmlEmailWithAttachment(
+                emailService.sendEmailWithAttachment(
                     email.getToEmail(),
                     "Your Booking Confirmation",
                     email.getTemplateName(),
@@ -48,8 +51,8 @@ public class TaskScheduler {
 
                 email.setSent(true);
                 pendingEmailRepository.save(email);
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            } catch (MessagingException ex) {
+                log.error("Error sending email", ex);
             }
         }
     }

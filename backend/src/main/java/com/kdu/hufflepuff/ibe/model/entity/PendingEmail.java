@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class PendingEmail extends BaseEntity {
-
     private String toEmail;
     private String templateName;
     private String guestName;
@@ -19,6 +18,5 @@ public class PendingEmail extends BaseEntity {
     private Long tenantId;
     private LocalDateTime sendAfter;
     private boolean sent = false;
-
 }
 

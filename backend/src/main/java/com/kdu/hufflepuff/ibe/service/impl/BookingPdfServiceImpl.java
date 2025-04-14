@@ -7,6 +7,7 @@ import com.kdu.hufflepuff.ibe.service.interfaces.BookingPdfService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -21,18 +22,11 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class BookingPdfServiceImpl implements BookingPdfService {
-
     private final TemplateEngine templateEngine;
     private final JavaMailSender mailSender;
     private final BookingService bookingService;
-
-    @Autowired
-    public BookingPdfServiceImpl(TemplateEngine templateEngine, JavaMailSender mailSender, BookingService bookingService) {
-        this.templateEngine = templateEngine;
-        this.mailSender = mailSender;
-        this.bookingService = bookingService;
-    }
 
     public void generateAndSendBookingPdf(Long bookingId) {
         BookingDetailsDTO booking = bookingService.getBookingDetailsById(bookingId);
