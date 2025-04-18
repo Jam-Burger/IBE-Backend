@@ -2,6 +2,9 @@ package com.kdu.hufflepuff.ibe.service.interfaces;
 
 import com.kdu.hufflepuff.ibe.model.dto.in.BookingRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.BookingSummaryDTO;
+
+import java.util.List;
 
 public interface BookingService {
     /**
@@ -30,4 +33,13 @@ public interface BookingService {
      * @return the booking details with combined information
      */
     BookingDetailsDTO getBookingDetailsById(Long bookingId);
+
+    /**
+     * Fetches booking details  List with combined data from GraphQL and database
+     *
+     * @param billingEmail the email of the bookings to fetch
+     * @return the booking details with combined information
+     */
+    List<BookingSummaryDTO> getBookingDetailsByEmail(String billingEmail);
+
 } 

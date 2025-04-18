@@ -13,4 +13,5 @@ public interface OTPRepository extends JpaRepository<OTPEntity, Long> {
     OTPEntity getOTPEntityByEmailAndOtpNumber(String email, String otpNumber);
 
     void deleteByOtpNumber(String otpNumber);
+
 }

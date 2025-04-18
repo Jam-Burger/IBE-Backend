@@ -5,6 +5,7 @@ import com.kdu.hufflepuff.ibe.exception.BookingOperationException;
 import com.kdu.hufflepuff.ibe.exception.OTPException;
 import com.kdu.hufflepuff.ibe.model.dto.in.BookingRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.BookingSummaryDTO;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.AccessTokenService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingPdfService;
@@ -18,14 +19,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/{tenantId}/bookings")
 @RequiredArgsConstructor
 @Tag(name = "Bookings", description = "Booking management API")
+@Slf4j
 public class BookingController {
     private final BookingService bookingService;
     private final BookingPdfService bookingPdfService;
@@ -125,6 +130,7 @@ public class BookingController {
     }
 
     private void authorize(String email, String otp, String accessToken) {
+
         if (email == null || email.isEmpty()) {
             throw BookingOperationException.guestCreationFailed("Email is required");
         }
@@ -137,8 +143,33 @@ public class BookingController {
             throw new AuthException("Invalid access token");
         }
 
-        if (otp != null && !otpService.isOTPVerified(email, otp)) {
-            throw OTPException.invalidOtp("Invalid OTP provided");
+        if (otp != null && !otpService.verifyOtp(email, otp)) {
+            throw OTPException.invalidOtp(otp);
         }
     }
+
+
+    @GetMapping("/my-bookings")
+    public ResponseEntity<ApiResponse<List<BookingSummaryDTO>>> getBookingsByEmail(
+            @PathVariable Long tenantId,
+            @RequestParam String billingEmail,
+            @RequestParam(required = false) String accessToken,
+            @RequestParam(required = false) String otp
+    ) {
+
+        authorize(billingEmail, otp, accessToken);
+
+        List<BookingSummaryDTO> bookingDetails = bookingService.getBookingDetailsByEmail(billingEmail);
+
+        if (otp != null)
+            otpService.deleteOtp(otp);
+
+        return ApiResponse.<List<BookingSummaryDTO>>builder()
+                .message("Booking retrieved successfully")
+                .data(bookingDetails)
+                .statusCode(HttpStatus.OK)
+                .build()
+                .send();
+    }
+
 }

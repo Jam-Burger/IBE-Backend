@@ -1,6 +1,7 @@
 package com.kdu.hufflepuff.ibe.mapper;
 
 import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
+import com.kdu.hufflepuff.ibe.model.dto.out.BookingSummaryDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.SpecialOfferResponseDTO;
 import com.kdu.hufflepuff.ibe.model.entity.BookingExtension;
 import com.kdu.hufflepuff.ibe.model.graphql.Booking;
@@ -58,6 +59,28 @@ public class BookingMapper {
             if (bookingExtension.getSpecialOffer() != null) {
                 dto.setSpecialOffer(modelMapper.map(bookingExtension.getSpecialOffer(), SpecialOfferResponseDTO.class));
             }
+        }
+        return dto;
+    }
+
+    public BookingSummaryDTO mapToBookingSummaryDTO(Booking booking) {
+        BookingSummaryDTO dto = new BookingSummaryDTO();
+
+        dto.setBookingId(booking.getBookingId());
+        dto.setCheckInDate(booking.getCheckInDate());
+        dto.setCheckOutDate(booking.getCheckOutDate());
+        dto.setAdultCount(booking.getAdultCount());
+        dto.setChildCount(booking.getChildCount());
+        dto.setTotalCost(booking.getTotalCost());
+
+        if (booking.getPropertyBooked() != null) {
+            dto.setPropertyName(booking.getPropertyBooked().getPropertyName());
+            dto.setPropertyAddress(booking.getPropertyBooked().getPropertyAddress());
+            dto.setContactNumber(booking.getPropertyBooked().getContactNumber());
+        }
+
+        if (booking.getBookingStatus() != null) {
+            dto.setStatus(booking.getBookingStatus().getStatus());
         }
         return dto;
     }

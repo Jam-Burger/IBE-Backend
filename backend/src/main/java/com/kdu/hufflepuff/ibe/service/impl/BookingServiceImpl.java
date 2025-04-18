@@ -8,24 +8,25 @@ import com.kdu.hufflepuff.ibe.mapper.BookingMapper;
 import com.kdu.hufflepuff.ibe.model.dto.in.BookingRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.in.PaymentDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
-import com.kdu.hufflepuff.ibe.model.entity.BookingExtension;
-import com.kdu.hufflepuff.ibe.model.entity.GuestExtension;
-import com.kdu.hufflepuff.ibe.model.entity.SpecialOffer;
-import com.kdu.hufflepuff.ibe.model.entity.Transaction;
+import com.kdu.hufflepuff.ibe.model.dto.out.BookingSummaryDTO;
+import com.kdu.hufflepuff.ibe.model.entity.*;
 import com.kdu.hufflepuff.ibe.model.graphql.Booking;
 import com.kdu.hufflepuff.ibe.model.graphql.Guest;
 import com.kdu.hufflepuff.ibe.model.graphql.RoomAvailability;
 import com.kdu.hufflepuff.ibe.repository.jpa.BookingExtensionRepository;
+import com.kdu.hufflepuff.ibe.repository.jpa.RoomTypeRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.*;
 import com.kdu.hufflepuff.ibe.util.*;
 import com.kdu.hufflepuff.ibe.util.GuestCountConverter.GuestCounts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -44,6 +45,8 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
     private final DelayedEmailSchedulerService delayedEmailSchedulerService;
     private final Random random = new Random();
+    private final ModelMapper modelMapper;
+    private final RoomTypeRepository roomTypeRepository;
 
     @Override
     @Transactional
@@ -352,6 +355,32 @@ public class BookingServiceImpl implements BookingService {
         log.info("Booking: {}", booking);
         log.info("Booking extension: {}", bookingExtension);
         return bookingMapper.toBookingDetailsDTO(booking, bookingExtension);
+    }
+
+
+
+
+    @Override
+    public List<BookingSummaryDTO> getBookingDetailsByEmail(String billingEmail) {
+        List<BookingExtension> bookingExtensions = bookingExtensionRepository.findAllByGuestDetails_BillingEmail(billingEmail);
+        List<BookingSummaryDTO> bookingSummaryDTOList = new ArrayList<>();
+
+        for (BookingExtension extension : bookingExtensions) {
+            Booking booking = fetchBookingFromGraphQL(extension.getBookingId());
+            BookingSummaryDTO bookingSummaryDTO = bookingMapper.mapToBookingSummaryDTO(booking);
+            if (booking.getRoomBooked() != null && !booking.getRoomBooked().isEmpty()) {
+                RoomAvailability firstRoomAvailability = booking.getRoomBooked().getFirst();
+                if (firstRoomAvailability.getRoom() != null) {
+                    RoomTypeExtension roomTypeExtension = roomTypeRepository.findById(firstRoomAvailability.getRoom().getRoomTypeId())
+                            .orElseThrow(() -> new RuntimeException("Room Type not found"));
+
+                    bookingSummaryDTO.setRoomTypeImage(roomTypeExtension.getImages().getFirst());
+
+                }
+            }
+            bookingSummaryDTOList.add(bookingSummaryDTO);
+        }
+        return bookingSummaryDTOList;
     }
 
     /**

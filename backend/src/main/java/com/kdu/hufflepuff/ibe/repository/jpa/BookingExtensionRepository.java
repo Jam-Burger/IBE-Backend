@@ -4,7 +4,10 @@ import com.kdu.hufflepuff.ibe.model.entity.BookingExtension;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface BookingExtensionRepository extends JpaRepository<BookingExtension, Long> {
     BookingExtension findByBookingId(Long bookingId);
+    List<BookingExtension> findAllByGuestDetails_BillingEmail(String billingEmail);
 }

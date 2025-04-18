@@ -64,4 +64,5 @@ public class BookingDetailsDTO {
 
     @JsonProperty("room_type_id")
     private Long roomTypeId;
+
 } 
