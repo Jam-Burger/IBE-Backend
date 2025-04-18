@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
@@ -51,6 +52,8 @@ public class OTPServiceImpl implements OTPService {
 
     @Override
     public String generateOtp(String email) {
+        otpRepository.findByEmail(email).ifPresent(otpRepository::delete);
+
         String newOtp = String.format("%06d", random.nextInt(999999));
 
         OTPEntity otpEntity = new OTPEntity();
@@ -105,6 +108,7 @@ public class OTPServiceImpl implements OTPService {
     }
 
     @Override
+    @Transactional
     public void deleteOtp(String otp) {
         otpRepository.deleteByOtpNumber(otp);
     }

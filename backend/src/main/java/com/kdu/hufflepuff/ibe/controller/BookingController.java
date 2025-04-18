@@ -45,21 +45,21 @@ public class BookingController {
         @Parameter(description = "OTP for validation") @RequestParam(required = false) String otp,
         @Parameter(description = "Booking request details") @Valid @RequestBody BookingRequestDTO request) {
 
-        String billingEmail = request.getFormData().get("billingEmail");
+        try {
+            String billingEmail = request.getFormData().get("billingEmail");
+            authorize(billingEmail, otp, accessToken);
 
-        authorize(billingEmail, otp, accessToken);
-
-        BookingDetailsDTO response = bookingService.createBooking(tenantId, request);
-
-        if (otp != null)
-            otpService.deleteOtp(otp);
-
-        return ApiResponse.<BookingDetailsDTO>builder()
-            .message("Booking created successfully")
-            .data(response)
-            .statusCode(HttpStatus.CREATED)
-            .build()
-            .send();
+            BookingDetailsDTO response = bookingService.createBooking(tenantId, request);
+            return ApiResponse.<BookingDetailsDTO>builder()
+                .message("Booking created successfully")
+                .data(response)
+                .statusCode(HttpStatus.CREATED)
+                .build()
+                .send();
+        } finally {
+            if (otp != null)
+                otpService.deleteOtp(otp);
+        }
     }
 
     @Operation(summary = "Get booking by ID", description = "Returns a booking object by its ID")
@@ -92,22 +92,23 @@ public class BookingController {
         @Parameter(description = "OTP for validation") @RequestParam(required = false) String otp,
         @Parameter(description = "ID of the booking to cancel") @PathVariable Long bookingId) {
 
-        BookingDetailsDTO bookingDetails = bookingService.getBookingDetailsById(bookingId);
-        String billingEmail = bookingDetails.getGuestDetails().getBillingEmail();
+        try {
+            BookingDetailsDTO bookingDetails = bookingService.getBookingDetailsById(bookingId);
+            String billingEmail = bookingDetails.getGuestDetails().getBillingEmail();
 
-        authorize(billingEmail, otp, accessToken);
+            authorize(billingEmail, otp, accessToken);
 
-        BookingDetailsDTO result = bookingService.cancelBooking(bookingId);
-
-        if (otp != null)
-            otpService.deleteOtp(otp);
-
-        return ApiResponse.<BookingDetailsDTO>builder()
-            .message("Booking cancelled successfully")
-            .data(result)
-            .statusCode(HttpStatus.ACCEPTED)
-            .build()
-            .send();
+            BookingDetailsDTO result = bookingService.cancelBooking(bookingId);
+            return ApiResponse.<BookingDetailsDTO>builder()
+                .message("Booking cancelled successfully")
+                .data(result)
+                .statusCode(HttpStatus.ACCEPTED)
+                .build()
+                .send();
+        } finally {
+            if (otp != null)
+                otpService.deleteOtp(otp);
+        }
     }
 
     @Operation(summary = "Send booking PDF", description = "Generates and sends a PDF of the booking details to the customer's email")
@@ -137,8 +138,8 @@ public class BookingController {
             throw new AuthException("Invalid access token");
         }
 
-        if (otp != null && !otpService.isOTPVerified(email, otp)) {
-            throw OTPException.invalidOtp("Invalid OTP provided");
+        if (otp != null && !otpService.verifyOtp(email, otp)) {
+            throw OTPException.invalidOtp(otp);
         }
     }
 }
