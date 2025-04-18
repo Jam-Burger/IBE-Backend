@@ -23,7 +23,7 @@ public class GuestExtension extends BaseEntity {
     @Column(name = "billing_last_name", nullable = false)
     private String billingLastName;
 
-    @Column(name = "billing_email", nullable = false)
+    @Column(name = "billing_email", nullable = false, unique = true)
     private String billingEmail;
 
     @Column(name = "billing_phone", nullable = false)
@@ -53,7 +53,7 @@ public class GuestExtension extends BaseEntity {
     @Column(name = "traveler_last_name", nullable = false)
     private String travelerLastName;
 
-    @Column(name = "traveler_email", nullable = false, unique = true)
+    @Column(name = "traveler_email", nullable = false)
     private String travelerEmail;
 
     @Column(name = "traveler_phone", nullable = false)
