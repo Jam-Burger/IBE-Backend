@@ -157,8 +157,10 @@ public class BookingController {
             @RequestParam(required = false) String otp
     ) {
 
-        authorize(billingEmail, otp, accessToken);
-
+//        authorize(billingEmail, otp, accessToken);
+        log.info("----------------------otp---------{}",otp);
+        log.info("------------------------billingEmail---------{}",billingEmail);
+        log.info("----------------------accessToken---------{}",accessToken);
         List<BookingSummaryDTO> bookingDetails = bookingService.getBookingDetailsByEmail(billingEmail);
 
         if (otp != null)
