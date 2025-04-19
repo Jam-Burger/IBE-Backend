@@ -55,15 +55,19 @@ function formatSlackMessage(message) {
             }
         ];
 
-        // Add more specific information based on metric type
+        // Add more specific information based on metric type and operator
         if (metricName === 'CPUUtilization') {
-            readableMessage = isAlarm ?
-                `🚨 HIGH CPU USAGE ALERT: ECS Service is experiencing high CPU utilization` :
-                `✅ CPU usage has returned to normal levels`;
+            if (operator.includes('GreaterThan')) {
+                readableMessage = isAlarm ?
+                    `🚨 HIGH CPU USAGE ALERT: ECS Service is experiencing high CPU utilization` :
+                    `✅ CPU usage has returned to normal levels`;
+            }
         } else if (metricName === 'MemoryUtilization') {
-            readableMessage = isAlarm ?
-                `🚨 HIGH MEMORY USAGE ALERT: ECS Service is experiencing high memory utilization` :
-                `✅ Memory usage has returned to normal levels`;
+            if (operator.includes('GreaterThan')) {
+                readableMessage = isAlarm ?
+                    `🚨 HIGH MEMORY USAGE ALERT: ECS Service is experiencing high memory utilization` :
+                    `✅ Memory usage has returned to normal levels`;
+            }
         } else if (metricName === 'TargetResponseTime') {
             readableMessage = isAlarm ?
                 `🚨 SLOW RESPONSE TIME ALERT: Service response time is too high` :
@@ -72,6 +76,28 @@ function formatSlackMessage(message) {
             readableMessage = isAlarm ?
                 `🚨 SERVER ERROR ALERT: Service is returning 5XX errors` :
                 `✅ Service is no longer returning 5XX errors`;
+        } else if (metricName === 'HTTPCode_Target_4XX_Count') {
+            readableMessage = isAlarm ?
+                `🚨 CLIENT ERROR ALERT: Service is returning 4XX errors` :
+                `✅ Service is no longer returning 4XX errors`;
+        } else if (metricName === 'RunningTaskCount') {
+            if (operator.includes('GreaterThan')) {
+                readableMessage = isAlarm ?
+                    `🚨 SCALING ALERT: ECS Service has scaled up due to high demand` :
+                    `✅ ECS Service has scaled down as demand decreased`;
+            } else if (operator.includes('LessThan')) {
+                readableMessage = isAlarm ?
+                    `🚨 SCALING ALERT: ECS Service has scaled down due to low demand` :
+                    `✅ ECS Service has scaled up as demand increased`;
+            }
+        } else if (metricName === 'ServiceHealthyTaskCount') {
+            readableMessage = isAlarm ?
+                `🚨 HEALTH ALERT: ECS Service has unhealthy tasks` :
+                `✅ ECS Service has recovered to healthy state`;
+        } else if (metricName === 'PendingTaskCount') {
+            readableMessage = isAlarm ?
+                `🚨 TASK PENDING ALERT: ECS Service has pending tasks` :
+                `✅ ECS Service has no pending tasks`;
         }
     }
 
