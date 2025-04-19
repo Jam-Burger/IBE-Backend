@@ -41,7 +41,6 @@ public class BookingServiceImpl implements BookingService {
     private final RoomAvailabilityService roomAvailabilityService;
     private final RoomLockService roomLockService;
     private final SpecialOfferService specialOfferService;
-    private final OTPService otpService;
     private final BookingMapper bookingMapper;
     private final DelayedEmailSchedulerService delayedEmailSchedulerService;
     private final Random random = new Random();

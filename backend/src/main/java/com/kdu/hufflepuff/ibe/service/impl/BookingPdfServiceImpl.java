@@ -9,7 +9,6 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -42,7 +41,7 @@ public class BookingPdfServiceImpl implements BookingPdfService {
         String emailHtmlContent = templateEngine.process("booking-email", context); // assumes booking-email.html in templates
 
         // Send email with attachment
-        sendEmailWithAttachment(booking.getGuestDetails().getTravelerEmail(), emailHtmlContent, pdfBytes, bookingId);
+        sendEmailWithAttachment(booking.getGuestDetails().getBillingEmail(), emailHtmlContent, pdfBytes, bookingId);
     }
 
     private byte[] renderPdfFromHtml(String html) {

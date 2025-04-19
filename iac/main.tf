@@ -71,6 +71,15 @@ module "api_gateway" {
   tags            = local.tags
 }
 
+# SNS Module
+module "sns" {
+  source = "./modules/sns"
+
+  project_name      = local.name_prefix
+  slack_webhook_url = var.slack_webhook_url
+  tags              = local.tags
+}
+
 # CloudWatch Module
 module "cloudwatch" {
   source = "./modules/cloudwatch"
@@ -82,7 +91,7 @@ module "cloudwatch" {
   alb_arn_suffix          = regex("app/[^/]+/[^/]+$", module.alb.alb_arn)
   target_group_arn_suffix = regex("targetgroup/[^/]+/[^/]+$", module.alb.target_group_arn)
   log_retention_days      = 30
-  alarm_actions           = [] # Add SNS topic ARNs here if needed
+  alarm_actions           = [module.sns.sns_topic_arn] # Add SNS topic ARNs here if needed
   tags                    = local.tags
 }
 

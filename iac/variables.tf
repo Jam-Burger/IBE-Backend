@@ -67,3 +67,9 @@ variable "allowed_origins" {
   description = "List of allowed CORS origins (e.g., ['https://example.com', 'https://app.example.com'])"
   type        = list(string)
 }
+
+variable "slack_webhook_url" {
+  description = "Webhook URL for Slack integration"
+  type        = string
+  sensitive   = true
+}
