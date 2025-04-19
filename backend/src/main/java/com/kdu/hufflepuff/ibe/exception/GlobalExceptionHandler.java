@@ -1,6 +1,7 @@
 package com.kdu.hufflepuff.ibe.exception;
 
 import com.kdu.hufflepuff.ibe.model.response.ErrorResponse;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -113,6 +115,31 @@ public class GlobalExceptionHandler {
             .send();
     }
 
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleMethodValidationExceptions(HandlerMethodValidationException ex) {
+        log.error("Method validation error: {}", ex.getMessage());
+        
+        // Extract the error message from the exception
+        String message = ex.getMessage();
+        
+        // If the message contains parameter information, extract it
+        if (message.contains("parameter")) {
+            // The message typically contains information about which parameter failed validation
+            return ErrorResponse.builder()
+                .statusCode(HttpStatus.BAD_REQUEST)
+                .message(message)
+                .build()
+                .send();
+        }
+        
+        // Default message if we can't extract parameter information
+        return ErrorResponse.builder()
+            .statusCode(HttpStatus.BAD_REQUEST)
+            .message("Validation failed: " + message)
+            .build()
+            .send();
+    }
+
     @ExceptionHandler(MiscellaneousException.class)
     public ResponseEntity<ErrorResponse> handleMiscellaneousException(MiscellaneousException ex) {
         return ErrorResponse.builder()
@@ -127,6 +154,15 @@ public class GlobalExceptionHandler {
         return ErrorResponse.builder()
             .statusCode(HttpStatus.FORBIDDEN)
             .message(getRootCauseMessage(ex))
+            .build()
+            .send();
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        return ErrorResponse.builder()
+            .statusCode(HttpStatus.BAD_REQUEST)
+            .message(ex.getMessage())
             .build()
             .send();
     }

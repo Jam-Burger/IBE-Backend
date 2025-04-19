@@ -12,6 +12,7 @@ import com.kdu.hufflepuff.ibe.service.interfaces.AccessTokenService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingPdfService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
 import com.kdu.hufflepuff.ibe.service.interfaces.OTPService;
+import com.kdu.hufflepuff.ibe.validation.PositiveLong;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -37,7 +38,7 @@ public class BookingController {
     private final BookingPdfService bookingPdfService;
     private final AccessTokenService accessTokenService;
     private final OTPService otpService;
-    private  final JwtService jwtService;
+    private final JwtService jwtService;
 
     @Operation(summary = "Create new booking", description = "Creates a new booking and returns booking details")
     @ApiResponses(value = {
@@ -47,7 +48,7 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<BookingDetailsDTO>> createBooking(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PositiveLong @PathVariable Long tenantId,
         @Parameter(description = "Access token for logged in users") @RequestParam(required = false) String accessToken,
         @Parameter(description = "OTP for validation") @RequestParam(required = false) String otp,
         @Parameter(description = "Booking request details") @Valid @RequestBody BookingRequestDTO request) {
@@ -77,7 +78,7 @@ public class BookingController {
 
     @GetMapping("/{bookingId}")
     public ResponseEntity<ApiResponse<BookingDetailsDTO>> getBooking(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PositiveLong @PathVariable Long tenantId,
         @Parameter(description = "ID of the booking to retrieve") @PathVariable Long bookingId) {
         return ApiResponse.<BookingDetailsDTO>builder()
             .message("Booking retrieved successfully")
@@ -94,7 +95,7 @@ public class BookingController {
     })
     @PutMapping("/{bookingId}/cancel")
     public ResponseEntity<ApiResponse<BookingDetailsDTO>> cancelBooking(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PositiveLong @PathVariable Long tenantId,
         @Parameter(description = "Access token for logged in users") @RequestParam(required = false) String accessToken,
         @Parameter(description = "OTP for validation") @RequestParam(required = false) String otp,
         @Parameter(description = "ID of the booking to cancel") @PathVariable Long bookingId) {
@@ -126,13 +127,13 @@ public class BookingController {
     })
     @PostMapping("/{bookingId}/send-pdf")
     public ResponseEntity<String> sendBookingPdf(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PositiveLong @PathVariable Long tenantId,
         @Parameter(description = "ID of the booking to generate PDF for") @PathVariable Long bookingId) {
         bookingPdfService.generateAndSendBookingPdf(bookingId);
         return ResponseEntity.ok("Booking PDF has been sent successfully.");
     }
 
-    private  void  authorize(String email, String accessToken) {
+    private void authorize(String email, String accessToken) {
         if (email == null || email.isEmpty()) {
             throw BookingOperationException.guestCreationFailed("Email is required");
         }
@@ -141,12 +142,13 @@ public class BookingController {
             throw new AuthException("Access token is required");
         }
 
-        if (accessToken != null && !accessToken.isEmpty() && !accessTokenService.verifyAccessToken(email, accessToken)) {
+        if (!accessToken.isEmpty() && !accessTokenService.verifyAccessToken(email, accessToken)) {
             throw new AuthException("Invalid access token");
         }
 
 
     }
+
     private void authorize(String email, String otp, String accessToken) {
 
         if (email == null || email.isEmpty()) {
@@ -169,10 +171,10 @@ public class BookingController {
 
     @GetMapping("/my-bookings")
     public ResponseEntity<ApiResponse<List<BookingSummaryDTO>>> getBookingsByEmail(
-            @PathVariable Long tenantId,
-            @RequestParam(required = false) String billingEmail,
-            @RequestParam(required = false) String accessToken,
-            @RequestParam(required = false) String guestToken
+        @PathVariable Long tenantId,
+        @RequestParam(required = false) String billingEmail,
+        @RequestParam(required = false) String accessToken,
+        @RequestParam(required = false) String guestToken
     ) {
 
         if (guestToken != null && !guestToken.isEmpty()) {
@@ -185,11 +187,11 @@ public class BookingController {
         List<BookingSummaryDTO> bookingDetails = bookingService.getBookingDetailsByEmail(billingEmail);
 
         return ApiResponse.<List<BookingSummaryDTO>>builder()
-                .message("Booking retrieved successfully")
-                .data(bookingDetails)
-                .statusCode(HttpStatus.OK)
-                .build()
-                .send();
+            .message("Booking retrieved successfully")
+            .data(bookingDetails)
+            .statusCode(HttpStatus.OK)
+            .build()
+            .send();
 
     }
 

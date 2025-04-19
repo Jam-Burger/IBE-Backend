@@ -3,6 +3,8 @@ package com.kdu.hufflepuff.ibe.controller;
 import com.kdu.hufflepuff.ibe.model.enums.ImageType;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.ImageService;
+import com.kdu.hufflepuff.ibe.validation.PositiveLong;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -49,7 +51,7 @@ public class ImageController {
     })
     @PostMapping(value = "/{imageType}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<String>> uploadImage(
-        @Parameter(description = "ID of the tenant") @Valid @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PositiveLong @PathVariable Long tenantId,
         @Parameter(description = "Type of image being uploaded") @Valid @PathVariable ImageType imageType,
         @Parameter(description = "Image file to upload") @Valid @RequestParam("file") MultipartFile file
     ) throws IOException {
@@ -84,7 +86,7 @@ public class ImageController {
     })
     @PostMapping(value = "/ROOM/{roomTypeId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<List<String>>> uploadRoomImages(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PositiveLong @PathVariable Long tenantId,
         @Parameter(description = "ID of the room type") @PathVariable Long roomTypeId,
         @Parameter(description = "Image files to upload") @RequestParam("files") List<MultipartFile> files
     ) {

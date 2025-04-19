@@ -4,6 +4,8 @@ import com.kdu.hufflepuff.ibe.model.dto.out.GuestSessionDTO;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.security.JwtService;
 import com.kdu.hufflepuff.ibe.service.interfaces.OTPService;
+import com.kdu.hufflepuff.ibe.validation.PositiveLong;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,7 +46,7 @@ public class OTPController {
     })
     @PostMapping("/send")
     public ResponseEntity<String> sendOtp(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PositiveLong @PathVariable Long tenantId,
         @Parameter(description = "Email address to send OTP to", required = true) @RequestParam String email) {
         otpService.generateOtp(email);
         return ResponseEntity.ok("OTP sent to email");
@@ -68,7 +70,7 @@ public class OTPController {
     })
     @PostMapping("/verify")
     public ResponseEntity<ApiResponse<GuestSessionDTO>> verifyOtp(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PositiveLong @PathVariable Long tenantId,
         @Parameter(description = "Email address associated with the OTP", required = true) @RequestParam String email,
         @Parameter(description = "One-Time Password to verify", required = true) @RequestParam String otp) {
         boolean isValid = otpService.verifyOtp(email, otp);

@@ -51,6 +51,7 @@ public class GlobalConfigModel {
         return properties;
     }
 
+
     @Data
     @DynamoDbBean
     public static class Brand {
@@ -66,6 +67,10 @@ public class GlobalConfigModel {
         @Size(max = 255, message = "Page title cannot exceed 255 characters")
         private String pageTitle;
 
+        @NotBlank(message = "Footer logo URL is required")
+        @Size(max = 1024, message = "Footer logo URL cannot exceed 1024 characters")
+        private String footerLogoUrl;
+
         @DynamoDbAttribute("LogoUrl")
         public String getLogoUrl() {
             return logoUrl;
@@ -79,6 +84,11 @@ public class GlobalConfigModel {
         @DynamoDbAttribute("PageTitle")
         public String getPageTitle() {
             return pageTitle;
+        }
+
+        @DynamoDbAttribute("FooterLogoUrl")
+        public String getFooterLogoUrl() {
+            return footerLogoUrl;
         }
     }
 

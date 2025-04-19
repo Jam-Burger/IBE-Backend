@@ -3,6 +3,8 @@ package com.kdu.hufflepuff.ibe.controller;
 import com.kdu.hufflepuff.ibe.model.dto.out.SpecialOfferResponseDTO;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.SpecialOfferService;
+import com.kdu.hufflepuff.ibe.validation.PositiveLong;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,8 +43,8 @@ public class SpecialOfferController {
     })
     @GetMapping("/calender-offers")
     public ResponseEntity<ApiResponse<List<SpecialOfferResponseDTO>>> getCalenderOffers(
-        @Parameter(description = "Tenant ID", example = "1") @PathVariable Long tenantId,
-        @Parameter(description = "Property ID", example = "101") @PathVariable Long propertyId,
+        @Parameter(description = "Tenant ID", example = "1") @PositiveLong @PathVariable Long tenantId,
+        @Parameter(description = "Property ID", example = "101") @PositiveLong @PathVariable Long propertyId,
         @Parameter(description = "Start date (yyyy-MM-dd)", example = "2025-04-01")
         @Valid @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
         @Parameter(description = "End date (yyyy-MM-dd)", example = "2025-04-30")
@@ -70,7 +72,7 @@ public class SpecialOfferController {
     })
     @GetMapping
     public ResponseEntity<ApiResponse<List<SpecialOfferResponseDTO>>> getSpecialOffers(
-        @Parameter(description = "Tenant ID", example = "1") @PathVariable Long tenantId,
+        @Parameter(description = "Tenant ID", example = "1") @PositiveLong @PathVariable Long tenantId,
         @Parameter(description = "Property ID", example = "101") @PathVariable Long propertyId,
         @Parameter(description = "Start date (yyyy-MM-dd)", example = "2025-04-01")
         @Valid @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -100,8 +102,8 @@ public class SpecialOfferController {
     })
     @GetMapping("/promo-offer")
     public ResponseEntity<ApiResponse<SpecialOfferResponseDTO>> getPromoOffer(
-        @Parameter(description = "Tenant ID", example = "1") @PathVariable Long tenantId,
-        @Parameter(description = "Property ID", example = "101") @PathVariable Long propertyId,
+        @Parameter(description = "Tenant ID", example = "1") @PositiveLong @PathVariable Long tenantId,
+        @Parameter(description = "Property ID", example = "101") @PositiveLong @PathVariable Long propertyId,
         @Parameter(description = "Promo Code", example = "SUMMER25")
         @Valid @NotNull @RequestParam("promo_code") String promoCode,
         @Parameter(description = "Start date (yyyy-MM-dd)", example = "2025-04-01")

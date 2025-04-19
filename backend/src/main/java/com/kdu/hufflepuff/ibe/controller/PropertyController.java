@@ -4,6 +4,7 @@ import com.kdu.hufflepuff.ibe.model.dto.out.PropertyDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.PropertyDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.PropertyService;
+import com.kdu.hufflepuff.ibe.validation.PositiveLong;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,7 +45,7 @@ public class PropertyController {
     })
     @GetMapping
     public ResponseEntity<ApiResponse<List<PropertyDTO>>> getProperties(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId) {
+        @Parameter(description = "ID of the tenant") @PathVariable @PositiveLong Long tenantId) {
         return ApiResponse.<List<PropertyDTO>>builder()
             .data(propertyService.getProperties(tenantId))
             .message("Properties retrieved successfully")
@@ -70,8 +71,8 @@ public class PropertyController {
     })
     @GetMapping("/{propertyId}")
     public ResponseEntity<ApiResponse<PropertyDetailsDTO>> getPropertyDetails(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
-        @Parameter(description = "ID of the property to retrieve") @PathVariable Long propertyId) {
+        @Parameter(description = "ID of the tenant") @PositiveLong @PathVariable Long tenantId,
+        @Parameter(description = "ID of the property to retrieve") @PositiveLong @PathVariable Long propertyId) {
         return ApiResponse.<PropertyDetailsDTO>builder()
             .data(propertyService.getPropertyDetails(tenantId, propertyId))
             .message("Property details retrieved successfully")

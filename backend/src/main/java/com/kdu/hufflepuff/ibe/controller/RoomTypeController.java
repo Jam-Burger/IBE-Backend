@@ -6,6 +6,7 @@ import com.kdu.hufflepuff.ibe.model.dto.out.RoomTypeDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.enums.SortOption;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomTypeService;
+import com.kdu.hufflepuff.ibe.validation.PositiveLong;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +28,9 @@ public class RoomTypeController {
 
     @GetMapping("/room-types/{roomTypeId}")
     public ResponseEntity<ApiResponse<RoomTypeDetailsDTO>> getRoomType(
-        @PathVariable Long tenantId,
-        @PathVariable Long propertyId,
-        @PathVariable Long roomTypeId,
+        @PathVariable @PositiveLong Long tenantId,
+        @PathVariable @PositiveLong Long propertyId,
+        @PathVariable @PositiveLong Long roomTypeId,
         @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
         @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo
     ) {
@@ -55,8 +56,8 @@ public class RoomTypeController {
 
     @GetMapping("/room-types/filter")
     public ResponseEntity<ApiResponse<PaginatedResponseDTO<RoomTypeDetailsDTO>>> filterRoomTypes(
-        @PathVariable Long tenantId,
-        @PathVariable Long propertyId,
+        @PathVariable @PositiveLong Long tenantId,
+        @PathVariable @PositiveLong Long propertyId,
         @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
         @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
         @RequestParam(required = false) Integer roomCount,
@@ -112,8 +113,8 @@ public class RoomTypeController {
 
     @GetMapping("/amenities")
     public ResponseEntity<ApiResponse<List<String>>> getAmenitiesByPropertyId(
-        @PathVariable Long tenantId,
-        @PathVariable Long propertyId) {
+        @PathVariable @PositiveLong Long tenantId,
+        @PathVariable @PositiveLong Long propertyId) {
         return ApiResponse.<List<String>>builder()
             .data(roomTypeService.getAmenitiesByPropertyId(tenantId, propertyId))
             .message("Amenities retrieved successfully")

@@ -6,6 +6,7 @@ import com.kdu.hufflepuff.ibe.model.dynamodb.*;
 import com.kdu.hufflepuff.ibe.model.enums.ConfigType;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.WebsiteConfigService;
+import com.kdu.hufflepuff.ibe.validation.PositiveLong;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -42,7 +43,7 @@ public class ConfigController {
     })
     @GetMapping("/{configType}")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> getConfig(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PathVariable @PositiveLong Long tenantId,
         @Parameter(description = "Type of the configuration") @PathVariable ConfigType configType) {
         WebsiteConfigModel config = configService.getConfig(tenantId, configType);
         return createResponse("Configuration retrieved successfully", config, HttpStatus.OK);
@@ -61,7 +62,7 @@ public class ConfigController {
     })
     @PostMapping("/GLOBAL")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveGlobalConfig(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PathVariable @PositiveLong Long tenantId,
         @Valid @RequestBody ConfigRequestDTO<GlobalConfigModel> configRequest) {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
@@ -84,7 +85,7 @@ public class ConfigController {
     })
     @PostMapping("/LANDING")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveLandingConfig(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PathVariable @PositiveLong Long tenantId,
         @Valid @RequestBody ConfigRequestDTO<LandingPageConfigModel> configRequest) {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
@@ -107,7 +108,7 @@ public class ConfigController {
     })
     @PostMapping("/ROOMS_LIST")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveRoomsListConfig(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PathVariable @PositiveLong Long tenantId,
         @Valid @RequestBody ConfigRequestDTO<RoomsListConfigModel> configRequest) {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
@@ -130,7 +131,7 @@ public class ConfigController {
     })
     @PostMapping("/CHECKOUT")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> saveCheckoutConfig(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PathVariable @PositiveLong Long tenantId,
         @Valid @RequestBody ConfigRequestDTO<CheckoutConfigModel> configRequest) {
         WebsiteConfigModel savedConfig = configService.saveConfig(
             tenantId,
@@ -153,7 +154,7 @@ public class ConfigController {
     })
     @DeleteMapping("/{configType}")
     public ResponseEntity<ApiResponse<ConfigResponseDTO>> deleteConfig(
-        @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+        @Parameter(description = "ID of the tenant") @PathVariable @PositiveLong Long tenantId,
         @Parameter(description = "Type of the configuration") @PathVariable ConfigType configType) {
         WebsiteConfigModel deletedConfig = configService.deleteConfig(tenantId, configType);
         return createResponse("Configuration deleted successfully", deletedConfig, HttpStatus.OK);
