@@ -37,7 +37,7 @@ jobs:
           public_subnet_ids = ${{ vars.PUBLIC_SUBNET_IDS }}
           private_subnet_ids = ${{ vars.PRIVATE_SUBNET_IDS }}
           allowed_origins = ${{ vars.ALLOWED_ORIGINS }}
-          slack_webhook_url = ${{ secrets.SLACK_WEBHOOK_URL }}
+          slack_webhook_url = "${{ secrets.SLACK_WEBHOOK_URL }}"
           container_environment = {
             ENV = "dev"
             DB_URL = "${{ vars.DB_URL }}"
