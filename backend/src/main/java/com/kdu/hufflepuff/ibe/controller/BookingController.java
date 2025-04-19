@@ -7,6 +7,7 @@ import com.kdu.hufflepuff.ibe.model.dto.in.BookingRequestDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.BookingDetailsDTO;
 import com.kdu.hufflepuff.ibe.model.dto.out.BookingSummaryDTO;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
+import com.kdu.hufflepuff.ibe.security.JwtService;
 import com.kdu.hufflepuff.ibe.service.interfaces.AccessTokenService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingPdfService;
 import com.kdu.hufflepuff.ibe.service.interfaces.BookingService;
@@ -36,6 +37,7 @@ public class BookingController {
     private final BookingPdfService bookingPdfService;
     private final AccessTokenService accessTokenService;
     private final OTPService otpService;
+    private  final JwtService jwtService;
 
     @Operation(summary = "Create new booking", description = "Creates a new booking and returns booking details")
     @ApiResponses(value = {
@@ -130,6 +132,21 @@ public class BookingController {
         return ResponseEntity.ok("Booking PDF has been sent successfully.");
     }
 
+    private  void  authorize(String email, String accessToken) {
+        if (email == null || email.isEmpty()) {
+            throw BookingOperationException.guestCreationFailed("Email is required");
+        }
+
+        if (accessToken == null) {
+            throw new AuthException("Access token is required");
+        }
+
+        if (accessToken != null && !accessToken.isEmpty() && !accessTokenService.verifyAccessToken(email, accessToken)) {
+            throw new AuthException("Invalid access token");
+        }
+
+
+    }
     private void authorize(String email, String otp, String accessToken) {
 
         if (email == null || email.isEmpty()) {
@@ -144,7 +161,7 @@ public class BookingController {
             throw new AuthException("Invalid access token");
         }
 
-        if (otp != null && !otpService.verifyOtp(email, otp)) {
+        if (otp != null && !otpService.isOTPVerified(email, otp)) {
             throw OTPException.invalidOtp(otp);
         }
     }
@@ -153,19 +170,19 @@ public class BookingController {
     @GetMapping("/my-bookings")
     public ResponseEntity<ApiResponse<List<BookingSummaryDTO>>> getBookingsByEmail(
             @PathVariable Long tenantId,
-            @RequestParam String billingEmail,
+            @RequestParam(required = false) String billingEmail,
             @RequestParam(required = false) String accessToken,
-            @RequestParam(required = false) String otp
+            @RequestParam(required = false) String guestToken
     ) {
 
-//        authorize(billingEmail, otp, accessToken);
-        log.info("----------------------otp---------{}",otp);
-        log.info("------------------------billingEmail---------{}",billingEmail);
-        log.info("----------------------accessToken---------{}",accessToken);
-        List<BookingSummaryDTO> bookingDetails = bookingService.getBookingDetailsByEmail(billingEmail);
+        if (guestToken != null && !guestToken.isEmpty()) {
+            billingEmail = jwtService.extractBillingEmailFromGuestToken(guestToken);
+            jwtService.validateGuestToken(guestToken);
+        } else {
+            authorize(billingEmail, accessToken);
+        }
 
-        if (otp != null)
-            otpService.deleteOtp(otp);
+        List<BookingSummaryDTO> bookingDetails = bookingService.getBookingDetailsByEmail(billingEmail);
 
         return ApiResponse.<List<BookingSummaryDTO>>builder()
                 .message("Booking retrieved successfully")
@@ -173,6 +190,8 @@ public class BookingController {
                 .statusCode(HttpStatus.OK)
                 .build()
                 .send();
+
     }
+
 
 }
