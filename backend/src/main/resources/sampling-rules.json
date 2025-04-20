@@ -2,7 +2,7 @@
   "version": 2,
   "rules": [
     {
-      "description": "Critical paths sampling rule",
+      "description": "Critical paths",
       "host": "*",
       "http_method": "*",
       "url_path": "/api/*/bookings/*",
@@ -11,28 +11,7 @@
       "priority": 1
     },
     {
-      "description": "Error responses sampling rule",
-      "host": "*",
-      "http_method": "*",
-      "url_path": "/*",
-      "fixed_target": 1,
-      "rate": 1.0,
-      "priority": 2,
-      "attributes": {
-        "StatusCode": "4XX,5XX"
-      }
-    },
-    {
-      "description": "Health check sampling rule",
-      "host": "*",
-      "http_method": "GET",
-      "url_path": "/health",
-      "fixed_target": 0,
-      "rate": 0.0,
-      "priority": 100
-    },
-    {
-      "description": "Default sampling rule",
+      "description": "Default rule",
       "host": "*",
       "http_method": "*",
       "url_path": "/*",
@@ -43,6 +22,6 @@
   ],
   "default": {
     "fixed_target": 1,
-    "rate": 0.01
+    "rate": 0.05
   }
 } 

@@ -1,19 +1,23 @@
+resource "aws_xray_group" "this" {
+  group_name        = "${var.project_name}-group"
+  filter_expression = "service(\"${var.project_name}-*\") OR annotation.service = \"${var.project_name}*\""
+
+  tags = var.tags
+}
+
 resource "aws_xray_sampling_rule" "critical_paths" {
-  rule_name      = "${var.project_name}-crit-paths"
-  priority       = 1  # Higher priority (lower number)
-  version        = 1
+  rule_name      = "${var.project_name}-critical-paths"
+  priority       = 1
   reservoir_size = 1
-  fixed_rate     = 1.0  # Sample 100% of these requests
-  host           = "*"
+  fixed_rate     = 1.0
+  host_pattern   = "*"
   http_method    = "*"
-  url_path       = "/api/*/bookings/*"  # Sample all booking-related paths
-  service_name   = "*"
+  url_path       = "/api/*/bookings/*"
+  version        = 1
   service_type   = "*"
   resource_arn   = "*"
 
-  attributes = {
-    Environment = var.environment
-  }
+  tags = var.tags
 }
 
 resource "aws_xray_sampling_rule" "errors" {
@@ -55,20 +59,17 @@ resource "aws_xray_sampling_rule" "health_check" {
 
 resource "aws_xray_sampling_rule" "default" {
   rule_name      = "${var.project_name}-default"
-  priority       = 1000  # Lowest priority
-  version        = 1
+  priority       = 1000
   reservoir_size = 1
-  fixed_rate     = 0.05  # Sample 5% of remaining requests
-  host           = "*"
+  fixed_rate     = 0.05
+  host_pattern   = "*"
   http_method    = "*"
   url_path       = "/*"
-  service_name   = "*"
+  version        = 1
   service_type   = "*"
   resource_arn   = "*"
 
-  attributes = {
-    Environment = var.environment
-  }
+  tags = var.tags
 }
 
 resource "aws_xray_encryption_config" "this" {

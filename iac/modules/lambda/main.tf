@@ -28,6 +28,12 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   role       = aws_iam_role.lambda_role.name
 }
 
+# X-Ray permissions for Lambda
+resource "aws_iam_role_policy_attachment" "lambda_xray" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+  role       = aws_iam_role.lambda_role.name
+}
+
 # Additional permissions for S3 trigger
 resource "aws_iam_role_policy" "lambda_s3" {
   name = "${var.project_name}-lambda-s3-policy"
@@ -51,12 +57,26 @@ resource "aws_iam_role_policy" "lambda_s3" {
   })
 }
 
-# Install dependencies for both Lambda functions
-resource "null_resource" "lambda_dependencies" {
+# Create ZIP archives for Lambda functions
+data "archive_file" "housekeeping_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/housekeeping_service"
+  output_path = "${path.module}/housekeeping_service.zip"
+  excludes    = ["node_modules"]
+}
+
+data "archive_file" "promotional_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/promotional_email_sender"
+  output_path = "${path.module}/promotional_email_sender.zip"
+  excludes    = ["node_modules"]
+}
+
+# Check if ZIP files exist and trigger rebuild if needed
+resource "null_resource" "check_zip_files" {
   triggers = {
-    housekeeping_package_json = filemd5("${path.module}/housekeeping_service/package.json")
-    promotional_package_json  = filemd5("${path.module}/promotional_email_sender/package.json")
-    build_script              = filemd5("${path.module}/build.sh")
+    housekeeping_hash = data.archive_file.housekeeping_zip.output_base64sha256
+    promotional_hash = data.archive_file.promotional_zip.output_base64sha256
   }
 
   provisioner "local-exec" {
@@ -67,18 +87,24 @@ resource "null_resource" "lambda_dependencies" {
 
 # Housekeeping Service Lambda
 resource "aws_lambda_function" "housekeeping_service" {
-  depends_on = [null_resource.lambda_dependencies]
+  depends_on = [null_resource.check_zip_files]
 
-  filename      = "${path.module}/housekeeping_service.zip"
-  function_name = "${var.project_name}-housekeeping-service"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "index.handler"
-  runtime       = "nodejs22.x"
-  timeout       = 60
-  memory_size   = 256
+  filename         = data.archive_file.housekeeping_zip.output_path
+  source_code_hash = data.archive_file.housekeeping_zip.output_base64sha256
+  function_name    = "${var.project_name}-housekeeping-service"
+  role            = aws_iam_role.lambda_role.arn
+  handler         = "index.handler"
+  runtime         = "nodejs22.x"
+  timeout         = 60
+  memory_size     = 256
+
+  tracing_config {
+    mode = "Active"
+  }
 
   environment {
     variables = {
+      AWS_XRAY_TRACING_NAME = "${var.project_name}-housekeeping-service"
       DB_HOST         = split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[0]
       DB_PORT         = split("/", split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[1])[0]
       DB_NAME         = split("/", var.container_environment.DB_URL)[length(split("/", var.container_environment.DB_URL)) - 1]
@@ -91,7 +117,9 @@ resource "aws_lambda_function" "housekeeping_service" {
     }
   }
 
-  tags = var.tags
+  tags = merge(var.tags, {
+    Name = "${var.project_name}-housekeeping-service"
+  })
 }
 
 # EventBridge rule for daily trigger
@@ -118,18 +146,24 @@ resource "aws_lambda_permission" "allow_eventbridge" {
 
 # Promotional Email Sender Lambda
 resource "aws_lambda_function" "promotional_email_sender" {
-  depends_on = [null_resource.lambda_dependencies]
+  depends_on = [null_resource.check_zip_files]
 
-  filename      = "${path.module}/promotional_email_sender.zip"
-  function_name = "${var.project_name}-promotional-email-sender"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "index.handler"
-  runtime       = "nodejs22.x"
-  timeout       = 10
-  memory_size   = 256
+  filename         = data.archive_file.promotional_zip.output_path
+  source_code_hash = data.archive_file.promotional_zip.output_base64sha256
+  function_name    = "${var.project_name}-promotional-email-sender"
+  role            = aws_iam_role.lambda_role.arn
+  handler         = "index.handler"
+  runtime         = "nodejs22.x"
+  timeout         = 10
+  memory_size     = 256
+
+  tracing_config {
+    mode = "Active"
+  }
 
   environment {
     variables = {
+      AWS_XRAY_TRACING_NAME = "${var.project_name}-promotional-email-sender"
       DB_HOST         = split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[0]
       DB_PORT         = split("/", split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[1])[0]
       DB_NAME         = split("/", var.container_environment.DB_URL)[length(split("/", var.container_environment.DB_URL)) - 1]
@@ -142,7 +176,9 @@ resource "aws_lambda_function" "promotional_email_sender" {
     }
   }
 
-  tags = var.tags
+  tags = merge(var.tags, {
+    Name = "${var.project_name}-promotional-email-sender"
+  })
 }
 
 # Allow S3 to invoke Lambda - This MUST be created before the S3 notification
@@ -157,11 +193,11 @@ resource "aws_lambda_permission" "allow_s3" {
 # S3 bucket notification for promotional email sender
 resource "aws_s3_bucket_notification" "bucket_notification" {
   depends_on = [aws_lambda_permission.allow_s3]
-  bucket     = var.s3_bucket_id
+  bucket = var.s3_bucket_id
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.promotional_email_sender.arn
-    events              = ["s3:ObjectCreated:*"]
+    events = ["s3:ObjectCreated:*"]
     filter_prefix       = "1/templates/"
     filter_suffix       = ".json"
   }

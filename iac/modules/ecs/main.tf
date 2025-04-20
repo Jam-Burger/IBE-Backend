@@ -115,6 +115,12 @@ resource "aws_ecs_task_definition" "app" {
           protocol      = "udp"
         }
       ]
+      environment = [
+        {
+          name  = "AWS_REGION"
+          value = var.aws_region
+        }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {

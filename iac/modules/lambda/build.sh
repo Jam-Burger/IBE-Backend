@@ -1,22 +1,25 @@
 #!/bin/bash
 
-# Function to clean and install dependencies
-build_lambda() {
-    local lambda_dir=$1
-    echo "Building $lambda_dir..."
-        cd "$lambda_dir" || exit
-    
-    # Clean existing node_modules
-    rm -rf node_modules
-    rm -f yarn.lock
-    
-    # Install dependencies
-    yarn install --production
-    cd - || exit
-}
+echo "Checking for existing ZIP files..."
 
-# Build both lambda functions
-build_lambda "housekeeping_service"
-build_lambda "promotional_email_sender"
-
-echo "Build complete!" 
+if [ ! -f "housekeeping_service.zip" ] || [ ! -f "promotional_email_sender.zip" ]; then
+    echo "One or both ZIP files missing. Starting build process..."
+    
+    # Housekeeping service
+    echo "Building housekeeping service..."
+    cd housekeeping_service
+    npm install --production
+    cd ..
+    cd housekeeping_service && zip -r ../housekeeping_service.zip . && cd ..
+    
+    # Promotional email sender
+    echo "Building promotional email sender..."
+    cd promotional_email_sender
+    npm install --production
+    cd ..
+    cd promotional_email_sender && zip -r ../promotional_email_sender.zip . && cd ..
+    
+    echo "Build complete. ZIP files created."
+else
+    echo "ZIP files exist. No rebuild needed."
+fi 

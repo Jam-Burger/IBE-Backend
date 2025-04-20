@@ -5,7 +5,6 @@ import com.amazonaws.xray.AWSXRayRecorderBuilder;
 import com.amazonaws.xray.jakarta.servlet.AWSXRayServletFilter;
 import com.amazonaws.xray.plugins.EC2Plugin;
 import com.amazonaws.xray.plugins.ECSPlugin;
-import com.amazonaws.xray.strategy.jakarta.SegmentNamingStrategy;
 import jakarta.servlet.Filter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +30,6 @@ public class XRayConfig {
 
     @Bean
     public Filter tracingFilter() {
-        return new AWSXRayServletFilter(SegmentNamingStrategy.dynamic(serviceName));
+        return new AWSXRayServletFilter(request -> serviceName);
     }
 } 
