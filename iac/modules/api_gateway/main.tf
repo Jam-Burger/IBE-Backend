@@ -145,6 +145,7 @@ resource "aws_api_gateway_stage" "api" {
   deployment_id = aws_api_gateway_deployment.api.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
   stage_name    = var.stage_name
+  xray_tracing_enabled = true
 
   tags = var.tags
 }

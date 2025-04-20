@@ -27,78 +27,94 @@ function formatSlackMessage(message) {
     let readableMessage = `${message.AlarmName} state changed to ${message.NewStateValue}`;
     let detailsField = [];
 
-    // Add metric-specific details
+    // Extract current value from NewStateReason if available
+    let currentValue = 'unknown';
+    if (message.NewStateReason) {
+        const match = message.NewStateReason.match(/\[(.*?)\]/);
+        if (match) {
+            currentValue = match[1].split(' ')[0]; // Take first value if multiple exist
+        }
+    }
+
+    // Handle different types of alarms
     if (message.Trigger) {
-        const metricName = message.Trigger.MetricName;
-        const namespace = message.Trigger.Namespace;
-        const threshold = message.Trigger.Threshold;
-        const operator = message.Trigger.ComparisonOperator;
-
-        let operatorText = '';
-        if (operator.includes('GreaterThan')) {
-            operatorText = 'exceeded';
-        } else if (operator.includes('LessThan')) {
-            operatorText = 'dropped below';
+        // For metric math expressions
+        if (message.Trigger.Metrics) {
+            const mathMetric = message.Trigger.Metrics.find(m => m.Expression);
+            if (mathMetric) {
+                switch (mathMetric.Id) {
+                    case 'serviceHealth':
+                        const healthPercentage = parseFloat(currentValue).toFixed(1);
+                        readableMessage = isAlarm ?
+                            `🚨 Service Health Alert: Only ${healthPercentage}% healthy` :
+                            `✅ Service Health Restored: 100% healthy`;
+                        
+                        detailsField.push({
+                            title: "Impact",
+                            value: isAlarm ? 
+                                "Service capacity is reduced. Check ECS task logs and events." : 
+                                "All tasks are running normally.",
+                            short: false
+                        });
+                        break;
+                    case 'errorRate':
+                        const errorRate = parseFloat(currentValue).toFixed(1);
+                        readableMessage = isAlarm ?
+                            `🚨 High Error Rate: ${errorRate}% of requests are failing` :
+                            `✅ Error Rate Normal: Below threshold`;
+                        
+                        detailsField.push({
+                            title: "Impact",
+                            value: isAlarm ?
+                                "Service is returning elevated 4XX/5XX errors. Check application logs." :
+                                "Error rates have returned to normal levels.",
+                            short: false
+                        });
+                        break;
+                }
+            }
         }
+        // For standard metrics
+        else if (message.Trigger.MetricName) {
+            const metricName = message.Trigger.MetricName;
+            const threshold = message.Trigger.Threshold;
+            const currentValueNum = parseFloat(currentValue);
 
-        let value = 'unknown';
-        if (message.NewStateReason && message.NewStateReason.includes('[')) {
-            const match = message.NewStateReason.match(/\[(.*?)\]/);
-            if (match) value = match[1];
+            switch (metricName) {
+                case 'CPUUtilization':
+                    readableMessage = isAlarm ?
+                        `🚨 High CPU Usage: ${currentValueNum.toFixed(1)}% utilization` :
+                        `✅ CPU Usage Normal: Below ${threshold}%`;
+                    break;
+                case 'MemoryUtilization':
+                    readableMessage = isAlarm ?
+                        `🚨 High Memory Usage: ${currentValueNum.toFixed(1)}% utilization` :
+                        `✅ Memory Usage Normal: Below ${threshold}%`;
+                    break;
+                case 'TargetResponseTime':
+                    readableMessage = isAlarm ?
+                        `🚨 High Latency: ${currentValueNum.toFixed(2)}s response time` :
+                        `✅ Latency Normal: Below ${threshold}s`;
+                    break;
+            }
+
+            if (isAlarm) {
+                detailsField.push({
+                    title: "Metric Details",
+                    value: `Current: ${currentValueNum.toFixed(2)}, Threshold: ${threshold}`,
+                    short: false
+                });
+            }
         }
+    }
 
-        detailsField = [
-            {
-                title: "Alarm Details",
-                value: `${namespace}: ${metricName} ${operatorText} threshold of ${threshold} (current value: ${value})`,
-                short: false
-            }
-        ];
-
-        // Add more specific information based on metric type and operator
-        if (metricName === 'CPUUtilization') {
-            if (operator.includes('GreaterThan')) {
-                readableMessage = isAlarm ?
-                    `🚨 HIGH CPU USAGE ALERT: ECS Service is experiencing high CPU utilization` :
-                    `✅ CPU usage has returned to normal levels`;
-            }
-        } else if (metricName === 'MemoryUtilization') {
-            if (operator.includes('GreaterThan')) {
-                readableMessage = isAlarm ?
-                    `🚨 HIGH MEMORY USAGE ALERT: ECS Service is experiencing high memory utilization` :
-                    `✅ Memory usage has returned to normal levels`;
-            }
-        } else if (metricName === 'TargetResponseTime') {
-            readableMessage = isAlarm ?
-                `🚨 SLOW RESPONSE TIME ALERT: Service response time is too high` :
-                `✅ Service response time has returned to acceptable levels`;
-        } else if (metricName === 'HTTPCode_Target_5XX_Count') {
-            readableMessage = isAlarm ?
-                `🚨 SERVER ERROR ALERT: Service is returning 5XX errors` :
-                `✅ Service is no longer returning 5XX errors`;
-        } else if (metricName === 'HTTPCode_Target_4XX_Count') {
-            readableMessage = isAlarm ?
-                `🚨 CLIENT ERROR ALERT: Service is returning 4XX errors` :
-                `✅ Service is no longer returning 4XX errors`;
-        } else if (metricName === 'RunningTaskCount') {
-            if (operator.includes('GreaterThan')) {
-                readableMessage = isAlarm ?
-                    `🚨 SCALING ALERT: ECS Service has scaled up due to high demand` :
-                    `✅ ECS Service has scaled down as demand decreased`;
-            } else if (operator.includes('LessThan')) {
-                readableMessage = isAlarm ?
-                    `🚨 SCALING ALERT: ECS Service has scaled down due to low demand` :
-                    `✅ ECS Service has scaled up as demand increased`;
-            }
-        } else if (metricName === 'ServiceHealthyTaskCount') {
-            readableMessage = isAlarm ?
-                `🚨 HEALTH ALERT: ECS Service has unhealthy tasks` :
-                `✅ ECS Service has recovered to healthy state`;
-        } else if (metricName === 'PendingTaskCount') {
-            readableMessage = isAlarm ?
-                `🚨 TASK PENDING ALERT: ECS Service has pending tasks` :
-                `✅ ECS Service has no pending tasks`;
-        }
+    // Add state change reason for context
+    if (message.NewStateReason) {
+        detailsField.push({
+            title: "Additional Info",
+            value: message.NewStateReason,
+            short: false
+        });
     }
 
     // Create the Slack message
@@ -119,11 +135,6 @@ function formatSlackMessage(message) {
                         title: "Region",
                         value: message.Region,
                         short: true
-                    },
-                    {
-                        title: "Alarm Description",
-                        value: message.AlarmDescription || "No description provided",
-                        short: false
                     }
                 ],
                 footer: "AWS CloudWatch Alarm"

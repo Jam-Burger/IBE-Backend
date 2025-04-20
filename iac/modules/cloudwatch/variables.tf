@@ -42,11 +42,9 @@ variable "target_group_arn_suffix" {
 variable "alarm_actions" {
   description = "List of ARNs to notify when alarm transitions to ALARM state"
   type        = list(string)
-  default     = []
 }
 
 variable "ok_actions" {
   description = "List of ARNs to notify when alarm transitions to OK state"
   type        = list(string)
-  default     = []
 } 

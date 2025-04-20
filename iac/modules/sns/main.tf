@@ -69,7 +69,7 @@ resource "aws_lambda_function" "slack_notification" {
   function_name    = "${var.project_name}-slack-notification"
   role             = aws_iam_role.lambda_sns_role.arn
   handler          = "index.handler"
-  runtime          = "nodejs18.x"
+  runtime          = "nodejs22.x"
   timeout          = 10
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256

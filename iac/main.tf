@@ -71,6 +71,15 @@ module "api_gateway" {
   tags            = local.tags
 }
 
+# X-Ray Module
+module "xray" {
+  source = "./modules/xray"
+
+  project_name = local.name_prefix
+  environment  = local.environment
+  tags        = local.tags
+}
+
 # SNS Module
 module "sns" {
   source = "./modules/sns"
@@ -91,7 +100,8 @@ module "cloudwatch" {
   alb_arn_suffix          = regex("app/[^/]+/[^/]+$", module.alb.alb_arn)
   target_group_arn_suffix = regex("targetgroup/[^/]+/[^/]+$", module.alb.target_group_arn)
   log_retention_days      = 30
-  alarm_actions           = [module.sns.sns_topic_arn] # Add SNS topic ARNs here if needed
+  alarm_actions           = [module.sns.sns_topic_arn]
+  ok_actions              = [module.sns.sns_topic_arn]
   tags                    = local.tags
 }
 
@@ -107,4 +117,21 @@ module "storage" {
   project_name         = local.name_prefix
   cors_allowed_origins = var.allowed_origins
   tags                 = local.tags
+}
+
+# Lambda Module
+module "lambda" {
+  source = "./modules/lambda"
+
+  project_name = local.name_prefix
+  container_environment = merge(var.container_environment, {
+    ENV                     = local.environment
+    AWS_DYNAMODB_REGION     = var.aws_region
+    AWS_DYNAMODB_TABLE_NAME = module.dynamodb.ddb_table_name
+    AWS_S3_BUCKET_NAME      = module.storage.bucket_name
+    AWS_CLOUDFRONT_BASE_URL = module.storage.cloudfront_url
+  })
+  s3_bucket_arn = module.storage.bucket_arn
+  s3_bucket_id  = module.storage.bucket_name
+  tags          = local.tags
 }
