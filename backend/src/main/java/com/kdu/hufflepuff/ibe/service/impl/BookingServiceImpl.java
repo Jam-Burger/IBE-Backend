@@ -24,6 +24,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.amazonaws.xray.spring.aop.XRayEnabled;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@XRayEnabled
 public class BookingServiceImpl implements BookingService {
     private final BookingExtensionRepository bookingExtensionRepository;
     private final GuestService guestService;
@@ -226,7 +228,7 @@ public class BookingServiceImpl implements BookingService {
     /**
      * Creates booking extension and applies promotions if provided.
      */
-    private BookingExtension createBookingExtension(
+    private void createBookingExtension(
         Long bookingId, Transaction transaction, GuestExtension guestExtension, String promotionId) {
         BookingExtension bookingExtension = BookingExtension.builder()
             .transaction(transaction)
@@ -238,7 +240,7 @@ public class BookingServiceImpl implements BookingService {
             applySpecialOffer(bookingExtension, promotionId);
         }
 
-        return bookingExtensionRepository.save(bookingExtension);
+        bookingExtensionRepository.save(bookingExtension);
     }
 
     /**
