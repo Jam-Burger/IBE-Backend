@@ -200,7 +200,6 @@
             <version>${aws.sdk.version}</version>
         </dependency>
 
-        <!-- Remove redundant netty dependencies as they're included in spring-boot-starter-webflux -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-resolver-dns-native-macos</artifactId>
@@ -267,6 +266,16 @@
             <artifactId>jjwt-jackson</artifactId> <!-- for JSON parsing -->
             <version>0.11.5</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- Redis Cache -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
         </dependency>
 
     </dependencies>

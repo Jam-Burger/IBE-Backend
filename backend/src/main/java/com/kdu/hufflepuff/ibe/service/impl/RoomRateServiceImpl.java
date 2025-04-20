@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -38,7 +39,10 @@ public class RoomRateServiceImpl implements RoomRateService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "minimumRoomRates", key = "#tenantId + '_' + #propertyId + '_' + #startDate + '_' + #endDate", unless = "#result == null || #result.isEmpty()")
     public List<DailyRoomRateDTO> getMinimumDailyRates(Long tenantId, Long propertyId, LocalDate startDate, LocalDate endDate) {
+        log.info("Cache miss - Fetching minimum daily rates for propertyId: {}, startDate: {}, endDate: {}", 
+            propertyId, startDate, endDate);
         log.info("DATES: {}, {}", DateFormatUtils.toGraphQLDateString(startDate), DateFormatUtils.toGraphQLDateString(endDate));
 
         CompletableFuture<List<RoomAvailability>> availabilitiesFuture = CompletableFuture.supplyAsync(

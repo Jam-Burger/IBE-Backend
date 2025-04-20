@@ -78,6 +78,7 @@ public class SpecialOfferController {
         @Parameter(description = "End date (yyyy-MM-dd)", example = "2025-04-30")
         @Valid @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
+
         List<SpecialOfferResponseDTO> specialOffers = specialOfferService.getSpecialOffers(tenantId, propertyId, startDate, endDate);
         return ApiResponse.<List<SpecialOfferResponseDTO>>builder()
             .data(specialOffers)
