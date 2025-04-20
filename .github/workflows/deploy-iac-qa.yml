@@ -21,6 +21,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -50,6 +55,12 @@ jobs:
             MAIL_PASSWORD   = "${{ secrets.MAIL_PASSWORD }}"
           }
           EOF
+
+      - name: Build Lambda Functions
+        run: |
+          chmod +x build.sh
+          ./build.sh
+        working-directory: ./iac/modules/lambda
 
       - name: Terraform Init
         id: init

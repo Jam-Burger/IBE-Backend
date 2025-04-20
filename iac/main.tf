@@ -53,6 +53,8 @@ module "ecs" {
     AWS_DYNAMODB_TABLE_NAME = module.dynamodb.ddb_table_name
     AWS_S3_BUCKET_NAME      = module.storage.bucket_name
     AWS_CLOUDFRONT_BASE_URL = module.storage.cloudfront_url
+    REDIS_HOST              = module.redis.redis_endpoint
+    REDIS_PORT              = module.redis.redis_port
   })
   alb_arn_suffix          = regex("app/[^/]+/[^/]+$", module.alb.alb_arn)
   target_group_arn_suffix = regex("targetgroup/[^/]+/[^/]+$", module.alb.target_group_arn)
@@ -134,4 +136,18 @@ module "lambda" {
   s3_bucket_arn = module.storage.bucket_arn
   s3_bucket_id  = module.storage.bucket_name
   tags          = local.tags
+}
+
+# Redis Module
+module "redis" {
+  source = "./modules/redis"
+
+  project_name            = local.name_prefix
+  environment            = local.environment
+  vpc_id                 = var.vpc_id
+  subnet_ids             = var.private_subnet_ids  # Using private subnets for security
+  redis_security_group_id = module.ecs.redis_security_group_id
+  node_type              = "cache.t4g.micro"  # Small instance for development, adjust for production
+  num_cache_clusters     = 1  # Single node for development, increase for production
+  tags                   = local.tags
 }
