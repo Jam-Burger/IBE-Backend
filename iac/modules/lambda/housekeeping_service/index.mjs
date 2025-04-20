@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import AWSXRay from 'aws-xray-sdk-core';
 import pkg from 'pg';
 
 import {getBookedRooms, getCheckingInRooms, getCheckingOutRooms} from './services/graphqlClient.mjs';
@@ -30,30 +29,22 @@ const {Pool} = pkg;
 // Enable X-Ray tracing for PostgreSQL
 const pgPool = AWSXRay.capturePostgres(new Pool({
     host: process.env.DB_HOST,
-    port: 5432,
+    port: process.env.DB_PORT,
+    database: process.env.DB_NAME,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
 }));
 
-export const handler = async (event, context) => {
-    // Create a new segment for the Lambda invocation
-    const segment = AWSXRay.getSegment();
-    
+export const handler = async (event) => {
     const today = toIsoString(new Date());
     let client;
     try {
         // Create subsegment for database connection
-        const dbSegment = segment.addNewSubsegment('database-connection');
         client = await pgPool.connect();
-        dbSegment.close();
 
-        // Create subsegment for task cleanup
-        const cleanupSegment = segment.addNewSubsegment('task-cleanup');
         console.log("Deleting old tasks...");
         await deleteReport(client, today);
         console.log("Old tasks deleted");
-        cleanupSegment.close();
 
         for (let propertyId = 9; propertyId <= 9; propertyId++) {
             const {checkInTime, checkOutTime} = await getCheckinCheckoutTime(client, propertyId);
@@ -332,17 +323,9 @@ export const handler = async (event, context) => {
                 await sendEmails(client, propertyId, mailData);
             }
         }
-    } catch (error) {
-        console.error('Error:', error);
-        if (segment) {
-            segment.addError(error);
-        }
-        throw error;
     } finally {
         if (client) {
             client.release();
         }
     }
 };
-
-handler();

@@ -60,35 +60,44 @@ resource "aws_iam_role_policy" "lambda_s3" {
 # Create ZIP archives for Lambda functions
 data "archive_file" "housekeeping_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/housekeeping_service"
   output_path = "${path.module}/housekeeping_service.zip"
-  excludes    = ["node_modules"]
+  source_dir  = "${path.module}/housekeeping_service"
+
+  depends_on = [null_resource.install_dependencies]
 }
 
 data "archive_file" "promotional_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/promotional_email_sender"
   output_path = "${path.module}/promotional_email_sender.zip"
-  excludes    = ["node_modules"]
+  source_dir  = "${path.module}/promotional_email_sender"
+
+  depends_on = [null_resource.install_dependencies]
 }
 
-# Check if ZIP files exist and trigger rebuild if needed
-resource "null_resource" "check_zip_files" {
+# Install dependencies for both Lambda functions
+resource "null_resource" "install_dependencies" {
   triggers = {
-    housekeeping_hash = data.archive_file.housekeeping_zip.output_base64sha256
-    promotional_hash = data.archive_file.promotional_zip.output_base64sha256
+    housekeeping_package_json = filemd5("${path.module}/housekeeping_service/package.json")
+    promotional_package_json = filemd5("${path.module}/promotional_email_sender/package.json")
   }
 
   provisioner "local-exec" {
     working_dir = path.module
-    command     = "chmod +x build.sh && ./build.sh"
+    command     = <<-EOT
+      echo "Installing dependencies for housekeeping service..."
+      cd housekeeping_service
+      yarn
+      cd ..
+      echo "Installing dependencies for promotional email sender..."
+      cd promotional_email_sender
+      yarn
+      cd ..
+    EOT
   }
 }
 
 # Housekeeping Service Lambda
 resource "aws_lambda_function" "housekeeping_service" {
-  depends_on = [null_resource.check_zip_files]
-
   filename         = data.archive_file.housekeeping_zip.output_path
   source_code_hash = data.archive_file.housekeeping_zip.output_base64sha256
   function_name    = "${var.project_name}-housekeeping-service"
@@ -120,6 +129,8 @@ resource "aws_lambda_function" "housekeeping_service" {
   tags = merge(var.tags, {
     Name = "${var.project_name}-housekeeping-service"
   })
+
+  depends_on = [null_resource.install_dependencies]
 }
 
 # EventBridge rule for daily trigger
@@ -146,8 +157,6 @@ resource "aws_lambda_permission" "allow_eventbridge" {
 
 # Promotional Email Sender Lambda
 resource "aws_lambda_function" "promotional_email_sender" {
-  depends_on = [null_resource.check_zip_files]
-
   filename         = data.archive_file.promotional_zip.output_path
   source_code_hash = data.archive_file.promotional_zip.output_base64sha256
   function_name    = "${var.project_name}-promotional-email-sender"
@@ -179,6 +188,8 @@ resource "aws_lambda_function" "promotional_email_sender" {
   tags = merge(var.tags, {
     Name = "${var.project_name}-promotional-email-sender"
   })
+
+  depends_on = [null_resource.install_dependencies]
 }
 
 # Allow S3 to invoke Lambda - This MUST be created before the S3 notification

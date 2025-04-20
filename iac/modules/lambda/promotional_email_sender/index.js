@@ -1,22 +1,19 @@
-const AWSXRay = require('aws-xray-sdk-core');
 const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
-const AWS = require('aws-sdk');
+const { S3 } = require('@aws-sdk/client-s3');
 const { generateEmailHtml } = require('./generateTemplate');
 
-// Capture and trace AWS SDK calls
-const awsSDK = AWSXRay.captureAWS(AWS);
-const s3 = new awsSDK.S3();
+const s3 = new S3();
 
-// Enable X-Ray tracing for PostgreSQL
-const pgPool = AWSXRay.capturePostgres(new Pool({
+// Initialize PostgreSQL pool
+const pgPool = new Pool({
   host: process.env.DB_HOST,
-  port: 5432,
+  port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   ssl: { rejectUnauthorized: false }
-}));
+});
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -29,9 +26,6 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.handler = async (event) => {
-  // Get the current segment
-  const segment = AWSXRay.getSegment();
-  
   const record = event.Records[0];
   const bucket = record.s3.bucket.name;
   const key = decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '));
@@ -39,16 +33,14 @@ exports.handler = async (event) => {
   let client;
 
   try {
-    // Create subsegment for S3 operations
-    const s3Segment = segment.addNewSubsegment('s3-operations');
-    const s3Object = await s3.getObject({ Bucket: bucket, Key: key }).promise();
-    const offerJson = JSON.parse(s3Object.Body.toString('utf-8'));
-    s3Segment.close();
+    // Get the offer details from S3
+    const s3Object = await s3.getObject({ Bucket: bucket, Key: key });
+    // Handle S3 object body for SDK v3
+    const bodyContents = await streamToString(s3Object.Body);
+    const offerJson = JSON.parse(bodyContents);
+    console.log('📦 Offer details:', offerJson);
 
-    console.log(offerJson);
-
-    // Create subsegment for database operations
-    const dbSegment = segment.addNewSubsegment('database-operations');
+    // Get database connection
     client = await pgPool.connect();
 
     // Insert offer into DB
@@ -75,10 +67,6 @@ exports.handler = async (event) => {
       FROM guest_extension 
       WHERE special_offers_consent = true AND billing_email IS NOT NULL
     `);
-    dbSegment.close();
-
-    // Create subsegment for email operations
-    const emailSegment = segment.addNewSubsegment('email-operations');
     
     // Test email configuration
     try {
@@ -90,7 +78,6 @@ exports.handler = async (event) => {
             code: verifyErr.code,
             host: process.env.MAIL_USERNAME ? process.env.MAIL_USERNAME.split('@')[1] : 'unknown'
         });
-        emailSegment.addError(verifyErr);
         throw verifyErr;
     }
     
@@ -117,21 +104,35 @@ exports.handler = async (event) => {
           code: emailErr.code,
           command: emailErr.command
         });
-        if (emailSegment) {
-          emailSegment.addError(emailErr);
-        }
       }
     }
-    emailSegment.close();
 
     console.log("🎉 All emails processed.");
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'Promotional emails sent successfully'
+      })
+    };
   } catch (error) {
     console.error("❌ Error occurred:", error);
-    if (segment) {
-      segment.addError(error);
-    }
-    throw error;
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: 'Error processing promotional emails',
+        error: error.message
+      })
+    };
   } finally {
     if (client) client.release();
   }
 };
+
+// Helper function to convert stream to string
+async function streamToString(stream) {
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}

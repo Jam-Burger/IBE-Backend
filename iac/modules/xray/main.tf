@@ -6,14 +6,15 @@ resource "aws_xray_group" "this" {
 }
 
 resource "aws_xray_sampling_rule" "critical_paths" {
-  rule_name      = "${var.project_name}-critical-paths"
+  rule_name      = "${var.project_name}-crit-paths"
   priority       = 1
   reservoir_size = 1
   fixed_rate     = 1.0
-  host_pattern   = "*"
+  host           = "*"
   http_method    = "*"
   url_path       = "/api/*/bookings/*"
   version        = 1
+  service_name   = "*"
   service_type   = "*"
   resource_arn   = "*"
 
@@ -62,10 +63,11 @@ resource "aws_xray_sampling_rule" "default" {
   priority       = 1000
   reservoir_size = 1
   fixed_rate     = 0.05
-  host_pattern   = "*"
+  host           = "*"
   http_method    = "*"
   url_path       = "/*"
   version        = 1
+  service_name   = "*"
   service_type   = "*"
   resource_arn   = "*"
 
