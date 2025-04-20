@@ -15,6 +15,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PositiveLong {
     String message() default "Value must be a positive number";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 } 

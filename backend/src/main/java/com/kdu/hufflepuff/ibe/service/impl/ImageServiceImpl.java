@@ -11,20 +11,16 @@ import com.kdu.hufflepuff.ibe.service.interfaces.ImageService;
 import com.kdu.hufflepuff.ibe.service.interfaces.RoomTypeService;
 import com.kdu.hufflepuff.ibe.service.interfaces.WebsiteConfigService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
@@ -111,36 +107,33 @@ public class ImageServiceImpl implements ImageService {
             extension = originalFileName.substring(originalFileName.lastIndexOf("."));
         }
         String key = String.format("%s/%s%s", path, fileName, extension);
-        
-        // Read the entire file into memory
-        byte[] bytes = file.getBytes();
-        long fileSize = bytes.length;
-        
-        log.info("Uploading file: originalName={}, contentType={}, size={} bytes", 
-                originalFileName, file.getContentType(), fileSize);
 
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes)) {
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .contentType(file.getContentType())
-                .contentLength(fileSize)
-                .metadata(Map.of(
-                    "original-filename", originalFileName != null ? originalFileName : "unknown",
-                    "upload-date", java.time.Instant.now().toString(),
-                    "content-length", String.valueOf(fileSize)
-                ))
-                .build();
-
-            PutObjectResponse response = s3Client.putObject(putObjectRequest, 
-                RequestBody.fromBytes(bytes));
-            
-            log.info("Upload successful: key={}, eTag={}", key, response.eTag());
-            return String.format("%s/%s", cloudFrontBaseUrl, key);
-        } catch (Exception e) {
-            log.error("Failed to upload file to S3: {}", e.getMessage(), e);
-            throw new ImageUploadException("Failed to upload file to S3: " + e.getMessage(), e);
+        // Check file size before upload
+        long fileSizeKB = file.getSize() / 1024;
+        if (fileSizeKB > 5120) { // 5MB limit
+            throw new ImageUploadException("File size exceeds 5MB limit");
         }
+
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("original-filename", originalFileName != null ? originalFileName : "unknown");
+        metadata.put("content-type", file.getContentType() != null ? file.getContentType() : "application/octet-stream");
+        metadata.put("content-length", String.valueOf(file.getSize()));
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .contentType(file.getContentType())
+            .contentLength(file.getSize())
+            .contentEncoding("identity") // Prevent automatic compression
+            .metadata(metadata)
+            .build();
+
+        try (var inputStream = file.getInputStream()) {
+            byte[] bytes = inputStream.readAllBytes();
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
+        }
+
+        return String.format("%s/%s", cloudFrontBaseUrl, key);
     }
 
     private void updateLogoUrl(Long tenantId, String fileUrl) {

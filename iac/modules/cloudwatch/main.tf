@@ -88,7 +88,7 @@ resource "aws_cloudwatch_metric_alarm" "error_rate" {
 
   metric_query {
     id          = "errorRate"
-    expression  = "IF(requests > 0, 100 * errors / requests, 0)"
+    expression  = "IF(requests > 10, 100 * errors / requests, 0)"
     label       = "Error Rate (%)"
     return_data = true
   }
@@ -104,7 +104,7 @@ resource "aws_cloudwatch_metric_alarm" "error_rate" {
     metric {
       metric_name = "HTTPCode_Target_4XX_Count"
       namespace   = "AWS/ApplicationELB"
-      period      = 300  # 5 minute period
+      period      = 300
       stat        = "Sum"
       dimensions = {
         LoadBalancer = var.alb_arn_suffix
@@ -118,7 +118,7 @@ resource "aws_cloudwatch_metric_alarm" "error_rate" {
     metric {
       metric_name = "HTTPCode_Target_5XX_Count"
       namespace   = "AWS/ApplicationELB"
-      period      = 300  # 5 minute period
+      period      = 300
       stat        = "Sum"
       dimensions = {
         LoadBalancer = var.alb_arn_suffix
@@ -132,7 +132,7 @@ resource "aws_cloudwatch_metric_alarm" "error_rate" {
     metric {
       metric_name = "RequestCount"
       namespace   = "AWS/ApplicationELB"
-      period      = 300  # 5 minute period
+      period      = 300
       stat        = "Sum"
       dimensions = {
         LoadBalancer = var.alb_arn_suffix

@@ -118,10 +118,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ErrorResponse> handleMethodValidationExceptions(HandlerMethodValidationException ex) {
         log.error("Method validation error: {}", ex.getMessage());
-        
+
         // Extract the error message from the exception
         String message = ex.getMessage();
-        
+
         // If the message contains parameter information, extract it
         if (message.contains("parameter")) {
             // The message typically contains information about which parameter failed validation
@@ -131,7 +131,7 @@ public class GlobalExceptionHandler {
                 .build()
                 .send();
         }
-        
+
         // Default message if we can't extract parameter information
         return ErrorResponse.builder()
             .statusCode(HttpStatus.BAD_REQUEST)

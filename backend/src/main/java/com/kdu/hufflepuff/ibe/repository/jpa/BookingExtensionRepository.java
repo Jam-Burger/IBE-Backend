@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface BookingExtensionRepository extends JpaRepository<BookingExtension, Long> {
     BookingExtension findByBookingId(Long bookingId);
+
     List<BookingExtension> findAllByGuestDetails_BillingEmail(String billingEmail);
 }

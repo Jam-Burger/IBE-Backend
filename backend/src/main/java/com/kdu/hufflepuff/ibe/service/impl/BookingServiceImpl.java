@@ -357,8 +357,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
 
-
-
     @Override
     public List<BookingSummaryDTO> getBookingDetailsByEmail(String billingEmail) {
         List<BookingExtension> bookingExtensions = bookingExtensionRepository.findAllByGuestDetails_BillingEmail(billingEmail);
@@ -371,7 +369,7 @@ public class BookingServiceImpl implements BookingService {
                 RoomAvailability firstRoomAvailability = booking.getRoomBooked().getFirst();
                 if (firstRoomAvailability.getRoom() != null) {
                     RoomTypeExtension roomTypeExtension = roomTypeRepository.findById(firstRoomAvailability.getRoom().getRoomTypeId())
-                            .orElseThrow(() -> new RuntimeException("Room Type not found"));
+                        .orElseThrow(() -> new RuntimeException("Room Type not found"));
 
                     bookingSummaryDTO.setRoomTypeImage(roomTypeExtension.getImages().getFirst());
 

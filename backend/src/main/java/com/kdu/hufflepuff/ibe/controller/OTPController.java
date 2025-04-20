@@ -5,7 +5,6 @@ import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.security.JwtService;
 import com.kdu.hufflepuff.ibe.service.interfaces.OTPService;
 import com.kdu.hufflepuff.ibe.validation.PositiveLong;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "OTP", description = "One-Time Password generation and verification API")
 public class OTPController {
     private final OTPService otpService;
-    private  final JwtService jwtService;
+    private final JwtService jwtService;
 
     @Operation(
         summary = "Send OTP to email",
@@ -74,26 +73,26 @@ public class OTPController {
         @Parameter(description = "Email address associated with the OTP", required = true) @RequestParam String email,
         @Parameter(description = "One-Time Password to verify", required = true) @RequestParam String otp) {
         boolean isValid = otpService.verifyOtp(email, otp);
-        if(!isValid){
+        if (!isValid) {
             return ApiResponse.<GuestSessionDTO>builder()
-                    .message("Invalid OTP")
-                    .statusCode(HttpStatus.UNAUTHORIZED)
-                    .build()
-                    .send();
+                .message("Invalid OTP")
+                .statusCode(HttpStatus.UNAUTHORIZED)
+                .build()
+                .send();
         }
 
         String guestSessionToken = jwtService.generateGuestJwtToken(email);
 
         GuestSessionDTO response = GuestSessionDTO.builder()
-                .guestToken(guestSessionToken)
-                .build();
+            .guestToken(guestSessionToken)
+            .build();
 
         return ApiResponse.<GuestSessionDTO>builder()
-                .message("OTP verified successfully")
-                .data(response)
-                .statusCode(HttpStatus.OK)
-                .build()
-                .send();
+            .message("OTP verified successfully")
+            .data(response)
+            .statusCode(HttpStatus.OK)
+            .build()
+            .send();
     }
 
 }

@@ -23,7 +23,8 @@
         <aws.sdk.version>2.25.12</aws.sdk.version>
         <netty.version>4.1.118.Final</netty.version>
         <jacoco.version>0.8.12</jacoco.version>
-        <jackson.version>2.14.2</jackson.version>
+        <jackson.version>2.15.0-rc1</jackson.version>
+        <aws.xray.version>2.18.2</aws.xray.version>
     </properties>
 
 
@@ -170,29 +171,36 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-xray-recorder-sdk-spring</artifactId>
-            <version>2.14.0</version>
+            <version>${aws.xray.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-xray-recorder-sdk-aws-sdk-v2</artifactId>
-            <version>2.14.0</version>
+            <version>${aws.xray.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-xray-recorder-sdk-aws-sdk-v2-instrumentor</artifactId>
-            <version>2.14.0</version>
+            <version>${aws.xray.version}</version>
+        </dependency>
+        <!-- Add SQL and AppSync tracing -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-xray-recorder-sdk-sql</artifactId>
+            <version>${aws.xray.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-xray-recorder-sdk-sql-postgres</artifactId>
+            <version>${aws.xray.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>appsync</artifactId>
+            <version>${aws.sdk.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-resolver-dns</artifactId>
-            <version>${netty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>${netty.version}</version>
-        </dependency>
+        <!-- Remove redundant netty dependencies as they're included in spring-boot-starter-webflux -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-resolver-dns-native-macos</artifactId>
@@ -230,7 +238,7 @@
             <version>1.0.10</version>
         </dependency>
 
-        <!--        Swagger-->
+        <!--Swagger-->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -238,12 +246,6 @@
         </dependency>
 
         <!--        Security-->
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-            <version>3.4.4</version>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>

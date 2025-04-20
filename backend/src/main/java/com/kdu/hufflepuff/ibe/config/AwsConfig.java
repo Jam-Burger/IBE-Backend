@@ -28,32 +28,32 @@ public class AwsConfig {
     @Bean
     public ClientOverrideConfiguration tracingConfig() {
         return ClientOverrideConfiguration.builder()
-                .addExecutionInterceptor(new TracingInterceptor())
-                .build();
+            .addExecutionInterceptor(new TracingInterceptor())
+            .build();
     }
 
     @Bean
     public S3Client s3Client(ClientOverrideConfiguration tracingConfig) {
         return S3Client.builder()
-                .region(Region.of(awsRegion))
-                .overrideConfiguration(tracingConfig)
-                .credentialsProvider(credentialsProvider)
-                .build();
+            .region(Region.of(awsRegion))
+            .overrideConfiguration(tracingConfig)
+            .credentialsProvider(credentialsProvider)
+            .build();
     }
 
     @Bean
     public DynamoDbClient dynamoDbClient(ClientOverrideConfiguration tracingConfig) {
         return DynamoDbClient.builder()
-                .region(Region.of(awsRegion))
-                .overrideConfiguration(tracingConfig)
-                .credentialsProvider(credentialsProvider)
-                .build();
+            .region(Region.of(awsRegion))
+            .overrideConfiguration(tracingConfig)
+            .credentialsProvider(credentialsProvider)
+            .build();
     }
 
     @Bean
     public DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient dynamoDbClient) {
         return DynamoDbEnhancedClient.builder()
-                .dynamoDbClient(dynamoDbClient)
-                .build();
+            .dynamoDbClient(dynamoDbClient)
+            .build();
     }
 }

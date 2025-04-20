@@ -22,7 +22,14 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "storage" {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
+    bucket_key_enabled = true
   }
+}
+
+# Enable transfer acceleration if needed
+resource "aws_s3_bucket_accelerate_configuration" "storage" {
+  bucket = aws_s3_bucket.storage.id
+  status = "Enabled"
 }
 
 resource "aws_cloudfront_origin_access_control" "oac" {
@@ -46,8 +53,8 @@ resource "aws_cloudfront_distribution" "cdn" {
   origin {
     connection_attempts      = 3
     connection_timeout       = 10
-    domain_name              = aws_s3_bucket.storage.bucket_regional_domain_name
-    origin_id                = "S3-${var.project_name}-storage-bucket"
+    domain_name             = aws_s3_bucket.storage.bucket_regional_domain_name
+    origin_id               = "S3-${var.project_name}-storage-bucket"
     origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
   }
 
@@ -59,10 +66,11 @@ resource "aws_cloudfront_distribution" "cdn" {
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD"]
-    compress               = true
+    compress              = false  # Disable compression to preserve original file size
 
     forwarded_values {
       query_string = false
+      headers      = ["Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
       cookies {
         forward = "none"
       }

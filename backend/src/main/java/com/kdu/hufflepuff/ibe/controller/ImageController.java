@@ -4,7 +4,6 @@ import com.kdu.hufflepuff.ibe.model.enums.ImageType;
 import com.kdu.hufflepuff.ibe.model.response.ApiResponse;
 import com.kdu.hufflepuff.ibe.service.interfaces.ImageService;
 import com.kdu.hufflepuff.ibe.validation.PositiveLong;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

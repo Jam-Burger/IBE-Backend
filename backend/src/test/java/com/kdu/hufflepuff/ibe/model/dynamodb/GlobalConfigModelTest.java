@@ -66,7 +66,7 @@ class GlobalConfigModelTest {
 
         Method getProperties = clazz.getMethod("getProperties");
         assertThat(getProperties.getAnnotation(DynamoDbAttribute.class).value()).isEqualTo("Properties");
-        
+
         // Test Brand class annotations
         Class<GlobalConfigModel.Brand> brandClass = GlobalConfigModel.Brand.class;
         Method getFooterLogoUrl = brandClass.getMethod("getFooterLogoUrl");

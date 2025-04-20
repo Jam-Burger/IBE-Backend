@@ -1,4 +1,5 @@
 package com.kdu.hufflepuff.ibe.security;
+
 import com.kdu.hufflepuff.ibe.exception.GuestTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -35,22 +36,22 @@ public class JwtService {
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts
-                .builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expireTime))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                .compact();
+            .builder()
+            .setClaims(extraClaims)
+            .setSubject(userDetails.getUsername())
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + expireTime))
+            .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+            .compact();
     }
 
     private Claims extractAllClaims(String token) {
         return Jwts
-                .parserBuilder()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+            .parserBuilder()
+            .setSigningKey(getSignInKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
     }
 
     private Key getSignInKey() {
@@ -60,31 +61,31 @@ public class JwtService {
 
     public String generateGuestJwtToken(String billingEmail) {
         return Jwts.builder()
-                .setSubject("guest-session")
-                .claim("billingEmail", billingEmail)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expireTime))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                .compact();
+            .setSubject("guest-session")
+            .claim("billingEmail", billingEmail)
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + expireTime))
+            .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+            .compact();
     }
 
     public String extractBillingEmailFromGuestToken(String token) {
         Claims claims = Jwts
-                .parserBuilder()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+            .parserBuilder()
+            .setSigningKey(getSignInKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
         return claims.get("billingEmail", String.class);
     }
 
     public void validateGuestToken(String guestToken) {
         Claims claims = Jwts
-                .parserBuilder()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(guestToken)
-                .getBody();
+            .parserBuilder()
+            .setSigningKey(getSignInKey())
+            .build()
+            .parseClaimsJws(guestToken)
+            .getBody();
 
         Date expiryDate = claims.getExpiration();
         if (expiryDate.before(new Date())) {
