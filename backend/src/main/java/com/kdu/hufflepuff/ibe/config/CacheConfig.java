@@ -18,17 +18,17 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 public class CacheConfig {
-    
+
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         log.info("Initializing Redis cache manager with caches: specialOffers, calendarOffers, promoOffers, minimumRoomRates");
-        
+
         RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
             .entryTtl(Duration.ofHours(1))
             .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
             .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
             .disableCachingNullValues();
-            
+
         return RedisCacheManager.builder(redisConnectionFactory)
             .cacheDefaults(cacheConfiguration)
             .withCacheConfiguration("specialOffers", cacheConfiguration)

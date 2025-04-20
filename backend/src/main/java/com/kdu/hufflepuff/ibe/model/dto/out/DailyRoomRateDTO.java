@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Builder
 public class DailyRoomRateDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
     private Double minimumRate;

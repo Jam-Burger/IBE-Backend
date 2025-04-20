@@ -31,9 +31,9 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
     @Cacheable(value = "specialOffers", key = "#tenantId + '_' + #propertyId + '_' + #startDate + '_' + #endDate", unless = "#result == null || #result.isEmpty()")
     public List<SpecialOfferResponseDTO> getSpecialOffers(Long tenantId, Long propertyId, LocalDate startDate,
                                                           LocalDate endDate) {
-        log.info("Cache miss - Fetching special offers for propertyId: {}, startDate: {}, endDate: {}", 
+        log.info("Cache miss - Fetching special offers for propertyId: {}, startDate: {}, endDate: {}",
             propertyId, startDate, endDate);
-            
+
         List<SpecialOffer> specialOffers = specialOfferRepository.findAllByPropertyIdAndDateRange(propertyId, startDate,
             endDate);
 
@@ -64,9 +64,9 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
     @Cacheable(value = "calendarOffers", key = "#tenantId + '_' + #propertyId + '_' + #startDate + '_' + #endDate", unless = "#result == null || #result.isEmpty()")
     public List<SpecialOfferResponseDTO> getCalenderOffers(Long tenantId, Long propertyId, LocalDate startDate,
                                                            LocalDate endDate) {
-        log.info("Cache miss - Fetching calendar offers for propertyId: {}, startDate: {}, endDate: {}", 
+        log.info("Cache miss - Fetching calendar offers for propertyId: {}, startDate: {}, endDate: {}",
             propertyId, startDate, endDate);
-            
+
         List<SpecialOffer> specialOffers = specialOfferRepository.findAllByPropertyIdAndDateRangeWithNoPromoCode(propertyId, startDate,
             endDate);
         return specialOffers.stream()
@@ -79,9 +79,9 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
     @Cacheable(value = "promoOffers", key = "#tenantId + '_' + #propertyId + '_' + #promoCode + '_' + #startDate + '_' + #endDate", unless = "#result == null")
     public SpecialOfferResponseDTO getPromoOffer(Long tenantId, Long propertyId, String promoCode, LocalDate startDate,
                                                  LocalDate endDate) {
-        log.info("Cache miss - Fetching promo offer for propertyId: {}, promoCode: {}, startDate: {}, endDate: {}", 
+        log.info("Cache miss - Fetching promo offer for propertyId: {}, promoCode: {}, startDate: {}, endDate: {}",
             propertyId, promoCode, startDate, endDate);
-            
+
         SpecialOffer specialOffer = specialOfferRepository.findByPropertyIdAndPromoCode(propertyId, promoCode);
         if (specialOffer == null) {
             throw InvalidPromoCodeException.notFound(promoCode);

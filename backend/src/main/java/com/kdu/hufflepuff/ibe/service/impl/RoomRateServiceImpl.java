@@ -13,10 +13,10 @@ import com.kdu.hufflepuff.ibe.util.DateRangeUtils;
 import com.kdu.hufflepuff.ibe.util.GraphQLQueries;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -41,7 +41,7 @@ public class RoomRateServiceImpl implements RoomRateService {
     @Transactional(readOnly = true)
     @Cacheable(value = "minimumRoomRates", key = "#tenantId + '_' + #propertyId + '_' + #startDate + '_' + #endDate", unless = "#result == null || #result.isEmpty()")
     public List<DailyRoomRateDTO> getMinimumDailyRates(Long tenantId, Long propertyId, LocalDate startDate, LocalDate endDate) {
-        log.info("Cache miss - Fetching minimum daily rates for propertyId: {}, startDate: {}, endDate: {}", 
+        log.info("Cache miss - Fetching minimum daily rates for propertyId: {}, startDate: {}, endDate: {}",
             propertyId, startDate, endDate);
         log.info("DATES: {}, {}", DateFormatUtils.toGraphQLDateString(startDate), DateFormatUtils.toGraphQLDateString(endDate));
 
