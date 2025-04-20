@@ -8,12 +8,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
 @Import({
+    AwsConfig.class,
     SecurityConfig.class,
     WebConfig.class,
     ModelMapperConfig.class,
     GraphQLClientConfig.class,
     LoggingConfig.class,
-    AwsConfig.class,
     OpenAPIConfig.class
 })
 @EntityScan(basePackages = "com.kdu.hufflepuff.ibe.model.entity")

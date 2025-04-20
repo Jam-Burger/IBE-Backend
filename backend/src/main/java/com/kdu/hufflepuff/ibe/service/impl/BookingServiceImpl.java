@@ -20,11 +20,9 @@ import com.kdu.hufflepuff.ibe.util.*;
 import com.kdu.hufflepuff.ibe.util.GuestCountConverter.GuestCounts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.amazonaws.xray.spring.aop.XRayEnabled;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,7 +32,6 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@XRayEnabled
 public class BookingServiceImpl implements BookingService {
     private final BookingExtensionRepository bookingExtensionRepository;
     private final GuestService guestService;
@@ -46,7 +43,6 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
     private final DelayedEmailSchedulerService delayedEmailSchedulerService;
     private final Random random = new Random();
-    private final ModelMapper modelMapper;
     private final RoomTypeRepository roomTypeRepository;
 
     @Override
@@ -73,7 +69,8 @@ public class BookingServiceImpl implements BookingService {
             if (guestExtension != null) {
                 guest = guestService.findGuestById(guestExtension.getId());
                 if (guest == null) {
-                    String fullName = guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName();
+                    String fullName = guestExtension.getTravelerFirstName() + " "
+                        + guestExtension.getTravelerLastName();
                     guest = guestService.createGuestWithId(fullName, guestExtension.getId());
                 }
             } else {
@@ -102,13 +99,13 @@ public class BookingServiceImpl implements BookingService {
                 guestExtension.getTravelerFirstName() + " " + guestExtension.getTravelerLastName(),
                 booking.getBookingId(),
                 propertyId,
-                tenantId
-            );
+                tenantId);
 
             // Step 10: return booking details
             return getBookingDetailsById(booking.getBookingId());
         } catch (Exception e) {
-            throw BookingOperationException.bookingCreationFailed("Unexpected error during booking creation: " + e.getMessage(), e);
+            throw BookingOperationException
+                .bookingCreationFailed("Unexpected error during booking creation: " + e.getMessage(), e);
         } finally {
             releaseRoomLocks(selectedRoomIds, request.getDateRange().getFrom(), request.getDateRange().getTo());
         }
@@ -141,8 +138,7 @@ public class BookingServiceImpl implements BookingService {
             request.getRoomTypeId(),
             request.getDateRange().getFrom(),
             request.getDateRange().getTo(),
-            request.getRoomCount()
-        );
+            request.getRoomCount());
 
         List<Long> selectedRoomIds = selectRandomRoomIds(roomAvailabilities, request.getRoomCount());
         if (selectedRoomIds.isEmpty()) {
@@ -217,7 +213,8 @@ public class BookingServiceImpl implements BookingService {
     private void updateRoomAvailabilitiesForBooking(List<Long> availabilityIds, Long bookingId) {
         for (Long availabilityId : availabilityIds) {
             try {
-                RoomAvailability updatedAvailability = roomAvailabilityService.updateRoomAvailability(availabilityId, bookingId);
+                RoomAvailability updatedAvailability = roomAvailabilityService.updateRoomAvailability(availabilityId,
+                    bookingId);
                 log.info("Updated room availability: {}", updatedAvailability);
             } catch (Exception e) {
                 throw BookingOperationException.updateAvailabilityFailed(availabilityId, bookingId);
@@ -293,7 +290,8 @@ public class BookingServiceImpl implements BookingService {
             log.info("Booking created: {}", booking);
             return booking;
         } catch (Exception e) {
-            throw BookingOperationException.bookingCreationFailed("Failed to create booking in GraphQL: " + e.getMessage(), e);
+            throw BookingOperationException
+                .bookingCreationFailed("Failed to create booking in GraphQL: " + e.getMessage(), e);
         }
     }
 
@@ -304,13 +302,16 @@ public class BookingServiceImpl implements BookingService {
         BookingRequestDTO request, GuestCounts guestCounts,
         Long propertyId, Long guestId, boolean hasGqlPromotion) {
 
-        GraphQlClient.RequestSpec requestSpec = graphQlClient.document(GraphQLMutations.getCreateBookingQuery(hasGqlPromotion))
+        GraphQlClient.RequestSpec requestSpec = graphQlClient
+            .document(GraphQLMutations.getCreateBookingQuery(hasGqlPromotion))
             .variable("checkInDate", DateFormatUtils.toGraphQLDateString(request.getDateRange().getFrom()))
             .variable("checkOutDate", DateFormatUtils.toGraphQLDateString(request.getDateRange().getTo()))
             .variable("adultCount", guestCounts.adults)
             .variable("childCount", guestCounts.children)
             .variable("totalCost", Math.round(request.getTotalAmount()))
-            .variable("amountDueAtResort", Math.round(request.getTotalAmount() - paymentService.calculateDueNowAmount(request.getTotalAmount())))
+            .variable("amountDueAtResort",
+                Math.round(request.getTotalAmount()
+                    - paymentService.calculateDueNowAmount(request.getTotalAmount())))
             .variable("propertyId", propertyId)
             .variable("guestId", guestId);
 
@@ -327,7 +328,8 @@ public class BookingServiceImpl implements BookingService {
      */
     private Booking validateBookingForCancellation(Long bookingId) {
         Booking currentBooking = fetchBookingFromGraphQL(bookingId);
-        if (currentBooking.getBookingStatus() == null || currentBooking.getBookingStatus().getStatus().equals("CANCELLED")) {
+        if (currentBooking.getBookingStatus() == null
+            || currentBooking.getBookingStatus().getStatus().equals("CANCELLED")) {
             throw BookingOperationException.bookingAlreadyCancelled(bookingId);
         }
         return currentBooking;
@@ -358,10 +360,10 @@ public class BookingServiceImpl implements BookingService {
         return bookingMapper.toBookingDetailsDTO(booking, bookingExtension);
     }
 
-
     @Override
     public List<BookingSummaryDTO> getBookingDetailsByEmail(String billingEmail) {
-        List<BookingExtension> bookingExtensions = bookingExtensionRepository.findAllByGuestDetails_BillingEmail(billingEmail);
+        List<BookingExtension> bookingExtensions = bookingExtensionRepository
+            .findAllByGuestDetails_BillingEmail(billingEmail);
         List<BookingSummaryDTO> bookingSummaryDTOList = new ArrayList<>();
 
         for (BookingExtension extension : bookingExtensions) {
@@ -370,7 +372,8 @@ public class BookingServiceImpl implements BookingService {
             if (booking.getRoomBooked() != null && !booking.getRoomBooked().isEmpty()) {
                 RoomAvailability firstRoomAvailability = booking.getRoomBooked().getFirst();
                 if (firstRoomAvailability.getRoom() != null) {
-                    RoomTypeExtension roomTypeExtension = roomTypeRepository.findById(firstRoomAvailability.getRoom().getRoomTypeId())
+                    RoomTypeExtension roomTypeExtension = roomTypeRepository
+                        .findById(firstRoomAvailability.getRoom().getRoomTypeId())
                         .orElseThrow(() -> new RuntimeException("Room Type not found"));
 
                     bookingSummaryDTO.setRoomTypeImage(roomTypeExtension.getImages().getFirst());
