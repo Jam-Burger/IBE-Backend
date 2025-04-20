@@ -11,6 +11,15 @@ resource "aws_security_group" "ecs_tasks" {
     security_groups = [var.alb_security_group_id]
   }
 
+  # X-Ray daemon port
+  ingress {
+    from_port   = 2000
+    to_port     = 2000
+    protocol    = "udp"
+    self        = true
+    description = "X-Ray daemon port"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -86,6 +95,32 @@ resource "aws_ecs_task_definition" "app" {
           "awslogs-group"         = var.log_group_name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
+        }
+      }
+      essential = true,
+      dependsOn = [
+        {
+          containerName = "xray-daemon"
+          condition     = "START"
+        }
+      ]
+    },
+    {
+      name  = "xray-daemon"
+      image = "amazon/aws-xray-daemon"
+      portMappings = [
+        {
+          containerPort = 2000
+          hostPort      = 2000
+          protocol      = "udp"
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = var.log_group_name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "xray"
         }
       }
       essential = true

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -104,16 +105,28 @@ public class ImageServiceImpl implements ImageService {
      */
     private String uploadFileToS3(MultipartFile file, String path) throws IOException {
         String fileName = UUID.randomUUID().toString();
-        String key = String.format("%s/%s", path, fileName);
+        String originalFileName = file.getOriginalFilename();
+        String extension = "";
+        if (originalFileName != null && originalFileName.contains(".")) {
+            extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        }
+        String key = String.format("%s/%s%s", path, fileName, extension);
 
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-            .bucket(bucketName)
-            .key(key)
-            .contentType(file.getContentType())
-            .build();
+        try (var inputStream = file.getInputStream()) {
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType(file.getContentType())
+                .contentLength(file.getSize())
+                .metadata(Map.of(
+                    "original-filename", originalFileName != null ? originalFileName : "unknown",
+                    "upload-date", java.time.Instant.now().toString()
+                ))
+                .build();
 
-        s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-        return String.format("%s/%s", cloudFrontBaseUrl, key);
+            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
+            return String.format("%s/%s", cloudFrontBaseUrl, key);
+        }
     }
 
     private void updateLogoUrl(Long tenantId, String fileUrl) {

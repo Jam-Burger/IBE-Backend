@@ -37,6 +37,17 @@
         "arn:aws:s3:::${project_name}-storage-bucket",
         "arn:aws:s3:::${project_name}-storage-bucket/*"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords",
+        "xray:GetSamplingRules",
+        "xray:GetSamplingTargets",
+        "xray:GetSamplingStatisticSummaries"
+      ],
+      "Resource": "*"
     }
   ]
 }

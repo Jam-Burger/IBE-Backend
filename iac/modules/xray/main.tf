@@ -1,9 +1,64 @@
-resource "aws_xray_sampling_rule" "default" {
-  rule_name      = "${var.project_name}-sampling-rule"
-  priority       = 1000
+resource "aws_xray_sampling_rule" "critical_paths" {
+  rule_name      = "${var.project_name}-crit-paths"
+  priority       = 1  # Higher priority (lower number)
   version        = 1
   reservoir_size = 1
-  fixed_rate     = 0.05  # Sample 5% of requests
+  fixed_rate     = 1.0  # Sample 100% of these requests
+  host           = "*"
+  http_method    = "*"
+  url_path       = "/api/*/bookings/*"  # Sample all booking-related paths
+  service_name   = "*"
+  service_type   = "*"
+  resource_arn   = "*"
+
+  attributes = {
+    Environment = var.environment
+  }
+}
+
+resource "aws_xray_sampling_rule" "errors" {
+  rule_name      = "${var.project_name}-errors"
+  priority       = 2  # Second priority
+  version        = 1
+  reservoir_size = 1
+  fixed_rate     = 1.0  # Sample 100% of error responses
+  host           = "*"
+  http_method    = "*"
+  url_path       = "/*"
+  service_name   = "*"
+  service_type   = "*"
+  resource_arn   = "*"
+  
+  attributes = {
+    Environment = var.environment
+    StatusCode  = "4XX,5XX"
+  }
+}
+
+resource "aws_xray_sampling_rule" "health_check" {
+  rule_name      = "${var.project_name}-health-check"
+  priority       = 100  # Lower priority
+  version        = 1
+  reservoir_size = 0
+  fixed_rate     = 0.0  # Don't sample health checks
+  host           = "*"
+  http_method    = "GET"
+  url_path       = "/health"
+  service_name   = "*"
+  service_type   = "*"
+  resource_arn   = "*"
+
+  attributes = {
+    Environment = var.environment
+  }
+}
+
+resource "aws_xray_sampling_rule" "default" {
+  rule_name      = "${var.project_name}-default"
+  priority       = 1000  # Lowest priority
+  version        = 1
+  reservoir_size = 1
+  fixed_rate     = 0.05  # Sample 5% of remaining requests
   host           = "*"
   http_method    = "*"
   url_path       = "/*"
