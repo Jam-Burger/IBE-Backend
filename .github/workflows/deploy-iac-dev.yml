@@ -58,9 +58,9 @@ jobs:
 
       - name: Build Lambda Functions
         run: |
+          cd modules/lambda
           chmod +x build.sh
           ./build.sh
-        working-directory: ./iac/modules/lambda
 
       - name: Terraform Init
         id: init
