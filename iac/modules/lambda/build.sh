@@ -11,6 +11,8 @@ cd "$(dirname "$0")/housekeeping_service"
 yarn install --frozen-lockfile
 zip -r "../housekeeping_service.zip" . -x "node_modules/.cache/*" "*.git*"
 
+cd ..
+
 # Build promotional_email_sender
 echo "Building promotional_email_sender..."
 cd "$(dirname "$0")/promotional_email_sender"
