@@ -23,6 +23,7 @@
         <aws.sdk.version>2.25.12</aws.sdk.version>
         <netty.version>4.1.118.Final</netty.version>
         <jacoco.version>0.8.12</jacoco.version>
+        <caffeine.version>3.1.8</caffeine.version>
     </properties>
 
 
@@ -231,6 +232,16 @@
             <artifactId>jjwt-jackson</artifactId> <!-- for JSON parsing -->
             <version>0.11.5</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- Redis Cache -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
         </dependency>
 
     </dependencies>
