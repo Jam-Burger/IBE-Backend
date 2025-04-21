@@ -23,8 +23,29 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 public class CacheConfig {
+    @Value("${spring.data.redis.host}")
+    private String redisHost;
+
+    @Value("${spring.data.redis.port}")
+    private int redisPort;
+
     @Bean
-    public CacheManager cacheManager(LettuceConnectionFactory redisConnectionFactory) {
+    public LettuceConnectionFactory redisConnectionFactory() {
+        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+            .commandTimeout(Duration.ofSeconds(5L))
+            .useSsl() // Enable TLS for
+            .disablePeerVerification()
+            .build();
+
+        RedisStandaloneConfiguration standaloneConfig = new RedisStandaloneConfiguration();
+        standaloneConfig.setHostName(redisHost);
+        standaloneConfig.setPort(redisPort);
+
+        return new LettuceConnectionFactory(standaloneConfig, clientConfig);
+    }
+
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         log.info("Initializing Redis cache manager with caches: {}", 
                 String.join(", ", 
                     CacheNames.SPECIAL_OFFERS_CACHE,
@@ -35,8 +56,7 @@ public class CacheConfig {
         RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
             .entryTtl(Duration.ofHours(1))
             .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
-            .disableCachingNullValues();
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
         return RedisCacheManager.builder(redisConnectionFactory)
             .cacheDefaults(cacheConfiguration)

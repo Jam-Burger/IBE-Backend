@@ -78,7 +78,7 @@ module "ecs" {
     AWS_DYNAMODB_TABLE_NAME = module.dynamodb.ddb_table_name
     AWS_S3_BUCKET_NAME      = module.storage.bucket_name
     AWS_CLOUDFRONT_BASE_URL = module.storage.cloudfront_url
-    REDIS_HOST              = "rediss://${module.valkey.redis_endpoint.address}"
+    REDIS_HOST              = module.valkey.redis_endpoint.address
     REDIS_PORT              = module.valkey.redis_endpoint.port
   })
   alb_arn_suffix          = regex("app/[^/]+/[^/]+$", module.alb.alb_arn)
