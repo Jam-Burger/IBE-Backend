@@ -58,6 +58,11 @@ variable "alb_security_group_id" {
   type        = string
 }
 
+variable "ecs_security_group_id" {
+  description = "ID of the ECS tasks security group"
+  type        = string
+}
+
 variable "container_environment" {
   description = "Environment variables for the container"
   type        = map(string)

@@ -5,10 +5,10 @@ output "api_gateway_invoke_url" {
 
 output "redis_endpoint" {
   description = "The endpoint of the Redis cluster"
-  value       = module.valkey.redis_endpoint
+  value       = module.valkey.redis_endpoint.address
 }
 
 output "redis_port" {
   description = "The port of the Redis cluster"
-  value       = module.valkey.redis_port
+  value       = module.valkey.redis_endpoint.port
 }

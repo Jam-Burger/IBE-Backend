@@ -1,58 +1,3 @@
-# Security Group for ECS Tasks
-resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.project_name}-ecs-tasks-sg"
-  description = "Security group for ECS tasks"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port       = var.container_port
-    to_port         = var.container_port
-    protocol        = "tcp"
-    security_groups = [var.alb_security_group_id]
-  }
-
-  # X-Ray daemon port
-  ingress {
-    from_port   = 2000
-    to_port     = 2000
-    protocol    = "udp"
-    self        = true
-    description = "X-Ray daemon port"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = var.tags
-}
-
-# Security Group for Redis
-resource "aws_security_group" "redis" {
-  name        = "${var.project_name}-redis-sg"
-  description = "Security group for Redis cluster"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port       = 6379
-    to_port         = 6379
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ecs_tasks.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = var.tags
-}
-
 # ECR Repository
 resource "aws_ecr_repository" "app" {
   name = "${var.project_name}-repo"
@@ -169,7 +114,7 @@ resource "aws_ecs_service" "app" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [aws_security_group.ecs_tasks.id]
+    security_groups  = [var.ecs_security_group_id]
     assign_public_ip = false
   }
 

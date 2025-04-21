@@ -73,9 +73,3 @@ variable "slack_webhook_url" {
   type        = string
   sensitive   = true
 }
-
-variable "jwt_secret_key" {
-  description = "JWT secret key for the project"
-  type        = string
-  sensitive   = true
-}

@@ -31,6 +31,30 @@ module "alb" {
   tags              = local.tags
 }
 
+# Security Groups Module
+module "security_groups" {
+  source = "./modules/security_groups"
+
+  project_name         = local.name_prefix
+  vpc_id               = var.vpc_id
+  container_port       = var.container_port
+  alb_security_group_id = module.alb.alb_security_group_id
+  tags                 = local.tags
+}
+
+
+# Redis Module
+module "valkey" {
+  source = "./modules/valkey"
+
+  project_name            = local.name_prefix
+  subnet_ids              = var.private_subnet_ids # Using private subnets for security
+  redis_security_group_id = module.security_groups.redis_security_group_id
+  max_data_storage        = 5     # 5GB storage limit
+  max_ecpu_per_second     = 10000 # 10000 eCPU per second
+  tags                    = local.tags
+}
+
 # ECS Module
 module "ecs" {
   source = "./modules/ecs"
@@ -41,6 +65,7 @@ module "ecs" {
   private_subnet_ids     = var.private_subnet_ids
   target_group_arn       = module.alb.target_group_arn
   alb_security_group_id  = module.alb.alb_security_group_id
+  ecs_security_group_id  = module.security_groups.ecs_tasks_security_group_id
   ecs_execution_role_arn = module.iam.ecs_execution_role_arn
   ecs_task_role_arn      = module.iam.ecs_task_role_arn
   aws_region             = var.aws_region
@@ -53,9 +78,8 @@ module "ecs" {
     AWS_DYNAMODB_TABLE_NAME = module.dynamodb.ddb_table_name
     AWS_S3_BUCKET_NAME      = module.storage.bucket_name
     AWS_CLOUDFRONT_BASE_URL = module.storage.cloudfront_url
-    REDIS_HOST              = module.valkey.redis_endpoint
-    REDIS_PORT              = module.valkey.redis_port
-    JWT_SECRET_KEY          = var.jwt_secret_key
+    REDIS_HOST              = module.valkey.redis_endpoint.address
+    REDIS_PORT              = module.valkey.redis_endpoint.port
   })
   alb_arn_suffix          = regex("app/[^/]+/[^/]+$", module.alb.alb_arn)
   target_group_arn_suffix = regex("targetgroup/[^/]+/[^/]+$", module.alb.target_group_arn)
@@ -137,18 +161,4 @@ module "lambda" {
   s3_bucket_arn = module.storage.bucket_arn
   s3_bucket_id  = module.storage.bucket_name
   tags          = local.tags
-}
-
-# Redis Module
-module "valkey" {
-  source = "./modules/valkey"
-
-  project_name            = local.name_prefix
-  environment             = local.environment
-  vpc_id                  = var.vpc_id
-  subnet_ids              = var.private_subnet_ids # Using private subnets for security
-  redis_security_group_id = module.ecs.redis_security_group_id
-  node_type               = "cache.t4g.small" # Increased from micro to small for better performance
-  num_cache_clusters      = 2                 # Single node for development, increase for production
-  tags                    = local.tags
 }

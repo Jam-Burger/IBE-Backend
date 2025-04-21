@@ -3,16 +3,6 @@ variable "project_name" {
   type        = string
 }
 
-variable "environment" {
-  description = "Environment name"
-  type        = string
-}
-
-variable "vpc_id" {
-  description = "VPC ID where Redis will be deployed"
-  type        = string
-}
-
 variable "subnet_ids" {
   description = "List of subnet IDs where Redis will be deployed"
   type        = list(string)
@@ -23,14 +13,16 @@ variable "redis_security_group_id" {
   type        = string
 }
 
-variable "node_type" {
-  description = "The compute and memory capacity of the nodes in the cluster"
-  type        = string
+variable "max_data_storage" {
+  description = "Maximum data storage in GB for serverless Redis"
+  type        = number
+  default     = 5
 }
 
-variable "num_cache_clusters" {
-  description = "Number of cache clusters in the replication group"
+variable "max_ecpu_per_second" {
+  description = "Maximum eCPU per second for serverless Redis"
   type        = number
+  default     = 10000
 }
 
 variable "tags" {

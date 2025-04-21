@@ -1,11 +1,6 @@
 output "redis_endpoint" {
   description = "The endpoint of the Redis cluster"
-  value       = aws_elasticache_replication_group.this.primary_endpoint_address
-}
-
-output "redis_port" {
-  description = "The port of the Redis cluster"
-  value       = aws_elasticache_replication_group.this.port
+  value       = aws_elasticache_serverless_cache.this.endpoint[0]
 }
 
 output "redis_access_role_arn" {

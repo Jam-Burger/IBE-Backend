@@ -1,21 +1,20 @@
-resource "aws_elasticache_subnet_group" "this" {
-  name       = "${var.project_name}-redis-subnet-group"
-  subnet_ids = var.subnet_ids
-}
-
-resource "aws_elasticache_replication_group" "this" {
-  replication_group_id       = "${var.project_name}-redis"
-  description                = "Redis cluster for ${var.project_name}"
-  engine                     = "valkey"
-  node_type                  = var.node_type
-  num_cache_clusters         = var.num_cache_clusters
-  port                       = 6379
-  subnet_group_name          = aws_elasticache_subnet_group.this.name
-  security_group_ids = [var.redis_security_group_id]
-  automatic_failover_enabled = var.num_cache_clusters > 1
-  multi_az_enabled           = var.num_cache_clusters > 1
-  at_rest_encryption_enabled = true
-  transit_encryption_enabled = true
+resource "aws_elasticache_serverless_cache" "this" {
+  engine      = "valkey"
+  name        = "${var.project_name}-redis"
+  description = "Serverless Redis for ${var.project_name}"
+  cache_usage_limits {
+    data_storage {
+      maximum = var.max_data_storage
+      unit    = "GB"
+    }
+    ecpu_per_second {
+      maximum = var.max_ecpu_per_second
+    }
+  }
+  subnet_ids               = var.subnet_ids
+  security_group_ids       = [var.redis_security_group_id]
+  daily_snapshot_time      = "00:00"
+  snapshot_retention_limit = 0
 
   tags = var.tags
 }
@@ -51,9 +50,10 @@ resource "aws_iam_role_policy" "redis_access" {
         Effect = "Allow"
         Action = [
           "elasticache:DescribeCacheClusters",
-          "elasticache:DescribeReplicationGroups"
+          "elasticache:DescribeServerlessCaches",
+          "elasticache:DescribeServerlessCacheSnapshots"
         ]
-        Resource = [aws_elasticache_replication_group.this.arn]
+        Resource = [aws_elasticache_serverless_cache.this.arn]
       }
     ]
   })
