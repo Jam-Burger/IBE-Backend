@@ -55,6 +55,7 @@ module "ecs" {
     AWS_CLOUDFRONT_BASE_URL = module.storage.cloudfront_url
     REDIS_HOST              = module.valkey.redis_endpoint
     REDIS_PORT              = module.valkey.redis_port
+    JWT_SECRET_KEY          = var.jwt_secret_key
   })
   alb_arn_suffix          = regex("app/[^/]+/[^/]+$", module.alb.alb_arn)
   target_group_arn_suffix = regex("targetgroup/[^/]+/[^/]+$", module.alb.target_group_arn)
