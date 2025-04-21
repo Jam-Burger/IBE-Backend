@@ -23,29 +23,8 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 public class CacheConfig {
-    @Value("${spring.data.redis.host}")
-    private String host;
-
-    @Value("${spring.data.redis.port}")
-    private int redisPort;
-
     @Bean
-    public LettuceConnectionFactory redisConnectionFactory() {
-        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-            .commandTimeout(Duration.ofSeconds(5L))
-            .useSsl() // Enable TLS
-            .build();
-
-        // Use RedisStandaloneConfiguration for serverless/standalone Redis
-        RedisStandaloneConfiguration standaloneConfig = new RedisStandaloneConfiguration();
-        standaloneConfig.setHostName(host);
-        standaloneConfig.setPort(redisPort);
-
-        return new LettuceConnectionFactory(standaloneConfig, clientConfig);
-    }
-
-    @Bean
-    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+    public CacheManager cacheManager(LettuceConnectionFactory redisConnectionFactory) {
         log.info("Initializing Redis cache manager with caches: {}", 
                 String.join(", ", 
                     CacheNames.SPECIAL_OFFERS_CACHE,
