@@ -53,8 +53,8 @@ resource "aws_cloudfront_distribution" "cdn" {
   origin {
     connection_attempts      = 3
     connection_timeout       = 10
-    domain_name             = aws_s3_bucket.storage.bucket_regional_domain_name
-    origin_id               = "S3-${var.project_name}-storage-bucket"
+    domain_name              = aws_s3_bucket.storage.bucket_regional_domain_name
+    origin_id                = "S3-${var.project_name}-storage-bucket"
     origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
   }
 
@@ -66,7 +66,7 @@ resource "aws_cloudfront_distribution" "cdn" {
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD"]
-    compress              = false  # Disable compression to preserve original file size
+    compress               = false # Disable compression to preserve original file size
 
     forwarded_values {
       query_string = false

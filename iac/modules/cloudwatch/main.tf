@@ -94,7 +94,7 @@ resource "aws_cloudwatch_metric_alarm" "error_rate" {
   }
 
   metric_query {
-    id = "errors"
+    id         = "errors"
     expression = "errors4xx + errors5xx"
     label      = "Total Errors"
   }

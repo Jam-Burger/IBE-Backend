@@ -75,11 +75,11 @@ resource "aws_lambda_function" "housekeeping_service" {
   filename         = data.archive_file.housekeeping_zip.output_path
   source_code_hash = data.archive_file.housekeeping_zip.output_base64sha256
   function_name    = "${var.project_name}-housekeeping-service"
-  role            = aws_iam_role.lambda_role.arn
-  handler         = "index.handler"
-  runtime         = "nodejs22.x"
-  timeout         = 60
-  memory_size     = 256
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs22.x"
+  timeout          = 60
+  memory_size      = 256
 
   tracing_config {
     mode = "Active"
@@ -88,15 +88,15 @@ resource "aws_lambda_function" "housekeeping_service" {
   environment {
     variables = {
       AWS_XRAY_TRACING_NAME = "${var.project_name}-housekeeping-service"
-      DB_HOST         = split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[0]
-      DB_PORT         = split("/", split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[1])[0]
-      DB_NAME         = split("/", var.container_environment.DB_URL)[length(split("/", var.container_environment.DB_URL)) - 1]
-      DB_USER         = var.container_environment.DB_USERNAME
-      DB_PASSWORD     = var.container_environment.DB_PASSWORD
-      GRAPHQL_API_URL = var.container_environment.GRAPHQL_API_URL
-      GRAPHQL_API_KEY = var.container_environment.GRAPHQL_API_KEY
-      MAIL_USERNAME   = var.container_environment.MAIL_USERNAME
-      MAIL_PASSWORD   = var.container_environment.MAIL_PASSWORD
+      DB_HOST               = split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[0]
+      DB_PORT               = split("/", split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[1])[0]
+      DB_NAME               = split("/", var.container_environment.DB_URL)[length(split("/", var.container_environment.DB_URL)) - 1]
+      DB_USER               = var.container_environment.DB_USERNAME
+      DB_PASSWORD           = var.container_environment.DB_PASSWORD
+      GRAPHQL_API_URL       = var.container_environment.GRAPHQL_API_URL
+      GRAPHQL_API_KEY       = var.container_environment.GRAPHQL_API_KEY
+      MAIL_USERNAME         = var.container_environment.MAIL_USERNAME
+      MAIL_PASSWORD         = var.container_environment.MAIL_PASSWORD
     }
   }
 
@@ -132,11 +132,11 @@ resource "aws_lambda_function" "promotional_email_sender" {
   filename         = data.archive_file.promotional_zip.output_path
   source_code_hash = data.archive_file.promotional_zip.output_base64sha256
   function_name    = "${var.project_name}-promotional-email-sender"
-  role            = aws_iam_role.lambda_role.arn
-  handler         = "index.handler"
-  runtime         = "nodejs22.x"
-  timeout         = 10
-  memory_size     = 256
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs22.x"
+  timeout          = 10
+  memory_size      = 256
 
   tracing_config {
     mode = "Active"
@@ -145,15 +145,15 @@ resource "aws_lambda_function" "promotional_email_sender" {
   environment {
     variables = {
       AWS_XRAY_TRACING_NAME = "${var.project_name}-promotional-email-sender"
-      DB_HOST         = split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[0]
-      DB_PORT         = split("/", split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[1])[0]
-      DB_NAME         = split("/", var.container_environment.DB_URL)[length(split("/", var.container_environment.DB_URL)) - 1]
-      DB_USER         = var.container_environment.DB_USERNAME
-      DB_PASSWORD     = var.container_environment.DB_PASSWORD
-      GRAPHQL_API_URL = var.container_environment.GRAPHQL_API_URL
-      GRAPHQL_API_KEY = var.container_environment.GRAPHQL_API_KEY
-      MAIL_USERNAME   = var.container_environment.MAIL_USERNAME
-      MAIL_PASSWORD   = var.container_environment.MAIL_PASSWORD
+      DB_HOST               = split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[0]
+      DB_PORT               = split("/", split(":", split("jdbc:postgresql://", var.container_environment.DB_URL)[1])[1])[0]
+      DB_NAME               = split("/", var.container_environment.DB_URL)[length(split("/", var.container_environment.DB_URL)) - 1]
+      DB_USER               = var.container_environment.DB_USERNAME
+      DB_PASSWORD           = var.container_environment.DB_PASSWORD
+      GRAPHQL_API_URL       = var.container_environment.GRAPHQL_API_URL
+      GRAPHQL_API_KEY       = var.container_environment.GRAPHQL_API_KEY
+      MAIL_USERNAME         = var.container_environment.MAIL_USERNAME
+      MAIL_PASSWORD         = var.container_environment.MAIL_PASSWORD
     }
   }
 
@@ -174,11 +174,11 @@ resource "aws_lambda_permission" "allow_s3" {
 # S3 bucket notification for promotional email sender
 resource "aws_s3_bucket_notification" "bucket_notification" {
   depends_on = [aws_lambda_permission.allow_s3]
-  bucket = var.s3_bucket_id
+  bucket     = var.s3_bucket_id
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.promotional_email_sender.arn
-    events = ["s3:ObjectCreated:*"]
+    events              = ["s3:ObjectCreated:*"]
     filter_prefix       = "1/templates/"
     filter_suffix       = ".json"
   }

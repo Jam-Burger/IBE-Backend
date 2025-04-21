@@ -7,6 +7,7 @@ import com.kdu.hufflepuff.ibe.model.graphql.Promotion;
 import com.kdu.hufflepuff.ibe.repository.jpa.SpecialOfferRepository;
 import com.kdu.hufflepuff.ibe.service.interfaces.SpecialOfferService;
 import com.kdu.hufflepuff.ibe.util.GraphQLQueries;
+import com.kdu.hufflepuff.ibe.model.enums.CacheNames;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -28,7 +29,7 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "specialOffers", key = "#tenantId + '_' + #propertyId + '_' + #startDate + '_' + #endDate", unless = "#result == null || #result.isEmpty()")
+    @Cacheable(value = CacheNames.SPECIAL_OFFERS_CACHE, key = "#tenantId + '_' + #propertyId + '_' + #startDate + '_' + #endDate", unless = "#result == null || #result.isEmpty()")
     public List<SpecialOfferResponseDTO> getSpecialOffers(Long tenantId, Long propertyId, LocalDate startDate,
                                                           LocalDate endDate) {
         log.info("Cache miss - Fetching special offers for propertyId: {}, startDate: {}, endDate: {}",
@@ -61,7 +62,7 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "calendarOffers", key = "#tenantId + '_' + #propertyId + '_' + #startDate + '_' + #endDate", unless = "#result == null || #result.isEmpty()")
+    @Cacheable(value = CacheNames.CALENDAR_OFFERS_CACHE, key = "#tenantId + '_' + #propertyId + '_' + #startDate + '_' + #endDate", unless = "#result == null || #result.isEmpty()")
     public List<SpecialOfferResponseDTO> getCalenderOffers(Long tenantId, Long propertyId, LocalDate startDate,
                                                            LocalDate endDate) {
         log.info("Cache miss - Fetching calendar offers for propertyId: {}, startDate: {}, endDate: {}",
@@ -76,7 +77,7 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "promoOffers", key = "#tenantId + '_' + #propertyId + '_' + #promoCode + '_' + #startDate + '_' + #endDate", unless = "#result == null")
+    @Cacheable(value = CacheNames.PROMO_OFFERS_CACHE, key = "#tenantId + '_' + #propertyId + '_' + #promoCode + '_' + #startDate + '_' + #endDate", unless = "#result == null")
     public SpecialOfferResponseDTO getPromoOffer(Long tenantId, Long propertyId, String promoCode, LocalDate startDate,
                                                  LocalDate endDate) {
         log.info("Cache miss - Fetching promo offer for propertyId: {}, promoCode: {}, startDate: {}, endDate: {}",
@@ -101,7 +102,7 @@ public class SpecialOfferServiceImpl implements SpecialOfferService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "specialOffers", key = "#id", unless = "#result == null")
+    @Cacheable(value = CacheNames.SPECIAL_OFFERS_CACHE, key = "#id", unless = "#result == null")
     public SpecialOffer getSpecialOfferById(Long id) {
         log.info("Cache miss - Fetching special offer by id: {}", id);
         return specialOfferRepository.findById(id)

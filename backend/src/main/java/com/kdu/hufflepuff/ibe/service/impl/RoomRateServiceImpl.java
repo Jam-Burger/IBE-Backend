@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static com.kdu.hufflepuff.ibe.util.DateRangeUtils.splitDateRange;
+import com.kdu.hufflepuff.ibe.model.enums.CacheNames;
 
 @Slf4j
 @Service
@@ -39,7 +40,7 @@ public class RoomRateServiceImpl implements RoomRateService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "minimumRoomRates", key = "#tenantId + '_' + #propertyId + '_' + #startDate + '_' + #endDate", unless = "#result == null || #result.isEmpty()")
+    @Cacheable(value = CacheNames.MINIMUM_ROOM_RATES_CACHE, key = "#tenantId + '_' + #propertyId + '_' + #startDate + '_' + #endDate", unless = "#result == null || #result.isEmpty()")
     public List<DailyRoomRateDTO> getMinimumDailyRates(Long tenantId, Long propertyId, LocalDate startDate, LocalDate endDate) {
         log.info("Cache miss - Fetching minimum daily rates for propertyId: {}, startDate: {}, endDate: {}",
             propertyId, startDate, endDate);

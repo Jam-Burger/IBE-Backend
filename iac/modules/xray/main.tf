@@ -23,17 +23,17 @@ resource "aws_xray_sampling_rule" "critical_paths" {
 
 resource "aws_xray_sampling_rule" "errors" {
   rule_name      = "${var.project_name}-errors"
-  priority       = 2  # Second priority
+  priority       = 2 # Second priority
   version        = 1
   reservoir_size = 1
-  fixed_rate     = 1.0  # Sample 100% of error responses
+  fixed_rate     = 1.0 # Sample 100% of error responses
   host           = "*"
   http_method    = "*"
   url_path       = "/*"
   service_name   = "*"
   service_type   = "*"
   resource_arn   = "*"
-  
+
   attributes = {
     Environment = var.environment
     StatusCode  = "4XX,5XX"
@@ -42,10 +42,10 @@ resource "aws_xray_sampling_rule" "errors" {
 
 resource "aws_xray_sampling_rule" "health_check" {
   rule_name      = "${var.project_name}-health-check"
-  priority       = 100  # Lower priority
+  priority       = 100 # Lower priority
   version        = 1
   reservoir_size = 0
-  fixed_rate     = 0.0  # Don't sample health checks
+  fixed_rate     = 0.0 # Don't sample health checks
   host           = "*"
   http_method    = "GET"
   url_path       = "/health"
@@ -75,7 +75,7 @@ resource "aws_xray_sampling_rule" "default" {
 }
 
 resource "aws_xray_encryption_config" "this" {
-  type = "NONE"  # Can be changed to "KMS" if you want to use KMS encryption
+  type = "NONE" # Can be changed to "KMS" if you want to use KMS encryption
 }
 
 # IAM role for API Gateway to write traces to X-Ray
