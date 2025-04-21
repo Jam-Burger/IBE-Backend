@@ -14,3 +14,8 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "container_environment" {
+  description = "Environment variables for the Lambda functions"
+  type        = map(string)
+}

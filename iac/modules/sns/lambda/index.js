@@ -1,6 +1,25 @@
 // Lambda function for Slack CloudWatch Notifications
 const https = require('https');
 const url = require('url');
+const fs = require('fs');
+const nodemailer = require('nodemailer');
+const path = require('path');
+const Handlebars = require('handlebars');
+
+// Read email template
+const templatePath = path.join(__dirname, 'email-template.html');
+const template = Handlebars.compile(fs.readFileSync(templatePath, 'utf8'));
+
+// Create email transporter
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_PORT === '465',
+    auth: {
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD
+    }
+});
 
 exports.handler = async (event) => {
     console.log('Event:', JSON.stringify(event, null, 2));
@@ -12,7 +31,15 @@ exports.handler = async (event) => {
     const slackMessage = formatSlackMessage(message);
 
     // Send to Slack
-    return await sendToSlack(slackMessage);
+    await sendToSlack(slackMessage);
+
+    // Send email notification
+    await sendEmailNotification(message);
+
+    return {
+        statusCode: 200,
+        body: 'Notifications sent successfully'
+    };
 };
 
 function formatSlackMessage(message) {
@@ -194,4 +221,70 @@ async function sendToSlack(message) {
         req.write(postData);
         req.end();
     });
+}
+
+async function sendEmailNotification(message) {
+    // Extract datapoints from the state change reason
+    let datapoints = [];
+    if (message.NewStateReason) {
+        // Extract the datapoints section using a more precise regex
+        const datapointsMatch = message.NewStateReason.match(/\[(.*?)\]/);
+        if (datapointsMatch) {
+            // Split the datapoints string and process each one
+            const datapointsStr = datapointsMatch[1];
+            const points = datapointsStr.split(', ');
+            
+            datapoints = points.map(point => {
+                // Extract value and timestamp using a more precise regex
+                const match = point.match(/(\d+\.\d+)\s+\((\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}:\d{2})\)/);
+                if (match) {
+                    const [_, value, timestamp] = match;
+                    // Convert the timestamp to a more readable format
+                    const [date, time] = timestamp.split(' ');
+                    const [day, month, year] = date.split('/');
+                    const formattedDate = `20${year}-${month}-${day}T${time}`;
+                    
+                    return {
+                        value: parseFloat(value).toFixed(2),
+                        timestamp: new Date(formattedDate).toLocaleString()
+                    };
+                }
+                return null;
+            }).filter(Boolean); // Remove any null entries
+        }
+    }
+
+    // Prepare email data
+    const emailData = {
+        alarmName: message.AlarmName,
+        newStateValue: message.NewStateValue,
+        stateChangeTime: new Date(message.StateChangeTime).toLocaleString(),
+        region: message.Region,
+        trigger: message.Trigger,
+        newStateReason: message.NewStateReason,
+        datapoints: datapoints,
+        stateColor: message.NewStateValue === 'ALARM' ? '#dc3545' : 
+                   message.NewStateValue === 'OK' ? '#28a745' : '#ffc107'
+    };
+
+    // Generate HTML content
+    const html = template(emailData);
+
+    // Send email
+    try {
+        await transporter.sendMail({
+            from: process.env.MAIL_FROM,
+            to: process.env.MAIL_TO,
+            subject: `CloudWatch Alarm: ${message.AlarmName} - ${message.NewStateValue}`,
+            html: html
+        });
+        console.log('Email sent successfully');
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: 'Email sent successfully' })
+        };
+    } catch (error) {
+        console.error('Error sending email:', error);
+        throw error;
+    }
 }

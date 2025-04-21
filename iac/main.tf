@@ -35,11 +35,11 @@ module "alb" {
 module "security_groups" {
   source = "./modules/security_groups"
 
-  project_name         = local.name_prefix
-  vpc_id               = var.vpc_id
-  container_port       = var.container_port
+  project_name          = local.name_prefix
+  vpc_id                = var.vpc_id
+  container_port        = var.container_port
   alb_security_group_id = module.alb.alb_security_group_id
-  tags                 = local.tags
+  tags                  = local.tags
 }
 
 
@@ -111,9 +111,10 @@ module "xray" {
 module "sns" {
   source = "./modules/sns"
 
-  project_name      = local.name_prefix
-  slack_webhook_url = var.slack_webhook_url
-  tags              = local.tags
+  project_name          = local.name_prefix
+  slack_webhook_url     = var.slack_webhook_url
+  container_environment = var.container_environment
+  tags                  = local.tags
 }
 
 # CloudWatch Module

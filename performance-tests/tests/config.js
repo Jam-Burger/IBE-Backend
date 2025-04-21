@@ -35,11 +35,3 @@ export const STRESS_CONFIG = {
     },
     DELAY: 0.5, // seconds between requests
 };
-
-// HTML Report configuration
-export const REPORT_CONFIG = {
-    OUTPUT_DIR: 'reports',
-    getFilename: (testType) => {
-        return `${testType}-report-[${BASE_CONFIG.BASE_URL.split("//")[1]}].html`;
-    }
-};

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid {{stateColor}};
+        }
+        .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .status-ALARM {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-OK {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-INSUFFICIENT_DATA {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .metrics {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .metrics h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .metrics-table th, .metrics-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .metrics-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .metrics-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .dimensions {
+            margin-top: 20px;
+        }
+        .dimension-item {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .reason {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .reason h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        .datapoints-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .datapoints-table th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+            padding: 12px;
+            text-align: left;
+        }
+        .datapoints-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .datapoints-table tr:last-child td {
+            border-bottom: none;
+        }
+        .datapoints-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .value-cell {
+            font-weight: bold;
+            color: #dc3545;
+        }
+        .timestamp-cell {
+            color: #6c757d;
+        }
+        .threshold-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .threshold-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>CloudWatch Alarm Notification</h2>
+            <p>Alarm Name: {{alarmName}}</p>
+            <p>State: <span class="status status-{{newStateValue}}">{{newStateValue}}</span></p>
+            <p>Time: {{stateChangeTime}}</p>
+            <p>Region: {{region}}</p>
+        </div>
+
+        <div class="reason">
+            <h3>State Change Details</h3>
+            <p>{{newStateReason}}</p>
+            
+            {{#if datapoints}}
+            <table class="datapoints-table">
+                <thead>
+                    <tr>
+                        <th>Value</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each datapoints}}
+                    <tr>
+                        <td class="value-cell">{{value}}</td>
+                        <td class="timestamp-cell">{{timestamp}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            <div class="threshold-info">
+                Threshold: <span class="threshold-value">{{trigger.threshold}}</span>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</body>
+</html> 
+

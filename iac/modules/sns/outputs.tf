@@ -5,5 +5,5 @@ output "sns_topic_arn" {
 
 output "lambda_function_name" {
   description = "Name of the Lambda function for Slack notifications"
-  value       = aws_lambda_function.slack_notification.function_name
+  value       = aws_lambda_function.alarm_notification.function_name
 }

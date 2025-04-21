@@ -58,7 +58,6 @@ jobs:
 
       - name: Build Lambda Functions
         run: |
-          cd modules/lambda
           chmod +x build.sh
           ./build.sh
 

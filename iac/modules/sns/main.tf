@@ -65,8 +65,8 @@ resource "aws_iam_role_policy_attachment" "lambda_sns_policy_attachment" {
 }
 
 # Lambda function to format CloudWatch alarm messages for Slack
-resource "aws_lambda_function" "slack_notification" {
-  function_name    = "${var.project_name}-slack-notification"
+resource "aws_lambda_function" "alarm_notification" {
+  function_name    = "${var.project_name}-alarm-notification"
   role             = aws_iam_role.lambda_sns_role.arn
   handler          = "index.handler"
   runtime          = "nodejs22.x"
@@ -77,6 +77,12 @@ resource "aws_lambda_function" "slack_notification" {
   environment {
     variables = {
       SLACK_WEBHOOK_URL = var.slack_webhook_url
+      SMTP_HOST         = "smtp.gmail.com"
+      SMTP_PORT         = 587
+      MAIL_USERNAME     = var.container_environment.MAIL_USERNAME
+      MAIL_PASSWORD     = var.container_environment.MAIL_PASSWORD
+      MAIL_FROM         = var.container_environment.MAIL_USERNAME
+      MAIL_TO           = var.container_environment.MAIL_USERNAME
     }
   }
 
@@ -87,14 +93,14 @@ resource "aws_lambda_function" "slack_notification" {
 resource "aws_sns_topic_subscription" "lambda_subscription" {
   topic_arn = aws_sns_topic.cloudwatch_alarms.arn
   protocol  = "lambda"
-  endpoint  = aws_lambda_function.slack_notification.arn
+  endpoint  = aws_lambda_function.alarm_notification.arn
 }
 
 # Lambda permission to allow SNS to invoke it
 resource "aws_lambda_permission" "sns_invoke_lambda" {
   statement_id  = "AllowSNSInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.slack_notification.function_name
+  function_name = aws_lambda_function.alarm_notification.function_name
   principal     = "sns.amazonaws.com"
   source_arn    = aws_sns_topic.cloudwatch_alarms.arn
 }
