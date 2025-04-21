@@ -4,8 +4,9 @@
     "description": "Performance tests for IBE Backend using k6",
     "private": true,
     "scripts": {
+        "ctest": "k6 cloud tests/main.js",
+        "ctest:stress": "k6 cloud tests/stress.js",
         "test": "k6 run tests/main.js",
-        "test:smoke": "k6 run tests/smoke.js",
         "test:stress": "k6 run tests/stress.js"
     },
     "dependencies": {
