@@ -34,7 +34,6 @@ public class CacheConfig {
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
             .commandTimeout(Duration.ofSeconds(5L))
             .useSsl() // Enable TLS
-            .disablePeerVerification() // For testing; remove or configure trust store in production
             .build();
 
         // Use RedisStandaloneConfiguration for serverless/standalone Redis

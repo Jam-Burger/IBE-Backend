@@ -4,6 +4,15 @@ resource "aws_security_group" "ecs_tasks" {
   description = "Security group for ECS tasks"
   vpc_id      = var.vpc_id
 
+  # Allow inbound traffic from the ALB on the container port
+  ingress {
+    from_port       = var.container_port
+    to_port         = var.container_port
+    protocol        = "tcp"
+    security_groups = [var.alb_security_group_id]
+    description     = "Allow inbound traffic from ALB"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -44,14 +53,4 @@ resource "aws_security_group" "redis" {
   }
 
   tags = var.tags
-}
-
-# ALB to ECS security group rule
-resource "aws_security_group_rule" "alb_to_ecs" {
-  type                     = "ingress"
-  from_port                = var.container_port
-  to_port                  = var.container_port
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.ecs_tasks.id
-  source_security_group_id = var.alb_security_group_id
 } 
