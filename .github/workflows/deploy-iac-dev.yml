@@ -53,6 +53,7 @@ jobs:
             GRAPHQL_API_KEY = "${{ secrets.GRAPHQL_API_KEY }}"
             MAIL_USERNAME   = "${{ vars.MAIL_USERNAME }}"
             MAIL_PASSWORD   = "${{ secrets.MAIL_PASSWORD }}"
+            JWT_SECRET_KEY = "${{ secrets.JWT_SECRET_KEY }}"
           }
           EOF
 
